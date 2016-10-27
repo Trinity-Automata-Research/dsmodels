@@ -1,7 +1,9 @@
 #' Create a new dsproto object
 #'
 #' dsproto draws from the prototype implementation in ggplot2, which in turn is inspired by the
-#' ggplot2's implementation has some improvements in inheritance and performance. 
+#' ggplot2's implementation, with improvements in inheritance and performance. 
+#' The ggplot2 implementation is copyright by Hadley Wickham and Winston Chang, and released under
+#' GPLv2.
 #'
 #' @section Calling dsproto methods:
 #'

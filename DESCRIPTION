@@ -2,7 +2,7 @@ Package: dsmodels
 Type: Package
 Title: A language to facilitate the creation and visualization of two-
     dimensional dynamical systems
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: c(
 	     person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
 	     person("Seth", "Fogarty", email = "sfogarty@trinity.edu", role = c("aut"))
@@ -20,8 +20,7 @@ Description: An expressive language to facilitate the creation and visualization
     can also automatically guess attractors and regions of convergence and divergence.
 License: MIT + file LICENSE
 Depends:
-    R (>= 3.1.0)
-LazyData: TRUE
+    R (>= 3.1.0) LazyData: TRUE
 RoxygenNote: 5.0.1
 Collate:
     'dsproto.R'
@@ -41,4 +40,5 @@ Imports:
     graphics,
     grDevices,
     TeachingDemos
-BugReports: 
+BugReports: https://github.com/Trinity-Automata-Research/dsmodels/issues
+URL: https://github.com/Trinity-Automata-Research/dsmodels
