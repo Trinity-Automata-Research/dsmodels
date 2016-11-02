@@ -12,6 +12,7 @@ dsmodels is an expressive language to facilitate the creation and visualization
     Backgrounds define and color regions of interest, such as areas of convergence and divergence.
     The language
     can also automatically guess attractors and regions of convergence and divergence.
+    To see examples of dsmodels, check the Examples folder.
 
 To install dsmodels, simply type into your R console the following line:
      `install.packages("dsmodels")`.
@@ -23,4 +24,4 @@ To uninstall dsmodels, simply run the following command:
      `remove.packages("dsmodels")`
 
 
-To see examples of dsmodels, check the Examples folder.
+
