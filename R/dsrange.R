@@ -17,7 +17,7 @@
 #'  If a collection of values are provided, the minimum and maximum are used as the range.
 #' @param discretize If a value is provided, the field is discretized into an array of points. The value
 #'  specifies the distance between each point.
-#'  This becomes the default when displaying \code{\link{dsarrows}} or \code{\link{dots}}.
+#'  This becomes the default when displaying \code{\link{dsarrows}} or \code{\link{dsdots}}.
 #'  The number of points in the field is defined by:
 #'  \deqn{(xmax-xmin+1)(ymax-ymin+1)/discretize.}{ascii}
 # @param originOffset Currently not supported. Allows you to place an xlim and ylim

@@ -23,7 +23,6 @@
 #'
 #'
 #' @include dsproto.R
-#' @import TeachingDemos
 #' @param x The x-coordinate of the point.
 #' @param y The y-coordinate of the point.
 #' @param label A string label. Text will appear above the dot by default.
@@ -49,8 +48,6 @@
 #' and no further images will be calculated.
 #' @param artificial For internal use.
 #' @param pch Plotting 'character' or symbol to use, default is 21 (filled circle). See \code{help(pch)} for details.
-#' @param labelcol Colors the label.
-#' @param labelbg Colors a background around the label to make it more legible.
 #' @param ... Extra graphical parameters to be sent through \code{points}
 #' @examples
 #' library(dsmodels)
@@ -82,7 +79,6 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
                        col = "blue", regionCol=NULL, image = "", offset=c(0,0.5),
                     display = TRUE, fixed = FALSE, iters = 0,
                     attractor=FALSE, crop = TRUE, artificial=FALSE,
-                    labelcol=NULL,labelbg=NULL,
                     ...) {
 
   col <- colorVector(col, image, iters)
@@ -101,8 +97,6 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     regionCol = regionCol,
     display = display,
     attractor=attractor,
-    labelbg=labelbg,
-    labelcol=labelcol,
     toPlot = NULL,
     iters = iters,
     xoffset=offset[1],
@@ -124,19 +118,10 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
       }
     },
     displayLabel = function(self) {
-      if(is.null(self$labelbg)) {
         text(
           self$x+self$xoffset,
           self$y+self$yoffset,
           labels = self$label)
-      }
-      else {
-        shadowtext(self$x+self$xoffset,
-                   self$y+self$yoffset,
-                   labels = self$label,
-                   col=self$labelcol,
-                   bg = self$labelbg)
-      }
     },
     calculateImage = function(self, model) {
       if(iters == 0)
