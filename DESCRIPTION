@@ -18,7 +18,7 @@ Description: An expressive language to facilitate the creation and visualization
     Backgrounds define and color regions of interest, such as areas of convergence and divergence.
     The language
     can also automatically guess attractors and regions of convergence and divergence.
-License: MIT + file LICENSE
+License: GPL-2 | file LICENSE
 Depends:
     R (>= 3.1.0)
 LazyData: TRUE
