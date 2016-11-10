@@ -1,7 +1,7 @@
 Package: dsmodels
 Type: Package
-Title: A language to facilitate the creation and visualization of two-
-    dimensional dynamical systems
+Title: A Language to Facilitate the Creation and Visualization of Two-
+    Dimensional Dynamical Systems
 Version: 1.0.0
 Authors@R: c(
 	     person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
