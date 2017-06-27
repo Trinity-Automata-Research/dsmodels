@@ -1,5 +1,5 @@
-Authors: Seth Fogarty,          Charles Stein
-Contact: sfogarty@trinity.edu,  cstein1@trinity.edu
+Authors:  Charles Stein, Seth Fogarty         <br>
+Contact: cstein1@trinity.edu, sfogarty@trinity.edu
 
 dsmodels is an expressive language to facilitate the creation and visualization
     of two-dimensional dynamical systems. The basic elements of the language are
