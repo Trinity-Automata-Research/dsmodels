@@ -23,5 +23,5 @@ Place the following command as the first line of your script to begin using dsmo
 To uninstall dsmodels, simply run the following command:
      `remove.packages("dsmodels")`
 
-
+Please find our API <a href = http://www.cs.trinity.edu/~sfogarty/dsmodels/index.html>here</h>.
 
