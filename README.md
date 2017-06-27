@@ -1,7 +1,7 @@
-Authors:  Charles Stein, Seth Fogarty         <br>
+Authors: Charles Stein, Seth Fogarty<br>
 Contact: cstein1@trinity.edu, sfogarty@trinity.edu
 
-dsmodels is an expressive language to facilitate the creation and visualization
+<TT>dsmodels</TT> is an expressive language to facilitate the creation and visualization
     of two-dimensional dynamical systems. The basic elements of the language are
     a model wrapping around a function(x,y) which outputs a list(x
     = xprime, y = yprime), and a range. The language supports three
@@ -14,7 +14,7 @@ dsmodels is an expressive language to facilitate the creation and visualization
     can also automatically guess attractors and regions of convergence and divergence.
     To see examples of dsmodels, check the Examples folder.
 
-To install dsmodels, simply type into your R console the following line:
+To install <TT>dsmodels</TT>, simply type into your R console the following line:
      `install.packages("dsmodels")`.
 
 Place the following command as the first line of your script to begin using dsmodels:
