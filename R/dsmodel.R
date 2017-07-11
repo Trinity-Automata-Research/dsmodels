@@ -41,7 +41,7 @@ dsmodel <- function(fun, title="") {
   if(length(formals(fun)) > 2)
     stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
   if(length(formals(fun)) < 2)
-    stop("dsmodel: If you wish to visualize a 1-dimensional model, use dscobweb.")
+    stop("dsmodel: If you wish to visualize a 1-dimensional model, use ds1dmodel.")
   dsproto(
     `_class` = "model",
     `_inherit` = NULL,
@@ -80,7 +80,7 @@ dsmodel <- function(fun, title="") {
           tmp=self$fun(x,y)
           if(any(is.nan(tmp[[1]])) || any(is.nan(tmp[[2]])))
           {
-            warning("dsmodel: model undefined, NaN computed. (Division by zero). Removing points with NaN value and continuing procedure..")
+            warning("dsmodel: model undefined, NaN computed, (division by zero). Removing points with NaN value and continuing procedure..")
             tmp = NaNRemove(tmp)
           }
           if(crop){
