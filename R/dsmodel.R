@@ -1,4 +1,4 @@
-#' Defines a model object encapsulating a dynamical system
+#' Defines a model object encapsulating a two-dimensional dynamical system
 #'
 #' To begin, define a two dimensional function that outputs
 #' a two-dimensional list. For instance:
@@ -38,8 +38,10 @@
 #'   )
 #' }, title = "Another function!")
 dsmodel <- function(fun, title="") {
-  if(length(formals(fun)) != 2)
+  if(length(formals(fun)) > 2)
     stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
+  if(length(formals(fun)) < 2)
+    stop("dsmodel: If you wish to visualize a 1-dimensional model, use dscobweb.")
   dsproto(
     `_class` = "model",
     `_inherit` = NULL,
