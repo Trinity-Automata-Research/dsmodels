@@ -60,4 +60,4 @@ model +
 
 model+dspoint(0,0, display=FALSE, col="yellow")
 
-model+guessregions(discretize=0.02)
+model+simbasins(discretize=0.02)

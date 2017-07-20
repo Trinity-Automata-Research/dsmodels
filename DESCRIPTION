@@ -16,23 +16,23 @@ Description: An expressive language to facilitate the creation and visualization
     user-defined curves and points, and their images under the system.
     Backgrounds define and color regions of interest, such as areas of convergence and divergence.
     The language
-    can also automatically guess attractors and regions of convergence and divergence.
+    can also approximate attractors and their basins through simulation.
 License: GPL-2 | file LICENSE
 Depends:
     R (>= 3.1.0)
 LazyData: TRUE
 RoxygenNote: 6.0.1
-Collate:
+Collate: 
     'dsproto.R'
     'axeslabel.R'
     'dsarrows.R'
     'dscurve.R'
     'dsdots.R'
-    'dspoint.R'
-    'dsguessing.R'
     'dsmodel.R'
+    'dspoint.R'
     'dsrange.R'
     'dsregion.R'
+    'dssimulation.R'
     'features.R'
     'modelConstruction.R'
 Imports:
