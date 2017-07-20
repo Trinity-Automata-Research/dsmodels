@@ -29,7 +29,7 @@
 #'  Please see the \code{offset} parameter to adjust.
 #' @param col A string color for the point.
 #'  Use "NA" or "" to hide the point. See also \code{display}.
-#' @param offset This will offset the label. Enter as \code{c(x, y)}.
+#' @param offset This will offset the label. Enter as \code{c(x, y)}. Defaults to an automatic scale dependent on the \code{dsrange}'s \code{y} axis size.
 #' @param size Determines the size of the point.
 #' @param display Set display = FALSE to hide the dot, but still add to your system.
 #'  Mostly useful for \code{\link{guessregions}()}.
@@ -76,7 +76,7 @@
 #' 	dspoint(0.2, 0.5, image = "pink", iters = 3, col = "grey")
 #' @export
 dspoint <- function(x, y, label = "", pch = 21, size = 2,
-                       col = "blue", regionCol=NULL, image = "", offset=c(0,0.5),
+                       col = "blue", regionCol=NULL, image = "", offset=c(0,0),
                     display = TRUE, fixed = FALSE, iters = 0,
                     attractor=FALSE, crop = TRUE, artificial=FALSE,
                     ...) {
@@ -86,11 +86,13 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
   if(is.null(regionCol))
     regionCol <- col[1]
 
+  texLabel <- TeX(label)
+
   dsproto(
     `_class` = "dspoint", `_inherit` = feature,
     x = x,
     y = y,
-    label = label,
+    label = texLabel,
     col = col,
     pch = pch,
     cex = size,
@@ -114,14 +116,22 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
             cex = self$cex,
             ... = self$...)
         }
-        self$displayLabel()
+        self$displayLabel(model$range)
       }
     },
-    displayLabel = function(self) {
-        text(
-          self$x+self$xoffset,
-          self$y+self$yoffset,
-          labels = self$label)
+    displayLabel = function(self, range) {
+      xloc <- self$x + self$xoffset
+
+      if(self$yoffset == 0 && self$xoffset == 0){
+        scale <- 0.05*(abs(range$ylim[[1]])+abs(range$ylim[[2]]))
+        yloc <- self$y + scale
+      }
+      else{
+        yloc <- self$y + self$yoffset
+      }
+
+      text(xloc,yloc,
+           labels = self$label)
     },
     calculateImage = function(self, model) {
       if(iters == 0)
