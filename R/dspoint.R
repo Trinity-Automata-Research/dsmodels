@@ -179,7 +179,7 @@ findFixedPoint <- function (x,y,points,eps,stable,fun) {
   yp <- y
   moves <- TRUE
   ind <- findNearestPoint(xp, yp, points, eps)
-  while (is.null(ind) && moves) {
+  while (ind==0 && moves) {
     tmp <- fun(xp,yp)
     if( abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < stable)
       moves <- FALSE
@@ -187,13 +187,10 @@ findFixedPoint <- function (x,y,points,eps,stable,fun) {
     yp <- tmp[[2]]
     ind <- findNearestPoint(xp, yp, points, eps)
   }
-  if(is.null(ind))
-    0
-  else
-    ind
+  ind
 }
 
-#' Determines which point in a list is closest to the input.
+#' Determines which point in a list is closest to the input. 0 is used if all are further from  epsilon.
 #' @export
 # @rdname dspoint
 #' @param x A numeric  x coordinate.
@@ -205,7 +202,7 @@ findFixedPoint <- function (x,y,points,eps,stable,fun) {
 findNearestPoint <- function(x, y, points, eps, deep=TRUE) {
   dsq <- abs((x-points$x)^2+(y-points$y)^2)
   if(deep && min(dsq) >= eps)
-    NULL
+    0
   else
     points$inds[which.min(dsq)]
 }
