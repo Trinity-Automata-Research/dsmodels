@@ -3,6 +3,7 @@
 #' Labels the x-axis
 #' @export
 #' @param label The title of the axis, to be displayed on image.
+#' @param line The distance from the axis the text will be displayed.
 #' @param ... Extra parameters. These parameters are fed into \code{mtext()}.
 #' @include dsproto.R
 #' @examples
@@ -20,13 +21,15 @@
 #'  ylabel("Y-Axis!")
 
 
-xlabel <- function(label = "", ...) {
+xlabel <- function(label = "", line = 3, ...) {
+  texLabel <- TeX(label)
   dsproto(
     `_class` = "xaxislabel",
     `_inherit` = facade,
-    label = label,
+    label = texLabel,
+    line = line,
     render = function(self, model) {
-      mtext(self$label,side=1, ...)
+      mtext(self$label,side=1, line = self$line, ...)
     }
   )
 }
@@ -35,6 +38,7 @@ xlabel <- function(label = "", ...) {
 #'
 #' Labels the y-axis
 #' @param label The title of the axis, to be displayed on image.
+#' @param line The distance from the axis the text will be displayed.
 #' @param ... Extra parameters. These parameters are fed into \code{mtext()}.
 #' @examples
 #'  library(dsmodels)
@@ -49,13 +53,15 @@ xlabel <- function(label = "", ...) {
 #'  xlabel("X-Axis!") +
 #'  ylabel("Y-Axis!")
 #' @export
-ylabel <- function(label = "", ...) {
+ylabel <- function(label = "", line = 3, ...) {
+  texLabel <- TeX(label)
   dsproto(
     `_class` = "yaxislabel",
     `_inherit` = facade,
-    label = label,
+    label = texLabel,
+    line = line,
     render = function(self, model) {
-      mtext(self$label,side=2, ...)
+      mtext(self$label,side=2, line = self$line, ...)
     }
   )
 }
