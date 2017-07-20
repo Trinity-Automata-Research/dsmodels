@@ -26,7 +26,7 @@
 #' @param x The x-coordinate of the point.
 #' @param y The y-coordinate of the point.
 #' @param label A string label. Text can be input in the form of pseudo-LaTeX code within quotes.
-#'  See \code{\url{https://CRAN.R-project.org/package=latex2exp}} for more details.
+#'  See \code{\link[latex2exp]{TeX}} for more details.
 #'  Text will appear above the dot by default.
 #'  Please see the \code{offset} parameter to adjust.
 #' @param col A string color for the point.
@@ -67,7 +67,7 @@
 #'
 #' dsmodel(fun, title = "A Point and a Label") +
 #'  dsrange(3,3, discretize = .09) +
-#'  dspoint(2.2, 2.1, label = "point!", col = "green")
+#'  dspoint(2.2, 2.1, label = "$x^{\\alpha}$", col = "green")
 #'
 #' dsmodel(fun, title = "A Point and Iterations of that Point") +
 #'  dsrange(3,3, discretize = .09) +
