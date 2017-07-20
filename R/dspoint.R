@@ -34,15 +34,15 @@
 #' @param offset This will offset the label. Enter as \code{c(x, y)}. Defaults to an automatic scale dependent on the \code{dsrange}'s \code{y} axis size.
 #' @param size Determines the size of the point.
 #' @param display Set display = FALSE to hide the dot, but still add to your system.
-#'  Mostly useful for \code{\link{guessregions}()}.
+#'  Mostly useful for \code{\link{simbasins}()}.
 #' @param image A single color as a string, or a vector of colors as a string.
 #'  See details for more information.
 #' @param fixed A flag to declare a fixed point. The image of any fixed
 #'  point is should be the original point.
 #' @param attractor A flag to delcare a point as an attractor: a fixed point for the function that
-#' other points converge to. Used in \code{\link{guessregions}()}.
+#' other points converge to. Used in \code{\link{simbasins}()}.
 #' @param regionCol An alternate color used to define the color of the region for
-#'  \code{\link{guessregions}()}. Defaults to \code{col} or \code{col[1]}.
+#'  \code{\link{simbasins}()}. Defaults to \code{col} or \code{col[1]}.
 #' @param iters Determines the number of iterations of the function when making a color gradient.
 #' Use \code{col = color1, image = color2, iters = n} to create a gradient of colors between
 #' color1 and color2. See details for more information.
@@ -177,18 +177,19 @@ pointsToList <- function(points) {
 #' @param y A numeric initial y coordinate.
 #' @param points A list comprised of x coordinates, y coordinates, such as output by \code{pointsToList}. Should represent the attractors of \code{fun}.
 #' @param eps An epsilon, expected to already be squared, used to determine when a point is closed enough to a fixed point.
-#' @param stable A, usually smaller, value used to determine when a point has stopped moving without finding a nearby fixpoint.
-#' @param fun A two-dimensional function, taking an x and y and returning a list of x' y'.
+#' @param tolerance A, usually smaller, value used to determine when a point has stopped moving without finding a nearby fixpoint.
+#' @param model A dsmodel encapsulating the function to be applied.
+#' @param stride The number of times to apply the function at each step.
 #' @keywords internal
 #' @export
-findFixedPoint <- function (x,y,points,eps,stable,fun) {
+findFixedPoint <- function (x,y,points,eps,tolerance,model, stride) {
   xp <- x
   yp <- y
   moves <- TRUE
   ind <- findNearestPoint(xp, yp, points, eps)
   while (ind==0 && moves) {
-    tmp <- fun(xp,yp)
-    if( abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < stable)
+    tmp <- model$apply(xp,yp,iters=stride,accumulate=FALSE,crop=FALSE)
+    if( abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < tolerance)
       moves <- FALSE
     xp <- tmp[[1]]
     yp <- tmp[[2]]
