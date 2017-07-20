@@ -25,7 +25,9 @@
 #' @include dsproto.R
 #' @param x The x-coordinate of the point.
 #' @param y The y-coordinate of the point.
-#' @param label A string label. Text will appear above the dot by default.
+#' @param label A string label. Text can be input in the form of pseudo-LaTeX code within quotes.
+#'  See \code{\url{https://CRAN.R-project.org/package=latex2exp}} for more details.
+#'  Text will appear above the dot by default.
 #'  Please see the \code{offset} parameter to adjust.
 #' @param col A string color for the point.
 #'  Use "NA" or "" to hide the point. See also \code{display}.

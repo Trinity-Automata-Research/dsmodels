@@ -2,7 +2,8 @@
 #'
 #' Labels the x-axis
 #' @export
-#' @param label The title of the axis, to be displayed on image.
+#' @param label The title of the axis, to be displayed on image. Text can be input in the form of pseudo-LaTeX code within quotes.
+#'  See \code{\url{https://CRAN.R-project.org/package=latex2exp}} for more details.
 #' @param line The distance from the axis the text will be displayed.
 #' @param ... Extra parameters. These parameters are fed into \code{mtext()}.
 #' @include dsproto.R
@@ -37,7 +38,8 @@ xlabel <- function(label = "", line = 3, ...) {
 #' ylabel
 #'
 #' Labels the y-axis
-#' @param label The title of the axis, to be displayed on image.
+#' @param label The title of the axis, to be displayed on image. Text can be input in the form of pseudo-LaTeX code within quotes.
+#'  See \code{\url{https://CRAN.R-project.org/package=latex2exp}} for more details.
 #' @param line The distance from the axis the text will be displayed.
 #' @param ... Extra parameters. These parameters are fed into \code{mtext()}.
 #' @examples
