@@ -14,8 +14,9 @@
 #' to the existing dsmodel object. A \code{\link{dsrange}} must be one of the objects added to a model.
 #' @family Foundation
 #' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
-#' @param title A string title for the graph.
-#' @import grDevices
+#' @param title A string title for the graph. Text can be input in the form of pseudo-LaTeX code within quotes.
+#'  See \code{\link[latex2exp]{TeX}} for more details.
+#' @import grDevices latex2exp
 #' @include dsproto.R
 #' @seealso \code{\link{dsrange}}
 #' @export
@@ -36,15 +37,16 @@
 #'     x = x^2,
 #'     y = x/(y+1)
 #'   )
-#' }, title = "Another function!")
+#' }, title = "Another function showing $f(x)=x^{\\alpha}$!")
 dsmodel <- function(fun, title="") {
+  texTitle <- TeX(title)
   if(length(formals(fun)) != 2)
     stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
   dsproto(
     `_class` = "model",
     `_inherit` = NULL,
     fun = fun,
-    title = title,
+    title = texTitle,
     dim = 2,
     range = NULL,
     background = c(),
