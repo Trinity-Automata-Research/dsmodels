@@ -21,11 +21,12 @@
 #' iterated until within \code{epsilon} distance of an attractor, or until it moves less
 #' than \code{stable} between iterations. Points that stop moving further
 #' than \code{epsilon} of an attractor, are colored \code{missingCol}, default
-#' "lightgoldenrod3".
+#' "NA".
 #'
-#' If \code{iters} is given a numeric value, each point is iterated exactly \code{iters} time,
-#' and the closest attractor is chosen regardless of distance. In this case, \code{epsilon} has
-#' no effect. This will take bounded time, but may give a poorer guess.
+#' If \code{iters} is given a numeric value, each point is iterated exactly \code{iters} times.
+#' If the final image is within \code{epsilon} of an attractor, then the square is colored appropriately.
+#' If not, then the point is colored \code{missingCol}, default "NA".
+#' This will take bounded time, but may give a poorer guess.
 #'
 #' If \code{iters} is given an infinite value, the points are iterated until they move less than
 #' \code{stable} distance. An attractor is chosen only if it  falls within \code{epsilon} distance,
@@ -46,7 +47,8 @@
 #' @param stable A, usually smaller, distance at which a point is considered to have stopped moving. Defaults to \code{sqrt(.Machine$double.eps)}.
 #' @param behind Forces this item to be a background object for the purposes of layering
 #' @param missingCol When \code{iters} is not set, the color given to points that stop moving
-#'  before reaching an attractor. Defaults to "lightgoldenrod3".
+#'  before reaching an attractor. If \code{iters} is set, the color given to points that are
+#'  not within \code{epsilon} of an attractor. Defaults to "NA".
 #' @param ... Extra graphical parameters for \code{image}.
 #' @import graphics
 #' @import grDevices
@@ -70,7 +72,7 @@
 #'       guessregions(discretize=0.02)
 #'@export
 guessregions <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
-                         epsilon=NULL, behind=TRUE, stable=sqrt(.Machine$double.eps),  cols = NULL, missingCol="lightgoldenrod3",...) {
+                         epsilon=NULL, behind=TRUE, stable=sqrt(.Machine$double.eps),  cols = NULL, missingCol="NA",...) {
   if(is.null(epsilon))
     epsilon = NULL
   else
@@ -141,16 +143,16 @@ guessregions <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
       self$bindWithModel(model)
       if(is.null(self$iters)) {
         colsMap <- mapply(findFixedPoint, self$X0, self$Y0,
-                       MoreArgs=list(fun=model$fun, points=self$fps, stable=self$stable, eps=self$epsilon))
+                          MoreArgs=list(fun=model$fun, points=self$fps, stable=self$stable, eps=self$epsilon))
       } else if (is.infinite(iters)) {
         images <- applyTillFixed(model, self$X0, self$Y0, 5, self$stable)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
-                          MoreArgs=list(points=self$fps, eps=0, deep=FALSE))
+                          MoreArgs=list(points=self$fps, eps=0))
       }
       else {
         images <- model$apply(self$X0, self$Y0, self$iters, crop=FALSE, accumulate=FALSE)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
-                       MoreArgs=list(points=self$fps, eps=self$epsilon))
+                          MoreArgs=list(points=self$fps, eps=self$epsilon))
       }
       self$colMatrix <- matrix(unlist(colsMap), nrow=length(self$grid$x))
       self$regionsCalculated <- TRUE
@@ -161,7 +163,7 @@ guessregions <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
         self$recalculate(model)
       image(x=self$grid$x, y=self$grid$y, z=self$colMatrix,
             zlim=c(0,self$numCols), #length($cols)),
-            col=self$fps$col,
+            col=self$cols,
             add=TRUE)#, ... = self$...)
     }
   )
