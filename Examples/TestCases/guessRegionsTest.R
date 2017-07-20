@@ -44,19 +44,20 @@ K12y <- y12Func(K1)
 #dspoints carry a label and a color for the dot. The dot can be configured in size.
 #We haven't yet done so, but we could also have the model check that the dspoints are (roughly) fixed.
 #We could also try to categorize them, if that would be useful.
-A1F <- dspoint(A1,A11y, col="yellow", label = expression(paste(group("(",list(A[1], y[A[11]]),")"))))
-A2F <- dspoint(A1,A12y, col="orange", label = expression(paste(group("(",list(A[1], y[A[12]]),")"))))
-K1F <- dspoint(K1,K11y, col="magenta", label = expression(paste(group("(",list(K[1], y[K[11]]),")"))))
-K2F <- dspoint(K1,K12y, col="green", label = expression(paste(group("(",list(K[1], y[K[12]]),")"))))
+A1F <- dspoint(A1,A11y, col="yellow", label = "$(A_1,y_{A_{11}})$")
+A2F <- dspoint(A1,A12y, col="orange", label = "$(A_1,y_{A_{12}})$")
+K1F <- dspoint(K1,K11y, col="magenta", label = "$(K_1,y_{K_{11}})$")
+K2F <- dspoint(K1,K12y, col="green", label =  "$(K_1,y_{K_{12}})$")
+
 
 #To add fixpoints to the model, you use the + operation. You can also combine them into a single group with +.
 model+A1F+A2F+K1F+K2F
 #You don't need to name the dspoints to add them, although having variables makes it easier to define regions.
 model +
-  dspoint(A1,0, label = expression(paste(A[1])), offset=c(0,-0.08)) +
-  dspoint(K1,0, regionCol="magenta", label = expression(paste(K[1])), offset=c(0,-0.08)) +
-  dspoint(0,A2, label = expression(paste(A[2])), offset=c(-0.08,0)) +
-  dspoint(0,K2, regionCol = "orange", label = expression(paste(K[2])), offset=c(-0.08,0))
+  dspoint(A1,0, label = "A_1", offset=c(0,-0.08)) +
+  dspoint(K1,0, regionCol="magenta", label = "K_1", offset=c(0,-0.08)) +
+  dspoint(0,A2, label = "A_2", offset=c(-0.08,0)) +
+  dspoint(0,K2, regionCol = "orange", label = "K_2", offset=c(-0.08,0))
 
 model+dspoint(0,0, display=FALSE, col="yellow")
 

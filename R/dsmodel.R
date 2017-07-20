@@ -16,7 +16,7 @@
 #' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
 #' @param title A string title for the graph. Text can be input in the form of pseudo-LaTeX code within quotes.
 #'  See \code{\link[latex2exp]{TeX}} for more details.
-#' @import grDevices
+#' @import grDevices latex2exp
 #' @include dsproto.R
 #' @seealso \code{\link{dsrange}}
 #' @export

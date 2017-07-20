@@ -1,4 +1,4 @@
-library(latex2exp)
+#library(dsmodels)
 rm(list=ls())
 
 
@@ -16,6 +16,11 @@ fun <- function(x,y) {
 xstar = (K - a*L)/(1-a*b)
 ystar = (L - b*K)/(1-a*b)
 
-dsmodel(fun, title = "Hello, $\\LaTeX$") + dsrange(2,1.1, discretize = 1) + xlabel("$\\alpha$ vs $\\beta$", col = "green") +
-  ylabel("$\\heartsuit$", col = "red")+
-  dspoint(1,1, label="$x^{-x+1}$")
+xlim = 5
+ylim = xlim
+
+model <- dsmodel(fun, title = "Hello, $\\LaTeX$") + dsrange(xlim,ylim, discretize = 1)
+model + xlabel("$\\alpha$ vs $\\beta$", col = "green")
+model + ylabel("$\\heartsuit$", col = "red")
+model + dspoint(xlim/4,ylim/2, label="$x$")
+model + dspoint(xlim/2,ylim/2, label="$x^{-x+1}$")

@@ -6,6 +6,7 @@
 #'  See \code{\link[latex2exp]{TeX}} for more details.
 #' @param line The distance from the axis the text will be displayed.
 #' @param ... Extra parameters. These parameters are fed into \code{mtext()}.
+#' @import latex2exp
 #' @include dsproto.R
 #' @seealso \code{\link[latex2exp]{TeX}}
 #' @examples

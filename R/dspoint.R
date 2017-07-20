@@ -51,6 +51,7 @@
 #' @param artificial For internal use.
 #' @param pch Plotting 'character' or symbol to use, default is 21 (filled circle). See \code{help(pch)} for details.
 #' @param ... Extra graphical parameters to be sent through \code{points}
+#' @import latex2exp
 #' @examples
 #' library(dsmodels)
 #'
@@ -78,7 +79,7 @@
 #' 	dspoint(0.2, 0.5, image = "pink", iters = 3, col = "grey")
 #' @export
 dspoint <- function(x, y, label = "", pch = 21, size = 2,
-                       col = "blue", regionCol=NULL, image = "", offset=c(0,0),
+                       col = "blue", regionCol=NULL, image = "", offset=NULL,
                     display = TRUE, fixed = FALSE, iters = 0,
                     attractor=FALSE, crop = TRUE, artificial=FALSE,
                     ...) {
@@ -103,8 +104,7 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     attractor=attractor,
     toPlot = NULL,
     iters = iters,
-    xoffset=offset[1],
-    yoffset=offset[2],
+    offset=offset,
     crop = crop,
     render = function(self, model) {
       self$calculateImage(model)
@@ -122,18 +122,13 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
       }
     },
     displayLabel = function(self, range) {
-      xloc <- self$x + self$xoffset
-
-      if(self$yoffset == 0 && self$xoffset == 0){
-        scale <- 0.05*(abs(range$ylim[[1]])+abs(range$ylim[[2]]))
-        yloc <- self$y + scale
+      if(is.null(self$offset)) {
+          scale <- 0.08*(abs(max(range$ylim) - min(range$ylim)))
+          self$offset=c(0,scale)
       }
-      else{
-        yloc <- self$y + self$yoffset
-      }
-
-      text(xloc,yloc,
-           labels = self$label)
+      xloc <- self$x + self$offset[1]
+      yloc <- self$y + self$offset[2]
+      text(xloc,yloc, labels = self$label)
     },
     calculateImage = function(self, model) {
       if(iters == 0)
