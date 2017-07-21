@@ -301,7 +301,11 @@ NaNRemove <- function(twoDList){
 #' @keywords internal
 #' @param fun Input function to abstract.
 #' @param inp Input to that function.
+
 safe.apply <- function(fun,inp){
   tryCatch({fun(inp)},
+           warning=function(w) { FALSE},
            error=function(e) { FALSE })
 }
+
+

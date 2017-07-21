@@ -39,6 +39,7 @@ Imports:
     shape,
     graphics,
     grDevices,
-    latex2exp
+    latex2exp,
+    pryr
 BugReports: https://github.com/Trinity-Automata-Research/dsmodels/issues
 URL: https://github.com/Trinity-Automata-Research/dsmodels
