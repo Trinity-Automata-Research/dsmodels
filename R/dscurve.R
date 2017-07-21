@@ -98,7 +98,7 @@
 #'
 #' @export
 dscurve <- function(fun, yfun = NULL,
-                    col = "black", image = c(),
+                    col = "black", image = NULL,
                     lwd = 3, n=NULL, iters = 0,
                     crop = TRUE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL,
