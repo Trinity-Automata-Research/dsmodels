@@ -290,3 +290,14 @@ NaNRemove <- function(twoDList){
     )
   }
 }
+
+#' Is Input a Function
+#'
+#' This function determines if input is a function without crashing on variable not found error.
+#' @keywords internal
+#' @param expr Input in the form of an expression.
+#' @export
+is.function.safe <- function(expr) {
+  tryCatch({is.function(expr)},
+           error=function(e) { FALSE } )
+}
