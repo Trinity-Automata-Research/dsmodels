@@ -76,7 +76,10 @@ dsmodel <- function(fun, title="") {
           startvals <- self$cropframe(startvals)
         }
         iterAccum[[1]] <- startvals
-        for(i in 1:iters){
+        iterSeq = 1:iters
+        if(iters==0)
+          iterSeq <- NULL
+        for(i in iterSeq){
           tmp=self$fun(x,y)
           if(any(is.nan(tmp[[1]])) || any(is.nan(tmp[[2]])))
           {
@@ -291,13 +294,14 @@ NaNRemove <- function(twoDList){
   }
 }
 
-#' Is Input a Function
+
+#' Abstract a Function which does not Crash Upon Failure
 #'
-#' This function determines if input is a function without crashing on variable not found error.
+#' This function takes a boolean function and abstracts it. If the given function fails, the program will not crash.
 #' @keywords internal
-#' @param expr Input in the form of an expression.
-#' @export
-is.function.safe <- function(expr) {
-  tryCatch({is.function(expr)},
-           error=function(e) { FALSE } )
+#' @param fun Input function to abstract.
+#' @param inp Input to that function.
+safe.apply <- function(fun,inp){
+  tryCatch({fun(inp)},
+           error=function(e) { FALSE })
 }
