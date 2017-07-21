@@ -1,0 +1,7 @@
+model <- dsmodel(function(x,y) list(x+1,y+1), display = FALSE)
+model + dsrange(1,1,0.1)
+model + dsdots()
+model$show()
+model + dsarrows()
+model + dscurve(function(x) x)
+model$show()
