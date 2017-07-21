@@ -16,7 +16,7 @@
 #' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
 #' @param title A string title for the graph. Text can be input in the form of pseudo-LaTeX code within quotes.
 #'  See \code{\link[latex2exp]{TeX}} for more details.
-#' @param display If set to \code{FALSE}, the model will be drawn only when the user calls \code{`MODELNAME`$show()}. Otherwise,
+#' @param display If set to \code{FALSE}, the model will be drawn only when the user calls \code{`MODELNAME`$display()}. Otherwise,
 #'  the model will be drawn with every \code{dsmodels} object added after the \code{dsrange} is added.
 #' @import grDevices latex2exp
 #' @include dsproto.R
@@ -55,7 +55,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     feature = c(),
     visualization = c(),
     dots = c(),
-    display = display,
+    autoDisplay = display,
     print = function(self, ...) {
       invisible(self)
     },
@@ -138,7 +138,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
       }
     },
     render = function(self, obj = NULL) {
-      if(self$display){
+      if(self$autoDisplay){
         rerender = FALSE
         if(is.null(obj))
           rerender = TRUE
@@ -158,14 +158,8 @@ dsmodel <- function(fun, title="", display = TRUE) {
           }
         }
         if(rerender) {
-          self$range$render(model = self)
-          for(bg in self$background)
-            bg$render(model = self)
-          for(vi in self$visualization)
-            vi$render(model = self)
-          for(fe in self$feature)
-            fe$render(model = self)
-        }
+			self$display()
+		}
       }
     },
     recalculate = function(self) {
@@ -187,10 +181,14 @@ dsmodel <- function(fun, title="", display = TRUE) {
         }
       }
     },
-    show = function(self){
-      self$display = TRUE
-      self$render(NULL)
-      self$display = FALSE
+    display = function(self){
+    	self$range$render(model = self)
+        for(bg in self$background)
+          bg$render(model = self)
+        for(vi in self$visualization)
+          vi$render(model = self)
+        for(fe in self$feature)
+          fe$render(model = self)
     }
   )
 }
