@@ -102,8 +102,10 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     regionCol = regionCol,
     display = display,
     attractor=attractor,
+    fixed=fixed || attractor,
     toPlot = NULL,
     iters = iters,
+    artifical=artificial,
     offset=offset,
     crop = crop,
     render = function(self, model) {
@@ -158,7 +160,7 @@ pnt <- dspoint
 is.dspoint <- function(x) inherits(x, "dspoint")
 
 
-#' Converts a list of points to a list of x coorinates, y coordinates, region colors, and indexes.
+#' Converts a list of points to a list of x coordinates, y coordinates, region colors, and indexes.
 #' @param points A list of dspoints, or anything that supports $x, $y, and $col
 #' @keywords internal
 # @rdname dspoint
