@@ -16,6 +16,8 @@
 #' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
 #' @param title A string title for the graph. Text can be input in the form of pseudo-LaTeX code within quotes.
 #'  See \code{\link[latex2exp]{TeX}} for more details.
+#' @param display If set to \code{FALSE}, the model will be drawn only when the user calls \code{`MODELNAME`$display()}. Otherwise,
+#'  the model will be drawn with every \code{dsmodels} object added after the \code{dsrange} is added.
 #' @import grDevices latex2exp
 #' @include dsproto.R
 #' @seealso \code{\link{dsrange}}
@@ -38,7 +40,7 @@
 #'     y = x/(y+1)
 #'   )
 #' }, title = "Another function showing $f(x)=x^{\\alpha}$!")
-dsmodel <- function(fun, title="") {
+dsmodel <- function(fun, title="", display = TRUE) {
   texTitle <- TeX(title)
   if(length(formals(fun)) != 2)
     stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
@@ -53,6 +55,7 @@ dsmodel <- function(fun, title="") {
     feature = c(),
     visualization = c(),
     dots = c(),
+    autoDisplay = display,
     print = function(self, ...) {
       invisible(self)
     },
@@ -135,32 +138,28 @@ dsmodel <- function(fun, title="") {
       }
     },
     render = function(self, obj = NULL) {
-      rerender = FALSE
-      if(is.null(obj))
-        rerender = TRUE
-      if(is.range(obj)) {
-        if(!is.range(self$range))
-          stop("Range not added properly: severe error. Please notify developers.")
-        if(!self$range$rendered)
+      if(self$autoDisplay){
+        rerender = FALSE
+        if(is.null(obj))
           rerender = TRUE
-      }
-      else if (!is.null(self$range)) {
-        if(is.feature(obj) ||
-          (is.visualization(obj) && is.null(self$feature)) ||
-          (is.background(obj) && is.null(self$visualization)  && is.null(self$feature))) {
-          obj$render(model = self)
-        } else {
-          rerender = TRUE
+        if(is.range(obj)) {
+          if(!is.range(self$range))
+            stop("Range not added properly: severe error. Please notify developers.")
+          if(!self$range$rendered)
+            rerender = TRUE
         }
-      }
-      if(rerender) {
-        self$range$render(model = self)
-        for(bg in self$background)
-          bg$render(model = self)
-        for(vi in self$visualization)
-          vi$render(model = self)
-        for(fe in self$feature)
-          fe$render(model = self)
+        else if (!is.null(self$range)) {
+          if(is.feature(obj) ||
+            (is.visualization(obj) && is.null(self$feature)) ||
+            (is.background(obj) && is.null(self$visualization)  && is.null(self$feature))) {
+            obj$render(model = self)
+          } else {
+            rerender = TRUE
+          }
+        }
+        if(rerender) {
+			self$display()
+		}
       }
     },
     recalculate = function(self) {
@@ -181,6 +180,15 @@ dsmodel <- function(fun, title="") {
             fe$recalculate(model = self)
         }
       }
+    },
+    display = function(self){
+    	self$range$render(model = self)
+        for(bg in self$background)
+          bg$render(model = self)
+        for(vi in self$visualization)
+          vi$render(model = self)
+        for(fe in self$feature)
+          fe$render(model = self)
     }
   )
 }
