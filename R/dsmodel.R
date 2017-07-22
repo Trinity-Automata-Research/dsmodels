@@ -98,7 +98,10 @@ dsmodel <- function(fun, title="", display = TRUE) {
           startvals <- self$cropframe(startvals)
         }
         iterAccum[[1]] <- startvals
-        for(i in 1:iters){
+        iterSeq = 1:iters
+        if(iters==0)
+          iterSeq <- NULL
+        for(i in iterSeq){
           tmp=self$fun(x,y)
           if(any(is.nan(tmp[[1]])) || any(is.nan(tmp[[2]])))
           {
@@ -336,3 +339,19 @@ NaNRemove <- function(twoDList){
     )
   }
 }
+
+
+#' Abstract a Function which does not Crash Upon Failure
+#'
+#' This function takes a boolean function and abstracts it. If the given function fails, the program will not crash.
+#' @keywords internal
+#' @param fun Input function to abstract.
+#' @param inp Input to that function.
+
+safe.apply <- function(fun,inp){
+  tryCatch({fun(inp)},
+           warning=function(w) { FALSE},
+           error=function(e) { FALSE })
+}
+
+
