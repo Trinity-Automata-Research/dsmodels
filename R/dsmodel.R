@@ -23,6 +23,13 @@
 #'  the coordinates, color, and index. Other formats are \code{"objects"}, returning a vector of \code{dspoint} objects,
 #'  and \code{"pairs"}, returning a list of pairs of coordinates.}
 #' }
+#' \code{dsmodel$display()} forces the model to re-render the plot from scratch. Primarily useful if \code{display=false} was set.#' }
+#'
+#' \code{dsmodel$basins()} returns a list of which fixed points have a basin. This requires simbasins() to have been composed
+#' with the model, and is primarily useful when testing if a dynamical system is globally stable. In that case, the method
+#' will return a list of length 1. The list will contain the indices of the fixed points, as given in
+#' \code{dsmodel$points(formal="list", filter="attractor")}. An index of 0 means that some points never moved within
+#' epsilon of an attractor.
 #'
 #' @family Foundation
 #' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
