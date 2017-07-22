@@ -143,8 +143,11 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
     recalculate = function(self, model) {
       self$bindWithModel(model)
       if(is.null(self$iters)) {
+        model$warnPeriodic = FALSE
         colsMap <- mapply(findFixedPoint, self$X0, self$Y0,
                           MoreArgs=list(model=model, points=self$fps, tolerance=self$tolerance, eps=self$epsilon, stride=self$stride))
+        if(model$warnPeriodic)
+          warning("simbasins: some points appear to be periodic, or attractors not set properly.")
       } else if (is.infinite(iters)) {
         images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$tolerance)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
@@ -330,16 +333,16 @@ applyTillFixed <- function(model, x, y, stride, maxIters, tolerance) {
     }
   }
   if(iters == maxIters && moved)
-    warning("simattractors: hit iteration threshhold in simattractors.")
+    warning("dssimulation: hit iteration threshhold in simattractors.")
   if(!moved) {
     noStrideImages = model$apply(images$x, images$y, 1, accumulate=FALSE, crop=FALSE)
     dists = (noStrideImages$x - images$x)^2 + (noStrideImages$y - images$y)^2
     m <- max(dists)
     if(is.nan(m)){
-      stop("simattractors: Model not well defined: NaN")
+      warning("dssimulation: Model not well defined: NaN")
     }
     if (max(dists) > tolerance) {
-      warning("simattractors: points are only stable under stride, may have periodic attractors.")
+      warning("dssimulation: points are only stable under stride, may have periodic attractors.")
     }
   }
   images

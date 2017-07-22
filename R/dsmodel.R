@@ -12,6 +12,7 @@
 #' Models are constructed
 #' incrementally using the + operator to add features
 #' to the existing dsmodel object. A \code{\link{dsrange}} must be one of the objects added to a model.
+#'
 #' @section Methods:
 #' \code{dsmodel} objects support the following methods, which may be helpful for advanced users.
 #'
@@ -23,13 +24,19 @@
 #'  the coordinates, color, and index. Other formats are \code{"objects"}, returning a vector of \code{dspoint} objects,
 #'  and \code{"pairs"}, returning a list of pairs of coordinates.}
 #' }
-#' \code{dsmodel$display()} forces the model to re-render the plot from scratch. Primarily useful if \code{display=false} was set.#' }
+#'
+#' \code{dsmodel$display()} forces the model to re-render the plot from scratch. Primarily useful if \code{display=false} was set.
 #'
 #' \code{dsmodel$basins()} returns a list of which fixed points have a basin. This requires simbasins() to have been composed
 #' with the model, and is primarily useful when testing if a dynamical system is globally stable. In that case, the method
 #' will return a list of length 1. The list will contain the indices of the fixed points, as given in
-#' \code{dsmodel$points(formal="list", filter="attractor")}. An index of 0 means that some points never moved within
+#' \code{dsmodel$points(format="list", filter="attractor")}. An index of 0 means that some points never moved within
 #' epsilon of an attractor.
+#'
+#' \code{dsmodel$sim.is.stable()} attempts to determine if the system is stable by simulation. If no attractors have
+#' been composed with the model, \code{simattractors()} is composed with defaults. If \code{simbasins} has not
+#' been composed with the model, it is be composed with defaults. If every point is drawn to a single attractor, the
+#' system has been deemed stable. Note that boundary points on the range will not be tested.
 #'
 #' @family Foundation
 #' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
@@ -215,8 +222,11 @@ dsmodel <- function(fun, title="", display = TRUE) {
         stop("dsmodel: valid filters for dsmodel$points method are: \"all\", \"attractor\", \"fixed\", \"sim\".")
       if(format == "objects")
         points
-      else if (format == "list")
-        pointsToList(points)
+      else if (format == "list") {
+        res <- pointsToList(points)
+        res$inds = c(res$inds,recursive=TRUE)
+        res
+      }
       else if (format == "pairs")
         Map(function(pnt) c(pnt$x, pnt$y), points)
       else
@@ -230,7 +240,42 @@ dsmodel <- function(fun, title="", display = TRUE) {
           vi$render(model = self)
         for(fe in self$feature)
           fe$render(model = self)
-    }
+    },
+		basins = function(self){
+      basins <- Filter(is.dsimage,c(self$background,self$feature))
+      if(length(basins) == 0)
+        stop("dsmodel$basins requires simbasins() to have been composed with the model.")
+      if(length(basins) > 1)
+        stop("dsmodel$basins can't handle models with multiple simbasins().")
+      basin <- basins[[1]]
+      if(!basin$regionsCalculated)
+        basin$recalculate(self)
+      res <- unique(c(basin$colMatrix))
+      if(is.element(0,res))
+        warning("dsmodel$basins: simbasins did not find an attractor for every point.")
+      res
+		},
+		sim.is.stable = function(self) {
+		  attractors <- Filter(
+		    function(x) {
+		      if(is.dspoint(x))
+		        x$attractor
+		      else
+		        FALSE
+		    }, self$feature)
+		  if(length(attractors) == 0)
+		    self + simattractors()
+		  basins <- Filter(is.dsimage,c(self$background,self$feature))
+		  if(length(basins) == 0)
+		    self$simbasins()
+		  if(length(basins) > 1)
+		    stop("dsmodel$basins can't handle models with multiple simbasins().")
+		  basin <- basins[[1]]
+		  if(!basin$regionsCalculated)
+		    basin$recalculate(self)
+		  res <- unique(c(basin$colMatrix))
+		  (length(res) == 1) && !(is.element(0,res))
+		}
   )
 }
 #' Checks if object is a mode.
