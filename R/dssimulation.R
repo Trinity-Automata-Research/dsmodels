@@ -1,4 +1,4 @@
-#' Find basins of attraction by simulation.
+#' Find basins of attraction by simulation
 #'
 #' Attempts to determine which areas of the range are drawn to which attractors by simulation.
 #' The attractors must be added to the model before \code{simbasins()} is added. The space

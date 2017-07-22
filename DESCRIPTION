@@ -1,7 +1,7 @@
 Package: dsmodels
 Type: Package
 Title: A Language to Facilitate the Creation and Visualization of Two-Dimensional Dynamical Systems
-Version: 1.0.1
+Version: 1.1
 Authors@R: c(
          person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
          person("Seth", "Fogarty", email = "sfogarty@trinity.edu", role = c("aut"))
@@ -14,7 +14,7 @@ Description: An expressive language to facilitate the creation and visualization
     depict the behavior of the dynamical system over the entire range.
     Features display
     user-defined curves and points, and their images under the system.
-    Backgrounds define and color regions of interest, such as areas of convergence and divergence.
+    Backgrounds define and color regions of interest, such as basins of attraction.
     The language
     can also approximate attractors and their basins through simulation.
 License: GPL-2 | file LICENSE

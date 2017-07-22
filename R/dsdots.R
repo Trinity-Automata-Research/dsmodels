@@ -1,4 +1,4 @@
-#' Adds a visualization of the system using dots.
+#' Adds a visualization of the system using dots
 #'
 #' The visualization displays a uniform array of points and their images under the function defined
 #' by the model as dots.  Multiple

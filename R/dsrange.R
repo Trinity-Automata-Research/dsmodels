@@ -1,4 +1,4 @@
-#' Range of inputs for a model.
+#' Range of inputs for a model
 #'
 #' \code{dsrange} creates a discrete or continuous
 #' range for the model to be computed over. Points that fall outside the range will be
