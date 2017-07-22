@@ -25,7 +25,7 @@
 #'  and \code{"pairs"}, returning a list of pairs of coordinates.}
 #' }
 #'
-#' \code{dsmodel$display()} forces the model to re-render the plot from scratch. Primarily useful if \code{display=false} was set.
+#' \code{dsmodel$display()} forces the model to re-render the plot from scratch. Primarily useful if \code{display=TRUE} was set.
 #'
 #' \code{dsmodel$basins()} returns a list of which fixed points have a basin. This requires simbasins() to have been composed
 #' with the model, and is primarily useful when testing if a dynamical system is globally stable. In that case, the method
