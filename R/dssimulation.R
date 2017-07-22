@@ -69,7 +69,7 @@
 #'       dspoint(0,      1.9649, attractor=TRUE, col="orange", label = "K2")+
 #'       dspoint(0,      0,      attractor=TRUE, col="blue",   display=FALSE)+
 #'       dspoint(0.4419, 0.4416, col="yellow", label="A11")+
-#'       simbasins(discretize=0.02)
+#'       simbasins(discretize=0.05)
 #'@export
 simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
                          epsilon=NULL, behind=TRUE, tolerance=sqrt(.Machine$double.eps), stride=8,  cols = NULL, missingCol="NA",...) {

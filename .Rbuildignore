@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^C:\cygwin64\home\sfogarty\dsmodels\docs$
+^docs$
+^CONTRIBUTORS$
+^Examples$
+^_pkgdown.yml$
