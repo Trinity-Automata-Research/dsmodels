@@ -1,4 +1,4 @@
-#' Polygonal Region
+#' Colored polygonal region
 #'
 #' Friendly function to create a polygon corresponding with given values of the polygon's corners.
 #' The polygon is then colored automatically.

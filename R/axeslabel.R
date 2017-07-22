@@ -1,4 +1,4 @@
-#' xlabel
+#' Create a label on the x-axis
 #'
 #' Labels the x-axis
 #' @export
@@ -37,7 +37,7 @@ xlabel <- function(label = "", line = 3, ...) {
   )
 }
 
-#' ylabel
+#' Create a label on the y-axis
 #'
 #' Labels the y-axis
 #' @param label The title of the axis, to be displayed on image. Text can be input in the form of pseudo-LaTeX code within quotes.
