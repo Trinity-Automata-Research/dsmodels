@@ -1,0 +1,26 @@
+url: http://github.com/Trinity-Automata-Research/dsmodels
+
+reference:
+        - title: Foundation
+          desc: These objects form the basis of a plot.
+          contents:
+                  - dsmodel
+                  - dsrange
+                  - xlabel
+                  - ylabel
+        - title: Visualizations
+          desc: These objects are used to visualize the system's behavior over the entire range.
+          contents:
+                  - dsdots
+                  - dsarrows
+        - title: Features
+          desc: These objects encapsulate components of the range.
+          contents:
+                  - dspoint
+                  - dscurve
+                  - dsregion
+        - title: Simulation
+          desc: These objects are used to approximate the features of the model.
+          contents:
+                  - simattractors
+                  - simbasins
