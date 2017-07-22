@@ -2,7 +2,7 @@ url: http://github.com/Trinity-Automata-Research/dsmodels
 
 template:
         params:
-                bootswatch: flatly
+                bootswatch: cerulean 
 
 reference:
         - title: Foundation
