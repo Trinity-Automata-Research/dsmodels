@@ -97,8 +97,8 @@
 #'  curve2
 #'
 #' @export
-dscurve <- function(fun, yfun = "",
-                    col = "black", image = "",
+dscurve <- function(fun, yfun = NULL,
+                    col = "black", image = NULL,
                     lwd = 3, n=NULL, iters = 0,
                     crop = TRUE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL,
@@ -206,7 +206,7 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
         numPoints <- self$n
       self$xValues <-seq(min(model$range$xlim),max(model$range$xlim), length.out = numPoints)
       self$xValues <- self$prune(self$xlim,self$xValues)
-      self$yValues <- self$fun(self$xValues)
+      self$yValues <- mapply(self$fun,self$xValues)
       self$calculateImage(model, self$xValues, self$yValues)
     },
     render = function(self, model) {

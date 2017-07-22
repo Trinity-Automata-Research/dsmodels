@@ -22,8 +22,8 @@
 #' @param ... Takes points which will act as corners. See example and details for usage.
 # @param ... Extra graphical parameters passed to \code{polygon}.
 #' @seealso \code{\link{dspoint}}
-#' @seealso \code{\link{guessattractors}}
-#' @seealso \code{\link{guessregions}}
+#' @seealso \code{\link{simattractors}}
+#' @seealso \code{\link{simbasins}}
 #' @examples
 #' library(dsmodels)
 #'
