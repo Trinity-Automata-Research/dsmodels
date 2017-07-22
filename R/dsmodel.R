@@ -27,7 +27,7 @@
 #'
 #' \code{dsmodel$display()} forces the model to re-render the plot from scratch. Primarily useful if \code{display=TRUE} was set.
 #'
-#' \code{dsmodel$basins()} returns a list of which fixed points have a basin. This requires simbasins() to have been composed
+#' \code{dsmodel$basins()} returns a list of which fixed points have a basin. This requires \code{simbasins()} to have been composed
 #' with the model, and is primarily useful when testing if a dynamical system is globally stable. In that case, the method
 #' will return a list of length 1. The list will contain the indices of the fixed points, as given in
 #' \code{dsmodel$points(format="list", filter="attractor")}. An index of 0 means that some points never moved within
