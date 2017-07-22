@@ -1,4 +1,4 @@
-#' Polygonal Region
+#' Colored polygonal region
 #'
 #' Friendly function to create a polygon corresponding with given values of the polygon's corners.
 #' The polygon is then colored automatically.
@@ -22,8 +22,8 @@
 #' @param ... Takes points which will act as corners. See example and details for usage.
 # @param ... Extra graphical parameters passed to \code{polygon}.
 #' @seealso \code{\link{dspoint}}
-#' @seealso \code{\link{guessattractors}}
-#' @seealso \code{\link{guessregions}}
+#' @seealso \code{\link{simattractors}}
+#' @seealso \code{\link{simbasins}}
 #' @examples
 #' library(dsmodels)
 #'

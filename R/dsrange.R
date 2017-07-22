@@ -1,4 +1,4 @@
-#' Range of inputs for a model.
+#' Range of inputs for a model
 #'
 #' \code{dsrange} creates a discrete or continuous
 #' range for the model to be computed over. Points that fall outside the range will be
@@ -19,6 +19,8 @@
 #'  specifies the distance between each point.
 #'  This becomes the default when displaying \code{\link{dsarrows}} or \code{\link{dsdots}}.
 #'  The number of points in the field is defined by:
+#' @param axes If \code{FALSE}, the axes will not be drawn. Defaults to \code{TRUE}.
+#' @param frame.plot If \code{FALSE}, the frame of the plot will not be drawn. Defaults to \code{TRUE}.
 #'  \deqn{(xmax-xmin+1)(ymax-ymin+1)/discretize.}{ascii}
 # @param originOffset Currently not supported. Allows you to place an xlim and ylim
 #  for the graph without including extra discretized space.
@@ -41,7 +43,7 @@
 #' model + dsrange(3, 3, discretize = .09)
 dsrange <- function(x,y,discretize = 0,
                     #originOffset = c(-.1,-.1),
-                    renderCount=101, ...){ # Range
+                    renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
 
   if(length(x) == 1) {
     x <- c(0,x)
@@ -57,7 +59,6 @@ dsrange <- function(x,y,discretize = 0,
   if(length(ylim)>1) {
     ylim <- c(min(ylim),max(ylim))
   }
-
   if(discretize != 0)
   {
 
@@ -79,10 +80,13 @@ dsrange <- function(x,y,discretize = 0,
       appliedFun = list(),
       xlim = xlim, ylim=ylim, renderCount=renderCount,
       rendered = FALSE,
+      axes = axes,
+      frame.plot = frame.plot,
       render = function(self, model) {
         self$rendered = TRUE
-         plot(0, type = "l", lwd = 3, axes=T, main = model$title,
-             xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim)
+         plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
+             xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
+             frame.plot = self$frame.plot)
       },
 
       recalculate = function(self, model) {
@@ -109,12 +113,14 @@ dsrange <- function(x,y,discretize = 0,
       xlim = xlim, ylim=ylim,
       discretize = 0, renderCount=renderCount,
       rendered = FALSE,
+      axes = axes,
+      frame.plot = frame.plot,
       render = function(self, model) {
         self$rendered = TRUE
-        plot(0, type = "l", lwd = 3, axes=T, main = model$title,
-             xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim)
-      },
-      ...=...)
+        plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
+             xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
+             frame.plot = self$frame.plot)
+      })
   }
   range
 }

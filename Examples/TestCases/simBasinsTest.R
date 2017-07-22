@@ -1,4 +1,4 @@
-#library(dsmodels)
+library(dsmodels)
 
 r1 <- 2.6
 r2 <- 2.6
@@ -19,7 +19,7 @@ def <- function(X0,Y0) {
 model <- dsmodel(fun = def, title="Four interior fixed points")
 
 #The field is the graph area. We could change the name if you like, for instance to dsplot
-field <- dsrange(0:3,0:3,discretize = .2)
+field <- dsrange(0:3,0:3,discretize = .1)
 
 #By default the arrows will be scaled to the discretization parameter, and blue.
 #They can be set manually with parameters.
@@ -47,20 +47,22 @@ K12y <- y12Func(K1)
 A1F <- dspoint(A1,A11y, col="yellow", label = "$(A_1,y_{A_{11}})$")
 A2F <- dspoint(A1,A12y, col="orange", label = "$(A_1,y_{A_{12}})$")
 K1F <- dspoint(K1,K11y, col="magenta", label = "$(K_1,y_{K_{11}})$")
-K2F <- dspoint(K1,K12y, col="green", label =  "$(K_1,y_{K_{12}})$")
+K2F <- dspoint(K1,K12y, col="green", attractor=TRUE, label =  "$(K_1,y_{K_{12}})$")
 
 #To add fixpoints to the model, you use the + operation. You can also combine them into a single group with +.
 model+A1F+A2F+K1F+K2F
 #You don't need to name the dspoints to add them, although having variables makes it easier to define regions.
 model +
-  dspoint(A1,0, label = "$A_1$", offset=c(-0.15,0)) +
-  dspoint(K1,0, label = "$K_1$", offset=c(-0.15,0)) +
-  dspoint(0,A2, label = "$A_2$", offset=c(0,-0.2)) +
-  dspoint(0,K2, label = "$K_2$", offset=c(0,-0.2))
+  dspoint(A1,0, label = "A_1", offset=c(0,-0.08)) +
+  dspoint(K1,0, regionCol="magenta", attractor=TRUE,label = "K_1", offset=c(0,-0.08)) +
+  dspoint(0,A2, label = "A_2", offset=c(-0.08,0)) +
+  dspoint(0,K2, regionCol = "orange",attractor=TRUE, label = "K_2", offset=c(-0.08,0))
 
-#regions are defined by the sequence of points and a color. They are rendered in the order they are added to the model.
-model + dsregion(dspoint(0,0),pnt(0,A2), A1F, pnt(A1,0), col = "yellow")
-model + dsregion(A1F, A2F, pnt(A1,3), pnt(3,3), pnt(3, K11y), K1F, col= "green")
-model + dsregion(pnt(0,A2), pnt(0,3), pnt(A1,3), A1F, col="orange")
-#If you prefer to use the polygon function, dspolygon will accept all the same parameters and be rendered appropriately.
-model + dspolygon(x=c(A1,A1,K1,3,3,K1,A1),y=c(0,A11y,K11y,K11y,0,0,0),col="magenta",border=NA)
+model+dspoint(0,0, attractor=TRUE,display=FALSE, col="yellow")
+
+t <- proc.time()
+model+simbasins(discretize=0.02,stride=16)
+tp <- proc.time()
+print(tp-t)
+stopifnot(setequal(c(4,3,2,1),model$basins()))
+stopifnot(!(model$sim.is.stable()))

@@ -1,17 +1,18 @@
-#' Curve objects
+#' Parametric curves or a graph of functions
 #'
 #' This function takes a description of a curve and creates an object displaying the curve, and optionally
-#' it's behavior throughout iterations of the system.
+#' it's behavior throughout iterations of the system. Functions can be provided as expressions of \code{x},
+#'for graphing curves, or \code{t}, for parametric curves.
 #' The curve is defined either by the graph of a single function or a pair of parametric
 #' equations. By default, rendered with the \code{lines} function.
 #'
 #' @section The graph of a function:
 #'
-#' If the parameter \code{fun} is a function and
-#' the parameter \code{yfun} is not provided, then \code{dscurve} contains
+#' If the parameter \code{yfun} is not provided, then \code{dscurve} contains
 #' the curve of points (x,fun(x)). The inputs to \code{fun} are \code{n} points between the maximum
 #  and minimum. The maximum and minimum are taken from  the
 #' \code{\link{dsrange}}'s x limits, but can be overwritten with the \code{xlim} parameter.
+#' \code{fun} can either be any function of a single parameter, or an expression with exactly \code{x} as the free variable.
 #'
 #' @section  Parametric equations:
 #'
@@ -19,6 +20,8 @@
 #' \code{dscurve} contains the parametric curve described by the functions. The function is
 #' calculated at \code{n}
 #' points ranging from \code{tmin} to \code{tmax}.
+#' \code{fun} and \code{yfun} can either be any function of a single parameter, or an expression with exactly \code{t} as the free variable.
+
 #'
 #' @section Images of curves:
 #'
@@ -38,7 +41,7 @@
 #'
 #' @include dsproto.R
 #' @param fun A function. If \code{yfun} is provided, this is the x-equation of the parametric
-#' equations. If not, the function's graph is used.
+#' equations. If not, the function's graph is rendered.
 #' See sections describing graphs and parameteric equations for more info.
 #' @param yfun The y-equation of the parameteric equations.
 #' See sections describing parametric equations for more info.
@@ -64,6 +67,7 @@
 #' instead of \code{lines}.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
+#' @import pryr
 #' @examples
 #' library(dsmodels)
 #'
@@ -77,46 +81,52 @@
 #' model <- dsmodel(fun, title = "Points on a One-Dimensional Curve")
 #' range <- dsrange(-2:2,-2:2, discretize = 0.5)
 #'
-#' # Add a one-dimensional curve and its image in blue.
-#' curve1 <- dscurve(function(x) x^2,
-#'                 col = "orange",
-#'                 image = "blue",
-#'                 discretize = TRUE,
-#'                 xlim = c(-2,2))
-#' model +
-#'  range +
-#' 	curve1
+#' # Add the graph of a function and its image in blue.
+#' graphcrv <- dscurve(function(x) x^2,
+#'                     col = "orange",
+#'                     image = "blue",
+#'                     discretize = TRUE,
+#'                     xlim = c(-2,2))
+#' model + range +	graphcrv
+#' # Add the graph of expression of x.
+#' model + dscurve(x^2+1, col="yellow")
 #'
 #' # Create a parametric curve with image iterations red then green.
-#' curve2 <- dscurve(function(x) x^2,
-#'                 function(x) x,
-#'                 image = c("red", "green"),
-#'                 tstart = -2, tend = 2)
+#' paramcrv <- dscurve(function(t) t^2, function(t) t,
+#'                     image = c("red", "green"),
+#'                     tstart = -2, tend = 2)
 #' dsmodel(fun, "A Parametric Curve and Iterations of that Curve") +
-#'  dsrange(-2:2, -2:2, discretize = 0.5) +
-#'  curve2
+#'   dsrange(-2:2, -2:2, discretize = 0.5) +
+#' # A parametic curve defined by expressions of t.
+#'   paramcrv + dscurve(4*t-2,4*t-2,col="blue")
 #'
 #' @export
-dscurve <- function(fun, yfun = "",
-                    col = "black", image = "",
+dscurve <- function(fun, yfun = NULL,
+                    col = "black", image = NULL,
                     lwd = 3, n=NULL, iters = 0,
                     crop = TRUE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL,
                     ...) {
 
   colors <- colorVector(col, image, iters)
-  iters <- length(colors)
+  iters <- length(colors)-1
 
-  if(is.function(yfun)){
-    dscurveParam(xfun = fun, yfun = yfun,
+
+
+  if(!safe.apply(is.null,yfun)){
+    xfunc <- ensureFunction(substitute(fun), TRUE)
+    yfunc <- ensureFunction(substitute(yfun), TRUE)
+    dscurveParam(xfun = xfunc, yfun = yfunc,
                  colors = colors, lwd = lwd,
                  n = n, iters = iters, crop, discretize = discretize,
                  tstart = tstart, tend = tend,
                  ...)
   } else {
-    dscurveGraph(fun = fun, colors = colors,
-                     lwd = lwd, n = n, iters = iters, discretize = discretize,
-                     crop, xlim = xlim, ...)
+    func <- ensureFunction(substitute(fun), FALSE)
+    dscurveGraph(fun = func, colors = colors,
+                 lwd = lwd, n = n, iters = iters, discretize = discretize,
+                 crop, xlim = xlim, ...)
+
   }
 }
 
@@ -157,12 +167,12 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
         tValues = self$renderInputs
       self$calculateImage(model,tValues)
       if(self$discretize){
-        for(i in 1:(self$iters))
+        for(i in 1:(self$iters+1))
           points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
                 col = self$col[[i]], ... = self$...)
       }
       else{
-        for(i in 1:(self$iters))
+        for(i in 1:(self$iters+1))
           lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                 col = self$col[[i]], ... = self$...)
       }
@@ -206,18 +216,18 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
         numPoints <- self$n
       self$xValues <-seq(min(model$range$xlim),max(model$range$xlim), length.out = numPoints)
       self$xValues <- self$prune(self$xlim,self$xValues)
-      self$yValues <- self$fun(self$xValues)
+      self$yValues <- mapply(self$fun,self$xValues)
       self$calculateImage(model, self$xValues, self$yValues)
     },
     render = function(self, model) {
       self$calculateXYValues(model)
       if(self$discretize){
-        for(i in 1:(self$iters))
+        for(i in 1:(self$iters+1))
           points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
                 col = self$col[[i]], ... = self$...)
       }
       else{
-        for(i in 1:(self$iters))
+        for(i in 1:(self$iters+1))
           lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                 col = self$col[[i]], ... = self$...)
       }
@@ -246,3 +256,21 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
 #' @export
 is.curve <- function(x) inherits(x,"curve")
 
+
+ensureFunction <- function(expr, par){
+  if(safe.apply(is.function, eval(expr))){
+    eval(expr)
+  } else {
+    if(safe.apply(is.numeric,expr)){
+      if(par)
+        function(t) expr
+      else
+        function(x) expr
+    } else {
+      if(par)
+        make_function(alist(t=), expr, parent.frame())
+      else
+        make_function(alist(x=), expr, parent.frame())
+    }
+  }
+}
