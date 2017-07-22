@@ -1,4 +1,4 @@
-#' Individual points of interest.
+#' Individual points and their images
 #'
 #' \code{pnt} and \code{dspoint} are the same function.
 #' This function takes a single point and creates an object displaying the point, and optionally

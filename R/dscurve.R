@@ -1,4 +1,4 @@
-#' Curve objects
+#' Parametric curves or a graph of functions
 #'
 #' This function takes a description of a curve and creates an object displaying the curve, and optionally
 #' it's behavior throughout iterations of the system. Functions can be provided as expressions of \code{x},

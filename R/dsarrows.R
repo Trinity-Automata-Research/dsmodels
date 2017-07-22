@@ -1,4 +1,4 @@
-#' Add a visualization of the system using arrows.
+#' Add a visualization of the system using arrows
 #'
 #' The visualization displays the movement of a uniform array of points under the function defined
 #' by the model as arrows.
