@@ -1,12 +1,12 @@
 Package: dsmodels
 Type: Package
-Title: A Language to Facilitate the Creation and Visualization of Two-Dimensional Dynamical Systems
-Version: 1.1
+Title: A Language to Facilitate Simulation and Visualization of Two-Dimensional Dynamical Systems
+Version: 1.1.0
 Authors@R: c(
          person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
          person("Seth", "Fogarty", email = "sfogarty@trinity.edu", role = c("aut"))
         )
-Description: An expressive language to facilitate the creation and visualization
+Description: An expressive language to facilitate simulation and visualization
     of two-dimensional dynamical systems. The basic elements of the language are
     a model wrapping around a function(x,y) which outputs a list(x
     = xprime, y = yprime), and a range. The language supports three
