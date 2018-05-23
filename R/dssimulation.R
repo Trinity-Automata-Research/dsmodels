@@ -227,7 +227,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
     discretize=discretize, xlim=xlim, ylim=ylim,
     stride=stride,
     iters = iters,
-    attractorsCalculated = FALSE,
+    bound = FALSE,
     attractors = list(),
     attractorCoords = NULL,
     grid = NULL,
@@ -270,7 +270,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       }
     },
     on.bind = function(self, model) {
-      if(self$attractorsCalculated)
+      if(self$bound)
         warning("Determining attractors twice: this may result in duplicate points.")
       self$createGrid(model)
       moved <- TRUE
@@ -302,7 +302,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
           self$cols <- rainbow(found)
       }
       self$attractorCoords <- attractorCoords
-      self$attractorsCalculated <- TRUE
+      self$bound <- TRUE
       for(i in seq_len(found)) {
         point = dspoint(attractorCoords$x[i], attractorCoords$y[i], artificial=TRUE, col=self$cols[[i]], attractor=TRUE)
         self$attractors[[i]] <- point
