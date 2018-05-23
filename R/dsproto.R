@@ -325,8 +325,11 @@ dsproto_formals <- function(x) formals(environment(x)$f)
 #' @export
 facade <- dsproto("facade", NULL,
   bound = FALSE,
-  recalculate = function(self, model) {stop("Fully abstract method facade$recalculate", call. = FALSE)},
-  render = function(self, model) {stop("Fully abstract method facade$render", call. = FALSE)},
+  recalculate = function(self, model) {self$on.bind(model)},
+  render = function(self, model) {
+    if(!self$bound)
+      stop("Critical error: attempting to render dsmodels object before it is bound. Please notify developers.", call. = FALSE)
+  },
   on.bind = function(self, model) {self$bound = TRUE}
   )
 

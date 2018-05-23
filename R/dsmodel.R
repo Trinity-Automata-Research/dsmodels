@@ -170,7 +170,6 @@ dsmodel <- function(fun, title="", display = TRUE) {
     },
     #visualization methods
     bind = function(self, obj = NULL) {
-      print(obj)
       if(is.null(obj)) {
         stop("Bind called on null object: severe error. Please notify developers.")
       }
@@ -198,7 +197,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
       rerender = FALSE
       if(is.null(obj))
         rerender = TRUE #render called with no arguments to force a rendering.
-      if(is.range(obj)) {
+      else if(is.range(obj)) {
         if(!is.range(self$range))
           stop("Range not added properly: severe error. Please notify developers.")
         if(!self$range$rendered)
@@ -206,9 +205,11 @@ dsmodel <- function(fun, title="", display = TRUE) {
       }
       else if (!is.null(self$range)) {
         if(   (is.background(obj) && !(is.null(self$visualization) && is.null(self$feature)))
-           || (is.visualization(obj) && ! is.null(self.feature)) )
+           || (is.visualization(obj) && ! is.null(self$feature)) )
           rerender = TRUE
         else
+          if(!is.facade(obj))
+            stop("Attempting to render a non-facade object. This will go poorly. Notify developers")
           obj$render(model=self)
       }
       if(rerender) {

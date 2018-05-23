@@ -150,39 +150,29 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
     crop = crop,
     discretize = discretize,
         ... = ...,
-    calculateImage = function(self, model, tValues) {
-      if(is.null(self$toPlot)) {
-        self$toPlot <- model$apply(
-          self$xfun(tValues),
-          self$yfun(tValues),
-          self$iters,
-          crop = self$crop)
-      }
-    },
-    render = function(self, model) {
+    on.bind = function(self, model) {
       if(is.null(model$range)) stop("dscurve: Add range first")
       if(is.null(self$renderInputs))
         tValues = seq(self$tstart,self$tend,length.out=model$range$renderCount)
       else
         tValues = self$renderInputs
-      self$calculateImage(model,tValues)
+      self$toPlot <- model$apply(
+          self$xfun(tValues),
+          self$yfun(tValues),
+          self$iters,
+          crop = self$crop)
+    },
+    render = function(self, model) {
       if(self$discretize){
         for(i in 1:(self$iters+1))
           points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
-                col = self$col[[i]], ... = self$...)
+                 col = self$col[[i]], ... = self$...)
       }
       else{
         for(i in 1:(self$iters+1))
           lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                 col = self$col[[i]], ... = self$...)
       }
-    },
-    recalculate = function(self, model) {
-      if(is.null(self$renderInputs))
-        tValues = seq(self$tstart,self$tend,length.out=model$range$renderCount)
-      else
-        tValues = self$renderInputs
-      self$calculateImage(model, tValues)
     }
   )
 }
@@ -205,11 +195,8 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
     discretize = discretize,
     crop = crop,
     ... = ...,
-    calculateImage = function(self, model, xValues, yValues) {
-      if(is.null(self$toPlot))
-        self$toPlot <- model$apply(xValues, yValues, self$iters, crop = self$crop)
-    },
-    calculateXYValues = function(self,model) {
+    on.bind = function(self, model) {
+      self$bound = TRUE
       if(is.null(self$n))
         numPoints <- model$range$renderCount
       else
@@ -217,10 +204,9 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
       self$xValues <-seq(min(model$range$xlim),max(model$range$xlim), length.out = numPoints)
       self$xValues <- self$prune(self$xlim,self$xValues)
       self$yValues <- mapply(self$fun,self$xValues)
-      self$calculateImage(model, self$xValues, self$yValues)
+      self$toPlot <- model$apply(self$xValues, self$yValues, self$iters, crop = self$crop)
     },
     render = function(self, model) {
-      self$calculateXYValues(model)
       if(self$discretize){
         for(i in 1:(self$iters+1))
           points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
@@ -231,9 +217,6 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
           lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                 col = self$col[[i]], ... = self$...)
       }
-    },
-    recalculate = function(self, model) {
-      self$calculateImage(model, self$xValues, self$yValues)
     },
     prune = function(self, lim, values) {
       if(!is.null(lim)){
