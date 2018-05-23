@@ -187,7 +187,7 @@ is.dsimage <- function(x) inherits(x,"image")
 #' is iterated until the points move less than \code{tolerance} (default
 #' \code{sqrt(.Machine$double.eps)}) between iterations.
 #' The color of each point is drawn from the \code{col} parameter. If the number of points exceeds
-#' the size of $\code{col}$, or $\code{col}$ is not defined, then reasonable defaults are used instead.
+#' the size of \code{col}, or \code{col} is not defined, then reasonable defaults are used instead.
 #' The attractors are \code{dspoint}s that are added to the model.
 #'
 #' @include dsproto.R dspoint.R
