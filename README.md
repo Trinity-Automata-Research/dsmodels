@@ -36,3 +36,18 @@ To install the latest version (1.1) from GitHub:
 
 <br>
 <a href = http://www.cs.trinity.edu/~sfogarty/dsmodels/index.html>Documentation</a> for <TT>dsmodels</TT>.
+
+Citation
+--------
+Please use this Bibtex entry to cite <TT>dsmodels</TT>:
+
+```
+@inproceedings{steinfogarty2018dsmodels,
+  title={dsmodels: A Little Language for Dynamical Systems},
+  author={Stein, Charles and Fogarty, Seth},
+  booktitle={Proceedings of the Real World Domain Specific Languages Workshop 2018},
+  pages={3},
+  year={2018},
+  organization={ACM}
+}
+```
