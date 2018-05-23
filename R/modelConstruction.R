@@ -55,13 +55,14 @@ addToModel <- function(model, obj)  {
     model$background <- append(model$background, obj)
   else if(is.visualization(obj))
     model$visualization <- append(model$visualization, obj)
-  else if(is.facade(obj))
+  else if(is.feature(obj))
     model$feature <- append(model$feature, obj)
-
+  else if(is.facade(obj))
+    stop("Facade that is nto range, background, visualization, or feature. Notify developers.")
   else {
     stop("ModelConst: Don't know how to add ", class(obj), " to a plot. If range is not discretized, try discretizing the range.",
          call. = FALSE)
   }
-  model$render(obj)
+  model$bind(obj)
   model
 }

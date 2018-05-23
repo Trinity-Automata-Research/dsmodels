@@ -1,7 +1,7 @@
 #' Create a new dsproto object
 #'
 #' dsproto draws from the prototype implementation in ggplot2, which in turn is inspired by the
-#' ggplot2's implementation, with improvements in inheritance and performance. 
+#' ggplot2's implementation, with improvements in inheritance and performance.
 #' The ggplot2 implementation is copyright by Hadley Wickham and Winston Chang, and released under
 #' GPLv2.
 #'
@@ -316,7 +316,7 @@ dsproto_formals <- function(x) formals(environment(x)$f)
 
 #' Facade
 #'
-# Acts as a parent object for Features, Backgrounds, and Visualizations
+# Acts as a parent object for Ranges, Features, Backgrounds, and Visualizations
 #'
 #' @keywords internal
 # @rdname dsproto
@@ -324,8 +324,10 @@ dsproto_formals <- function(x) formals(environment(x)$f)
 # @usage NULL
 #' @export
 facade <- dsproto("facade", NULL,
+  bound = FALSE,
   recalculate = function(self, model) {stop("Fully abstract method facade$recalculate", call. = FALSE)},
-  render = function(self, model) {stop("Fully abstract method facade$render", call. = FALSE)}
+  render = function(self, model) {stop("Fully abstract method facade$render", call. = FALSE)},
+  on.bind = function(self, model) {self$bound = TRUE}
   )
 
 #' Background

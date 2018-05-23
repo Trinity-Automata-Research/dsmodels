@@ -85,6 +85,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     print = function(self, ...) {
       invisible(self)
     },
+    #methods for applying the underlying function of the model
     apply = function(self, x, y, iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
@@ -166,29 +167,56 @@ dsmodel <- function(fun, title="", display = TRUE) {
         )
       }
     },
-    render = function(self, obj = NULL) {
-      if(self$autoDisplay){
-        rerender = FALSE
-        if(is.null(obj))
+    #visualization methods
+    bind = function(self, obj = NULL) {
+      if(is.null(obj)) {
+        stop("Bind called on null object: severe error. Please notify developers.")
+      }
+      if(is.range(obj)) {
+        obj$on.bind(model = self)
+        if(!is.null(self$background)) {
+          for(ba in self$background)
+            ba$on.bind(model = self)
+        }
+        if(!is.null(self$visualization)) {
+          for(vi in self$visualization)
+            vi$on.bind(model = self)
+        }
+        if(!is.null(self$feature)) {
+          for(fe in self$feature)
+            fe$on.bind(model = self)
+        }
+        if(self$autoDisplay)
+          self$display(obj) #should this be redisplay instead?
+      }
+      else if(!is.null(self$range)) {
+        obj$on.bind(self)
+        if(self$autoDisplay)
+          self$display(obj)
+      }
+
+    },
+    display = function(self, obj = NULL) {
+      rerender = FALSE
+      if(is.null(obj))
+        rerender = TRUE #render called with no arguments to force a rendering.
+      if(is.range(obj)) {
+        if(!is.range(self$range))
+          stop("Range not added properly: severe error. Please notify developers.")
+        if(!self$range$rendered)
           rerender = TRUE
-        if(is.range(obj)) {
-          if(!is.range(self$range))
-            stop("Range not added properly: severe error. Please notify developers.")
-          if(!self$range$rendered)
-            rerender = TRUE
+      }
+      else if (!is.null(self$range)) {
+        if(is.feature(obj) ||
+          (is.visualization(obj) && is.null(self$feature)) ||
+          (is.background(obj) && is.null(self$visualization)  && is.null(self$feature))) {
+          obj$render(model = self)
+        } else {
+          rerender = TRUE
         }
-        else if (!is.null(self$range)) {
-          if(is.feature(obj) ||
-            (is.visualization(obj) && is.null(self$feature)) ||
-            (is.background(obj) && is.null(self$visualization)  && is.null(self$feature))) {
-            obj$render(model = self)
-          } else {
-            rerender = TRUE
-          }
-        }
-        if(rerender) {
-			self$display()
-		}
+      }
+      if(rerender) {
+		    self$redisplay()
       }
     },
     recalculate = function(self) {
@@ -210,6 +238,16 @@ dsmodel <- function(fun, title="", display = TRUE) {
         }
       }
     },
+		redisplay = function(self){
+		  self$range$render(model = self)
+		  for(bg in self$background)
+		    bg$render(model = self)
+		  for(vi in self$visualization)
+		    vi$render(model = self)
+		  for(fe in self$feature)
+		    fe$render(model = self)
+		},
+		#Methods related to models-as-interactable-objects (for simulation to test, not visualize)
     points = function(self, format="list", filter="all") {
       points <- Filter(is.dspoint, self$feature)
       if(filter == "attractor")
@@ -231,15 +269,6 @@ dsmodel <- function(fun, title="", display = TRUE) {
         Map(function(pnt) c(pnt$x, pnt$y), points)
       else
         stop("dsmodel: valid formats for dsmodel$points method are: \"objects\",  \"list\", \"pairs\"")
-    },
-    display = function(self){
-    	self$range$render(model = self)
-        for(bg in self$background)
-          bg$render(model = self)
-        for(vi in self$visualization)
-          vi$render(model = self)
-        for(fe in self$feature)
-          fe$render(model = self)
     },
 		basins = function(self){
       basins <- Filter(is.dsimage,c(self$background,self$feature))

@@ -44,7 +44,6 @@
 dsrange <- function(x,y,discretize = 0,
                     #originOffset = c(-.1,-.1),
                     renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
-
   if(length(x) == 1) {
     x <- c(0,x)
   }
@@ -71,7 +70,7 @@ dsrange <- function(x,y,discretize = 0,
 
     range = dsproto(
       `_class` = "range",
-      `_inherit` = NULL,
+      `_inherit` = facade,
       X0 = X0, Y0 = Y0,
       grid = list(x=gx, y=gy),
       discretize = discretize,
@@ -109,7 +108,7 @@ dsrange <- function(x,y,discretize = 0,
   {
     range = dsproto(
       `_class` = "range",
-      `_inherit` = NULL,
+      `_inherit` = facade,
       xlim = xlim, ylim=ylim,
       discretize = 0, renderCount=renderCount,
       rendered = FALSE,
