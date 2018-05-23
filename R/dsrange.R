@@ -83,7 +83,7 @@ dsrange <- function(x,y,discretize = 0,
       frame.plot = frame.plot,
       render = function(self, model) {
         self$rendered = TRUE
-         plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
+        plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
              xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
              frame.plot = self$frame.plot)
       },

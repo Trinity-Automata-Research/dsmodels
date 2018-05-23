@@ -77,6 +77,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     title = texTitle,
     dim = 2,
     range = NULL,
+    facade = c(),
     background = c(),
     feature = c(),
     visualization = c(),
@@ -169,23 +170,20 @@ dsmodel <- function(fun, title="", display = TRUE) {
     },
     #visualization methods
     bind = function(self, obj = NULL) {
+      print(obj)
       if(is.null(obj)) {
         stop("Bind called on null object: severe error. Please notify developers.")
       }
       if(is.range(obj)) {
         obj$on.bind(model = self)
-        if(!is.null(self$background)) {
-          for(ba in self$background)
-            ba$on.bind(model = self)
-        }
-        if(!is.null(self$visualization)) {
-          for(vi in self$visualization)
-            vi$on.bind(model = self)
-        }
-        if(!is.null(self$feature)) {
-          for(fe in self$feature)
-            fe$on.bind(model = self)
-        }
+        for(ba in self$background)
+          ba$on.bind(model = self)
+        for(vi in self$visualization)
+          vi$on.bind(model = self)
+        for(fe in self$feature)
+          fe$on.bind(model = self)
+        for(fa in self$facade)
+            fa$on.bind(model=self)
         if(self$autoDisplay)
           self$display(obj) #should this be redisplay instead?
       }
@@ -207,13 +205,11 @@ dsmodel <- function(fun, title="", display = TRUE) {
           rerender = TRUE
       }
       else if (!is.null(self$range)) {
-        if(is.feature(obj) ||
-          (is.visualization(obj) && is.null(self$feature)) ||
-          (is.background(obj) && is.null(self$visualization)  && is.null(self$feature))) {
-          obj$render(model = self)
-        } else {
+        if(   (is.background(obj) && !(is.null(self$visualization) && is.null(self$feature)))
+           || (is.visualization(obj) && ! is.null(self.feature)) )
           rerender = TRUE
-        }
+        else
+          obj$render(model=self)
       }
       if(rerender) {
 		    self$redisplay()
@@ -224,24 +220,22 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(is.range(self$range)) {
           self$range$render(model = self)
         }
-        if(!is.null(self$background)) {
-          for(ba in self$background)
-            ba$recalculate(model = self)
-        }
-        if(!is.null(self$visualization)) {
-          for(vi in self$visualization)
-            vi$recalculate(model = self)
-        }
-        if(!is.null(self$feature)) {
-          for(fe in self$feature)
-            fe$recalculate(model = self)
-        }
+        for(ba in self$background)
+          ba$recalculate(model = self)
+        for(vi in self$visualization)
+          vi$recalculate(model = self)
+        for(fe in self$feature)
+          fe$recalculate(model = self)
+        for(fa in self$facade)
+          fa$recalculate(model=self)
       }
     },
 		redisplay = function(self){
 		  self$range$render(model = self)
 		  for(bg in self$background)
 		    bg$render(model = self)
+		  for(fa in self$facade)
+		    fa$render(model = self)
 		  for(vi in self$visualization)
 		    vi$render(model = self)
 		  for(fe in self$feature)
