@@ -91,7 +91,7 @@ dsarrows <- function(
       #     self$Y0 = model$range$Y0
       # },
       computeArrows = function(self, model) {
-        if(is.null(self$discretize) || is.null(self$X0) || is.null(self$YO) )
+        if(is.null(self$discretize) || is.null(self$X0) || is.null(self$Y0) )
           stop("Critical error in dsarrows: attempting to compute arrows but discretization failed. Please notify developers.")
         if(!self$arrowsComputed) {
           tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, self$iters, crop = self$crop)
@@ -132,8 +132,7 @@ dsarrows <- function(
         self$Y1 = NULL
         self$Y2 = NULL
         self$arrowsComputed = FALSE
-        self$rediscretize(model)
-        self$computeArrows(model)
+        self$on.bind(model)
       },
       rediscretize = function(self, model) { # if recalculate needed, include model
         if(self$selfDiscretized){

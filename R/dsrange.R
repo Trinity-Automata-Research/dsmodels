@@ -44,84 +44,44 @@
 dsrange <- function(x,y,discretize = 0,
                     #originOffset = c(-.1,-.1),
                     renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
-  if(length(x) == 1) {
-    x <- c(0,x)
-  }
-  if(length(y) == 1) {
-    y <- c(0,y)
-  }
-  xlim <- x
-  ylim <- y
-  if(length(xlim)>1) {
-    xlim <- c(min(xlim),max(xlim))
-  }
-  if(length(ylim)>1) {
-    ylim <- c(min(ylim),max(ylim))
-  }
-  if(discretize != 0)
-  {
-
-    gx = seq(min(x),max(x), by = discretize)
-    gy = seq(min(y),max(y), by = discretize)
-    N = as.matrix(expand.grid(gx,gy))
-
-    X0 = N[,1]
-    Y0 = N[,2]
-
-    range = dsproto(
-      `_class` = "range",
-      `_inherit` = facade,
-      X0 = X0, Y0 = Y0,
-      grid = list(x=gx, y=gy),
-      discretize = discretize,
-      dims = 2, #originOffset = originOffset,
-      X1= NULL, Y1= NULL,
-      appliedFun = list(),
-      xlim = xlim, ylim=ylim, renderCount=renderCount,
-      rendered = FALSE,
-      axes = axes,
-      frame.plot = frame.plot,
-      render = function(self, model) {
-        self$rendered = TRUE
-        plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
-             xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
-             frame.plot = self$frame.plot)
-      },
-
-      recalculate = function(self, model) {
+  if(length(x) == 1)
+    xlim <- c(0,x)
+  else
+    xlim <- c(min(x),max(x))
+  if(length(y) == 1)
+    ylim <- c(0,y)
+  else
+    ylim <- c(min(y),max(y))
+  dsproto(
+    `_class` = "range",
+    `_inherit` = facade,
+    X0 = NULL, Y0 = NULL,
+    grid = NULL,
+    discretize = discretize,
+    dims = 2, #originOffset = originOffset,
+    appliedFun = list(),
+    xlim = xlim, ylim=ylim, renderCount=renderCount,
+    rendered = FALSE,
+    axes = axes,
+    frame.plot = frame.plot,
+    on.bind = function(self, model) {
+      if(self$discretize != 0)
+      {
         gx = seq(min(self$xlim),max(self$xlim), by = self$discretize)
         gy = seq(min(self$ylim),max(self$ylim), by = self$discretize)
         N = as.matrix(expand.grid(gx,gy))
-
         self$X0 = N[,1]
         self$Y0 = N[,2]
-
-        newrange = model$apply(self$X0, self$Y0, 1)
-        self$X1 = newrange[[2]]$x
-        self$Y1 = newrange[[2]]$y
-
-        self$arrowsComputed = TRUE
+        self$grid = list(x=gx, y=gy)
       }
-    )
-  }
-  else
-  {
-    range = dsproto(
-      `_class` = "range",
-      `_inherit` = facade,
-      xlim = xlim, ylim=ylim,
-      discretize = 0, renderCount=renderCount,
-      rendered = FALSE,
-      axes = axes,
-      frame.plot = frame.plot,
-      render = function(self, model) {
-        self$rendered = TRUE
-        plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
-             xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
-             frame.plot = self$frame.plot)
-      })
-  }
-  range
+    },
+    render = function(self, model) {
+      self$rendered = TRUE
+      plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
+           xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
+           frame.plot = self$frame.plot)
+    }
+  )
 }
 
 #' Reports whether x is a range.

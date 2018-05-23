@@ -110,7 +110,7 @@ dsdots <- function(col = "black",image = "", iters = 1,
         )
       }
     },
-    rediscretize = function(self, model) { # if recalculate needed, include model
+    rediscretize = function(self, model) {
       if(self$selfDiscretized) {
       	x <- model$range$xlim
       	y <- model$range$ylim
