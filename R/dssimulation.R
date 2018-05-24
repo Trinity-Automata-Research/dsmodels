@@ -250,7 +250,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       if(is.null(self$ylim))
         self$ylim <- model$range$ylim
       if(is.null(self$discretize))
-        if(!is.null(model$range) && !(model$range$discretize != 0)) {
+        if(model$range$discretize != 0) {
           self$discretize <- model$range$discretize #check if we can remove this line.
           if(is.null(model$range$grid) || is.null(model$range$X0) || is.null(model$range$Y0))
             stop("Critical Error: Discretized range not properly bound. Please notify developers.")
