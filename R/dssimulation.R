@@ -243,23 +243,22 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       }
       if(self$iters == 0)
         self$iters = Inf
-      if(is.null(self$epsilon))
-        self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
       if(is.null(self$xlim))
         self$xlim <- model$range$xlim
       if(is.null(self$ylim))
         self$ylim <- model$range$ylim
-      if(is.null(self$discretize))
-        if(model$range$discretize != 0) {
-          self$discretize <- model$range$discretize #check if we can remove this line.
-          if(is.null(model$range$grid) || is.null(model$range$X0) || is.null(model$range$Y0))
-            stop("Critical Error: Discretized range not properly bound. Please notify developers.")
-          self$grid <- model$range$grid
-          self$X0 = model$range$X0
-          self$Y0 = model$range$Y0
-        }
-        else
+      if(is.null(self$discretize)) {
+        if(model$range$discretize == 0) {
           stop("Need a discretized range or a discretize parameter to simulate attractors.")
+        }
+        if(is.null(model$range$grid) || is.null(model$range$X0) || is.null(model$range$Y0))
+          stop("Critical Error: Discretized range not properly bound. Please notify developers.")
+        self$grid <- model$range$grid
+        self$X0 = model$range$X0
+        self$Y0 = model$range$Y0
+        if(is.null(self$epsilon))
+          self$epsilon <- (model$range$discretize)^2 #May as well work in squared distances.
+      }
       else {
         mx = seq(min(self$xlim),max(self$xlim), by = self$discretize)
         my = seq(min(self$ylim),max(self$ylim), by = self$discretize)
@@ -267,6 +266,8 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
         N = as.matrix(expand.grid(mx,my))
         self$X0 = N[,1]
         self$Y0 = N[,2]
+        if(is.null(self$epsilon))
+          self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
       }
     },
     on.bind = function(self, model) {
