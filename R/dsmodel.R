@@ -184,7 +184,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         for(fa in self$facade)
             fa$on.bind(model=self)
         if(self$autoDisplay)
-          self$display(obj) #should this be redisplay instead?
+          self$display(obj)
       }
       else if(!is.null(self$range)) {
         obj$on.bind(self)
