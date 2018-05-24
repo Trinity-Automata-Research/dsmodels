@@ -272,7 +272,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
       if(length(basins) > 1)
         stop("dsmodel$basins can't handle models with multiple simbasins().")
       basin <- basins[[1]]
-      if(!basin$regionsCalculated)
+      if(!basin$bound)
         basin$recalculate(self)
       res <- unique(c(basin$colMatrix))
       if(is.element(0,res))
@@ -295,7 +295,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  if(length(basins) > 1)
 		    stop("dsmodel$basins can't handle models with multiple simbasins().")
 		  basin <- basins[[1]]
-		  if(!basin$regionsCalculated)
+		  if(!basin$bound)
 		    basin$recalculate(self)
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
