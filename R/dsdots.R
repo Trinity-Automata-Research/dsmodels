@@ -91,18 +91,16 @@ dsdots <- function(col = "black",image = "", iters = 1,
     iters = iters,
     dotsComputed = FALSE,
     discretize = discretize,
+    selfDiscretized = !is.null(discretize),
     toPlot = c(), #when filled should be a list
     crop = crop,
-    computeDots = function(self, model) {
+    on.bind = function(self, model) {
+      self$bound = TRUE
       self$dotsComputed <- TRUE
       self$rediscretize(model)
       self$toPlot <- model$apply(self$X0, self$Y0, self$iters, crop = self$crop)
     },
-    render = function(self, model) {
-      self$rediscretize(model)
-	    if(!self$dotsComputed) {
-      	self$computeDots(model)
-	    }
+    render = function(self,model) {
       for(i in 1:(self$iters)){
         tmp <- self$toPlot[[i]]
         points(
@@ -112,11 +110,8 @@ dsdots <- function(col = "black",image = "", iters = 1,
         )
       }
     },
-    recalculate = function(self, model) {
-      self$computeDots(model)
-    },
-    rediscretize = function(self, model) { # if recalculate needed, include model
-      if(!is.null(self$discretize)) {
+    rediscretize = function(self, model) {
+      if(self$selfDiscretized) {
       	x <- model$range$xlim
       	y <- model$range$ylim
 

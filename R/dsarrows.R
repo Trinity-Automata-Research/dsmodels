@@ -80,6 +80,7 @@ dsarrows <- function(
       type = type,
       angle= angle,
       discretize = discretize,
+      selfDiscretized = !is.null(discretize),
       crop = crop,
       head.length = head.length,
       ... = ...,
@@ -90,7 +91,8 @@ dsarrows <- function(
       #     self$Y0 = model$range$Y0
       # },
       computeArrows = function(self, model) {
-        self$rediscretize(model)
+        if(is.null(self$discretize) || is.null(self$X0) || is.null(self$Y0) )
+          stop("Critical error in dsarrows: attempting to compute arrows but discretization failed. Please notify developers.")
         if(!self$arrowsComputed) {
           tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, self$iters, crop = self$crop)
           self$X1 <- tmp$x
@@ -109,12 +111,16 @@ dsarrows <- function(
           self$Y2 <- a*self$X2+b
         }
       },
-      render = function(self, model) {
+      on.bind = function(self, model) {
         self$rediscretize(model)
+        self$computeArrows(model)
+        self$bound=TRUE
+      },
+      render = function(self, model) {
+        if(!self$bound)
+          stop("Critical error. Attempting to render before object is bound. Please notify developers.")
         if(!self$arrowsComputed)
-          self$recalculate(model)
-        if(!is.discretizedrange(model$range) && is.null(self$discretize))
-          stop("arrows: dsrange is not discretized. Give range an extra 'discretize' parameter in either dsarrows or dsrange.")
+          stop("Critical error. Attempting to render dsarrows, but arrows were not computed.")
         Arrows(self$X0, self$Y0,
                self$X2, self$Y2,
                col = self$col, arr.length = self$head.length,
@@ -126,23 +132,23 @@ dsarrows <- function(
         self$Y1 = NULL
         self$Y2 = NULL
         self$arrowsComputed = FALSE
-        self$computeArrows(model)
+        self$on.bind(model)
       },
       rediscretize = function(self, model) { # if recalculate needed, include model
-        if(!is.null(self$discretize)){
-        x <- model$range$xlim
-        y <- model$range$ylim
+        if(self$selfDiscretized){
+          x <- model$range$xlim
+          y <- model$range$ylim
 
-        gx = seq(min(x),max(x), by = self$discretize)
-        gy = seq(min(y),max(y), by = self$discretize)
-        N = as.matrix(expand.grid(gx,gy))
+          gx = seq(min(x),max(x), by = self$discretize)
+          gy = seq(min(y),max(y), by = self$discretize)
+          N = as.matrix(expand.grid(gx,gy))
 
-        self$X0 = N[,1]
-        self$Y0 = N[,2]
+          self$X0 = N[,1]
+          self$Y0 = N[,2]
         }
         else{
           if(model$range$discretize == 0)
-            stop("dsdots: Either the dsrange or the dsdots have to have a non-empty discretization parameter.")
+            stop("dsarrows: Either the dsrange or the dsarrows have to have a non-empty discretization parameter.")
           self$X0 = model$range$X0
           self$Y0 = model$range$Y0
           self$discretize = model$range$discretize

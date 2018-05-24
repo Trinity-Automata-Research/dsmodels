@@ -81,7 +81,7 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
     `_class` = "image", `_inherit` = boolSelector(behind, background, feature),
     discretize=discretize, xlim=xlim, ylim=ylim,
     iters=iters,
-    regionsCalculated = FALSE,
+    bound = FALSE,
     grid = NULL,
     colMatrix = NULL,
     numCols = NULL,
@@ -94,17 +94,13 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
     Y0 = NULL,
     missingCol = missingCol,
      ... = ...,
-    bindWithModel = function(self, model) {
-      attractors <- Filter(
-        function(x) {
-          if(is.dspoint(x))
-            x$attractor
-          else
-            FALSE
-        }, model$feature)
+    createGrid = function(self, model) {
       if(!is.range(model$range)) {
         stop("simbasins: Can only guess basins a model defined in a range")
       }
+      attractors <- Filter(
+        function(x) { (is.dspoint(x)) && (x$attractor) },
+        model$feature)
       if(length(attractors) == 0){
         attractors <- Filter(function(x) {is.dspoint(x)}, model$feature)
         warning("simbasins: No points are specified as attractors, which may result in unintended behavior when simulating basins.")
@@ -122,26 +118,29 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
           self$cols <- c(self$missingCol, self$cols)
         }
       }
-      if(is.null(self$discretize))
-        self$discretize <- model$range$discretize
+      if(is.null(self$discretize)) {
+        if(model$range$discretize == 0)
+          stop("Either simbasins or the range must have a discretization parameter.")
+        else
+          self$discretize <- model$range$discretize
+      }
       if(is.null(self$epsilon))
         self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
       if(is.null(self$xlim))
         self$xlim <- model$range$xlim
       if(is.null(self$ylim))
         self$ylim <- model$range$ylim
-      if(is.null(self$grid)) {
-        mx = seq(min(self$xlim)+(self$discretize/2),max(self$xlim), by = self$discretize)
-        my = seq(min(self$ylim)+(self$discretize/2),max(self$ylim), by = self$discretize)
-        self$grid <- list(x=mx, y=my)
-        N = as.matrix(expand.grid(mx,my))
-        self$X0 = N[,1]
-        self$Y0 = N[,2]
-      }
+
+      mx = seq(min(self$xlim)+(self$discretize/2),max(self$xlim), by = self$discretize)
+      my = seq(min(self$ylim)+(self$discretize/2),max(self$ylim), by = self$discretize)
+      self$grid <- list(x=mx, y=my)
+      N = as.matrix(expand.grid(mx,my))
+      self$X0 = N[,1]
+      self$Y0 = N[,2]
     },
 
-    recalculate = function(self, model) {
-      self$bindWithModel(model)
+    on.bind = function(self, model) {
+      self$createGrid(model)
       if(is.null(self$iters)) {
         model$warnPeriodic = FALSE
         colsMap <- mapply(findFixedPoint, self$X0, self$Y0,
@@ -159,12 +158,11 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
                           MoreArgs=list(points=self$fps, eps=self$epsilon))
       }
       self$colMatrix <- matrix(unlist(colsMap), nrow=length(self$grid$x))
-      self$regionsCalculated <- TRUE
+      self$bound <- TRUE
     },
-
     render = function(self, model) {
-      if(!self$regionsCalculated)
-        self$recalculate(model)
+      if(!self$bound)
+        stop("Critical Error: Attempting to render basins before bound to model. Please notify developers.")
       image(x=self$grid$x, y=self$grid$y, z=self$colMatrix,
             zlim=c(0,self$numCols), #length($cols)),
             col=self$cols,
@@ -189,7 +187,7 @@ is.dsimage <- function(x) inherits(x,"image")
 #' is iterated until the points move less than \code{tolerance} (default
 #' \code{sqrt(.Machine$double.eps)}) between iterations.
 #' The color of each point is drawn from the \code{col} parameter. If the number of points exceeds
-#' the size of $\code{col}$, or $\code{col}$ is not defined, then reasonable defaults are used instead.
+#' the size of \code{col}, or \code{col} is not defined, then reasonable defaults are used instead.
 #' The attractors are \code{dspoint}s that are added to the model.
 #'
 #' @include dsproto.R dspoint.R
@@ -225,11 +223,11 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
                          epsilon=NULL, tolerance=sqrt(.Machine$double.eps), cols= NULL){
   epsilon <- boolSelector(is.null(epsilon), NULL, epsilon^2)
   dsproto(
-    `_class` = "simattractors", `_inherit` = background,
+    `_class` = "simattractors", `_inherit` = facade,
     discretize=discretize, xlim=xlim, ylim=ylim,
     stride=stride,
     iters = iters,
-    attractorsCalculated = FALSE,
+    bound = FALSE,
     attractors = list(),
     attractorCoords = NULL,
     grid = NULL,
@@ -239,37 +237,43 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
     X0 = NULL,
     Y0 = NULL,
     attractors = NULL,
-    bindWithModel = function(self, model) {
+    createGrid = function(self, model) {
       if(!is.range(model$range)) {
         stop("Can only simulate attractors within a defined range.")
       }
       if(self$iters == 0)
         self$iters = Inf
-      if(is.null(self$discretize))
-        if(!is.null(model$range) && !is.null(model$range$discretize))
-          self$discretize <- model$range$discretize
-        else
-          stop("Need a discretized range or a discretize parameter to find attractors.")
-      if(is.null(self$epsilon))
-        self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
       if(is.null(self$xlim))
         self$xlim <- model$range$xlim
       if(is.null(self$ylim))
         self$ylim <- model$range$ylim
-      if(is.null(self$grid)) {
+      if(is.null(self$discretize)) {
+        if(model$range$discretize == 0) {
+          stop("Need a discretized range or a discretize parameter to simulate attractors.")
+        }
+        if(is.null(model$range$grid) || is.null(model$range$X0) || is.null(model$range$Y0))
+          stop("Critical Error: Discretized range not properly bound. Please notify developers.")
+        self$grid <- model$range$grid
+        self$X0 = model$range$X0
+        self$Y0 = model$range$Y0
+        if(is.null(self$epsilon))
+          self$epsilon <- (model$range$discretize)^2 #May as well work in squared distances.
+      }
+      else {
         mx = seq(min(self$xlim),max(self$xlim), by = self$discretize)
         my = seq(min(self$ylim),max(self$ylim), by = self$discretize)
         self$grid <- list(x=mx, y=my)
         N = as.matrix(expand.grid(mx,my))
         self$X0 = N[,1]
         self$Y0 = N[,2]
+        if(is.null(self$epsilon))
+          self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
       }
     },
-
-    recalculate = function(self, model) {
-      if(self$attractorsCalculated)
+    on.bind = function(self, model) {
+      if(self$bound)
         warning("Determining attractors twice: this may result in duplicate points.")
-      self$bindWithModel(model)
+      self$createGrid(model)
       moved <- TRUE
       images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$iters, self$tolerance)
       found <- 1
@@ -299,16 +303,12 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
           self$cols <- rainbow(found)
       }
       self$attractorCoords <- attractorCoords
-      self$attractorsCalculated <- TRUE
+      self$bound <- TRUE
       for(i in seq_len(found)) {
         point = dspoint(attractorCoords$x[i], attractorCoords$y[i], artificial=TRUE, col=self$cols[[i]], attractor=TRUE)
         self$attractors[[i]] <- point
         model+point
       }
-    },
-    render = function(self, model) {
-      if(!self$attractorsCalculated)
-        self$recalculate(model)
     }
   )
 }

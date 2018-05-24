@@ -104,9 +104,6 @@ dspolygon <- function(x, y, col = "yellow", border = NA, behind = TRUE) {
               y = self$y,
               col =self$col,
               border = self$border, ... = self$...)
-    },
-    recalculate = function(self, model) {
-      warning("dspolygon: Nothing here")
     }
   )
 }

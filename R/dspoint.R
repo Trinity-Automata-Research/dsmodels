@@ -96,6 +96,7 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     x = x,
     y = y,
     label = texLabel,
+    hasLabel = label == "",
     col = col,
     pch = pch,
     cex = size,
@@ -108,8 +109,13 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     artifical=artificial,
     offset=offset,
     crop = crop,
+    on.bind = function(self, model) {
+      if(iters == 0)
+        self$toPlot <- model$apply(self$x, self$y, length(self$col), crop = self$crop)
+      else
+        self$toPlot <- model$apply(self$x, self$y, self$iters, crop = self$crop)
+    },
     render = function(self, model) {
-      self$calculateImage(model)
       if(self$display) {
         for(i in 1:(self$iters)) {
           tmp <- self$toPlot[[i]]
@@ -124,22 +130,15 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
       }
     },
     displayLabel = function(self, range) {
-      if(is.null(self$offset)) {
+      if(self$hasLabel) {
+        if(is.null(self$offset)) {
           scale <- 0.08*(abs(max(range$ylim) - min(range$ylim)))
           self$offset=c(0,scale)
+        }
+        xloc <- self$x + self$offset[1]
+        yloc <- self$y + self$offset[2]
+        text(xloc,yloc, labels = self$label)
       }
-      xloc <- self$x + self$offset[1]
-      yloc <- self$y + self$offset[2]
-      text(xloc,yloc, labels = self$label)
-    },
-    calculateImage = function(self, model) {
-      if(iters == 0)
-        self$toPlot <- model$apply(self$x, self$y, length(self$col), crop = self$crop)
-      else
-        self$toPlot <- model$apply(self$x, self$y, self$iters, crop = self$crop)
-    },
-    recalculate = function(self, model) {
-      self$calculateImage(model)
     }
   )
 }
