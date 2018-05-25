@@ -131,12 +131,11 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
       if(is.null(self$ylim))
         self$ylim <- model$range$ylim
 
-      mx = seq(min(self$xlim)+(self$discretize/2),max(self$xlim), by = self$discretize)
-      my = seq(min(self$ylim)+(self$discretize/2),max(self$ylim), by = self$discretize)
-      self$grid <- list(x=mx, y=my)
-      N = as.matrix(expand.grid(mx,my))
-      self$X0 = N[,1]
-      self$Y0 = N[,2]
+      centers=model$range$centers(x=self$xlim, y=self$ylim, discretize=self$discretize)
+
+      self$X0 = centers$X0
+      self$Y0 = centers$Y0
+      self$grid <- centers$grid
     },
 
     on.bind = function(self, model) {
@@ -261,12 +260,12 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
           self$epsilon <- (model$range$discretize)^2 #May as well work in squared distances.
       }
       else {
-        mx = seq(min(self$xlim),max(self$xlim), by = self$discretize)
-        my = seq(min(self$ylim),max(self$ylim), by = self$discretize)
-        self$grid <- list(x=mx, y=my)
-        N = as.matrix(expand.grid(mx,my))
-        self$X0 = N[,1]
-        self$Y0 = N[,2]
+        corners=model$range$corners(discretize=self$discretize)
+
+        self$X0 = corners$X0
+        self$Y0 = corners$Y0
+        self$grid = corners$grid
+
         if(is.null(self$epsilon))
           self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
       }

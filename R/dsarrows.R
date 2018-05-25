@@ -136,15 +136,11 @@ dsarrows <- function(
       },
       rediscretize = function(self, model) { # if recalculate needed, include model
         if(self$selfDiscretized){
-          x <- model$range$xlim
-          y <- model$range$ylim
 
-          gx = seq(min(x),max(x), by = self$discretize)
-          gy = seq(min(y),max(y), by = self$discretize)
-          N = as.matrix(expand.grid(gx,gy))
+          corners=model$range$corners(discretize=self$discretize)
 
-          self$X0 = N[,1]
-          self$Y0 = N[,2]
+          self$X0 = corners$X0
+          self$Y0 = corners$Y0
         }
         else{
           if(model$range$discretize == 0)

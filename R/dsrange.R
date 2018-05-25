@@ -44,14 +44,8 @@
 dsrange <- function(x,y,discretize = 0,
                     #originOffset = c(-.1,-.1),
                     renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
-  if(length(x) == 1)
-    xlim <- c(0,x)
-  else
-    xlim <- c(min(x),max(x))
-  if(length(y) == 1)
-    ylim <- c(0,y)
-  else
-    ylim <- c(min(y),max(y))
+  xlim <- make.lims(x)
+  ylim <- make.lims(y)
   dsproto(
     `_class` = "range",
     `_inherit` = facade,
@@ -64,15 +58,14 @@ dsrange <- function(x,y,discretize = 0,
     rendered = FALSE,
     axes = axes,
     frame.plot = frame.plot,
+    #visualization methods
     on.bind = function(self, model) {
       if(self$discretize != 0)
       {
-        gx = seq(min(self$xlim),max(self$xlim), by = self$discretize)
-        gy = seq(min(self$ylim),max(self$ylim), by = self$discretize)
-        N = as.matrix(expand.grid(gx,gy))
-        self$X0 = N[,1]
-        self$Y0 = N[,2]
-        self$grid = list(x=gx, y=gy)
+        corners=self$corners()
+        self$X0 = corners$X0
+        self$Y0 = corners$Y0
+        self$grid = corners$grid
       }
     },
     render = function(self, model) {
@@ -80,8 +73,42 @@ dsrange <- function(x,y,discretize = 0,
       plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
            xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
            frame.plot = self$frame.plot)
+    },
+    #methods for creating grids
+    corners = function(self, xlim=self$xlim, ylim=self$ylim, discretize=self$discretize){
+      x=make.lims(xlim)
+      y=make.lims(ylim)
+      gx = seq(min(x),max(x), by = discretize)
+      gy = seq(min(y),max(y), by = discretize)
+      N = as.matrix(expand.grid(gx,gy))
+      e <- new.env()
+      e$X0 = N[,1]
+      e$Y0 = N[,2]
+      e$grid = list(x=gx, y=gy)
+      e
+    },
+    centers = function(self, xlim=self$xlim, ylim=self$ylim, discretize=self$discretize){
+      x=make.lims(xlim)
+      y=make.lims(ylim)
+      gx = seq(min(x)+(self$discretize/2),max(x), by = self$discretize)
+      gy = seq(min(y)+(self$discretize/2),max(y), by = self$discretize)
+      N = as.matrix(expand.grid(gx,gy))
+      e <- new.env()
+      e$X0 = N[,1]
+      e$Y0 = N[,2]
+      e$grid = list(x=gx, y=gy)
+      e
+
     }
   )
+}
+
+make.lims <- function(x){
+  if(length(x) == 1)
+    lim <- c(0,x)
+  else
+    lim <- c(min(x),max(x))
+  lim
 }
 
 #' Reports whether x is a range.
