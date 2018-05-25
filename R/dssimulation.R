@@ -148,9 +148,9 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
         if(model$warnPeriodic)
           warning("simbasins: some points appear to be periodic, or attractors not set properly.")
       } else if (is.infinite(iters)) {
-        images <- applyTillFixed(model, self$X0, self$Y0, self$stride, initIters = 0, self$tolerance)
+        images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$iters, initIters = 0, self$tolerance)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
-                          MoreArgs=list(points=self$fps, eps=0))
+                          MoreArgs=list(points=self$fps, eps=self$epsilon))
       }
       else {
         images <- model$apply(self$X0, self$Y0, self$iters, crop=FALSE, accumulate=FALSE)
