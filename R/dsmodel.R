@@ -408,7 +408,7 @@ NaNRemove <- function(twoDList){
     )
   }
 }
-
+#can this just be replaced with > k[is.finite(k)&is.finite(r)]? (yes. why god why)
 
 #' Abstract a Function which does not Crash Upon Failure
 #'

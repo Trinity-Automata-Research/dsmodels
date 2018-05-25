@@ -148,7 +148,7 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
         if(model$warnPeriodic)
           warning("simbasins: some points appear to be periodic, or attractors not set properly.")
       } else if (is.infinite(iters)) {
-        images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$tolerance)
+        images <- applyTillFixed(model, self$X0, self$Y0, self$stride, initIters = 0, self$tolerance)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
                           MoreArgs=list(points=self$fps, eps=0))
       }
@@ -219,7 +219,7 @@ is.dsimage <- function(x) inherits(x,"image")
 #'
 #' model + dsrange(5,5,0.09) + simattractors(discretize=0.02)
 #'@export
-simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters=1e+18,
+simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters=1e+18, initIters=0,
                          epsilon=NULL, tolerance=sqrt(.Machine$double.eps), cols= NULL){
   epsilon <- boolSelector(is.null(epsilon), NULL, epsilon^2)
   dsproto(
@@ -227,6 +227,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
     discretize=discretize, xlim=xlim, ylim=ylim,
     stride=stride,
     iters = iters,
+    initIters=initIters,
     bound = FALSE,
     attractors = list(),
     attractorCoords = NULL,
@@ -275,7 +276,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
         warning("Determining attractors twice: this may result in duplicate points.")
       self$createGrid(model)
       moved <- TRUE
-      images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$iters, self$tolerance)
+      images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$iters, self$initIters, self$tolerance)
       found <- 1
       points <- mapply(c,images$x, images$y, SIMPLIFY=FALSE)
       attractorCoords <- list(x=c(images$x[1]), y=c(images$y[1]))
@@ -313,23 +314,37 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
   )
 }
 
-applyTillFixed <- function(model, x, y, stride, maxIters, tolerance) {
+applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance) {
   moved <- TRUE
   prev <- list(x=x, y=y)
   iters = 0
+  if(initIters>0){
+    prev <- model$apply(prev$x, prev$y, iters=initIters, accumulate=FALSE, crop=FALSE)
+  }
   while(moved && iters < maxIters) {
-    images <- model$apply(prev$x, prev$y, stride, accumulate=FALSE, crop=FALSE)
+    images <- model$apply(prev$x, prev$y, stride, accumulate=FALSE, crop=FALSE) #crop=TRUE?
+    if (length(prev$x) != length(images$x)){
+      print("Oops!")
+      print(length(prev$x))
+      print(length(images$x))
+    }
     dists = (images$x - prev$x)^2 + (images$y - prev$y)^2
-    m <- max(dists)
+    m <- max(dists[is.finite(dists)])
     if(is.nan(m)){
+      print(prev)
+      print(images)
+      print(dists)
       stop("dssimulation: Model not well defined: NaN")
     }
-    if (max(dists) < tolerance) {
+    if (m < tolerance) {
       moved <- FALSE
+      if(!all(is.finite(dists))){
+        warning("dssimulation: Model is potentially unstable.")
+      }
     }
     else {
       prev <- images
-      iters <- iters+1
+      iters <- iters+1 #should probably be +stride. Issue #104
     }
   }
   if(iters == maxIters && moved)
@@ -337,15 +352,22 @@ applyTillFixed <- function(model, x, y, stride, maxIters, tolerance) {
   if(!moved) {
     noStrideImages = model$apply(images$x, images$y, 1, accumulate=FALSE, crop=FALSE)
     dists = (noStrideImages$x - images$x)^2 + (noStrideImages$y - images$y)^2
-    m <- max(dists)
-    if(is.nan(m)){
-      warning("dssimulation: Model not well defined: NaN")
+    if(!all(is.finite(dists))){
+      warning("dssimulation: Model is potentially unstable.")
     }
-    if (max(dists) > tolerance) {
+    m <- max(dists[is.finite(dists)])
+    if (m > tolerance) {
       warning("dssimulation: points are only stable under stride, may have periodic attractors.")
+      #tolernace here is the wrong parameter, because we're moving once instead of 8 times.
+      #dividing by 8 is probably better(?), but maybe even as extreme as square-rooting.
+      #ISSUE number 102
     }
   }
-  images
+  x <- images$x
+  y <- images$y
+  valids <- is.finite(x) & is.finite(y)
+  res <- list(x=x[valids], y=y[valids])
+  res
 }
 
 boolSelector <- function(b, t, f) { if(b) t else f }
