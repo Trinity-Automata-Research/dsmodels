@@ -59,15 +59,6 @@ dsrange <- function(x,y,discretize = 0,
     axes = axes,
     frame.plot = frame.plot,
     #visualization methods
-    on.bind = function(self, model) {
-      if(self$discretize != 0)
-      {
-        corners=self$corners()
-        self$X0 = corners$X0
-        self$Y0 = corners$Y0
-        self$grid = corners$grid
-      }
-    },
     render = function(self, model) {
       self$rendered = TRUE
       plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
@@ -75,11 +66,29 @@ dsrange <- function(x,y,discretize = 0,
            frame.plot = self$frame.plot)
     },
     #methods for creating grids
-    corners = function(self, xlim=self$xlim, ylim=self$ylim, discretize=self$discretize){
-      x=make.lims(xlim)
-      y=make.lims(ylim)
-      gx = seq(min(x),max(x), by = discretize)
-      gy = seq(min(y),max(y), by = discretize)
+    grid = function(self, discretize=NULL, xlim=NULL, ylim=NULL, center=FALSE){
+      if(is.null(discretize)||discretize==0){
+        if(is.null(self$discretize)||self$discretize==0)
+          stop("Either the range or the appropriate object must have a discretization parameter")
+        discretize=self$discretize
+      }
+      if(is.null(xlim)){
+        x=self$xlim
+      } else {
+        x=make.lims(xlim)
+      }
+      if(is.null(ylim)){
+        y=self$ylim
+      } else {
+        y=make.lims(ylim)
+      }
+      if(center){
+        gx = seq(min(x)+(discretize/2),max(x), by = discretize)
+        gy = seq(min(y)+(discretize/2),max(y), by = discretize)
+      } else{
+        gx = seq(min(x),max(x), by = discretize)
+        gy = seq(min(y),max(y), by = discretize)
+      }
       N = as.matrix(expand.grid(gx,gy))
       e <- new.env()
       e$X0 = N[,1]
@@ -87,19 +96,13 @@ dsrange <- function(x,y,discretize = 0,
       e$grid = list(x=gx, y=gy)
       e
     },
-    centers = function(self, xlim=self$xlim, ylim=self$ylim, discretize=self$discretize){
-      x=make.lims(xlim)
-      y=make.lims(ylim)
-      gx = seq(min(x)+(self$discretize/2),max(x), by = self$discretize)
-      gy = seq(min(y)+(self$discretize/2),max(y), by = self$discretize)
-      N = as.matrix(expand.grid(gx,gy))
-      e <- new.env()
-      e$X0 = N[,1]
-      e$Y0 = N[,2]
-      e$grid = list(x=gx, y=gy)
-      e
-
+    corners = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
+      self$grid(self, discretize, xlim, ylim)
+    },
+    centers = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
+      self$grid(self, discretize, xlim, ylim, center=TRUE)
     }
+
   )
 }
 

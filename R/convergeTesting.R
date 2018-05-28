@@ -1,12 +1,26 @@
 #method to take list of points and test if the points diverge
 #works with pairs of nubers instead of dspoints
+library(dsmodels)
 
-testIS=FALSE
+testISA=FALSE
 testATFOI=FALSE
-testAGTSA=TRUE
+testISO=TRUE
+
+#attractors can be "any", "one","one off axis"
+is.stable = function(model, x, y, attractors="any", stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps),epsilon=100*tolerance){
+  if(attractors=="any")
+    is.stableAny(model, x, y, stride, maxIters, tolerance)
+  else if(attractors=="one")
+    is.stableOne(model, x, y, stride, maxIters, tolerance)
+  else if(attractors=="one off axis" || attractors=="oneOffAxis")
+    is.stableOne(model, x, y, stride, maxIters, tolerance, epsilon = epsilon, filterAxis = TRUE)
+  else
+    stop("valid attractors for is.stabel are \"any\", \"one\", and \"one off axis\".")
+}
+
 
 #modification of find fixed points. returns false if any point diverges. dosent handle periodic orbits
-is.stable = function(model, x, y, stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps)){
+is.stableAny = function(model, x, y, stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps)){
   xp <- x
   yp <- y
   counter <- 0
@@ -41,13 +55,21 @@ applyTillFixedOrInf = function(model, x, y, stride=8, maxIters=Inf, tolerance=sq
   list(x=xp,y=yp)
 }
 
-allGoToSameAttractor = function(model, x, y, stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps)){
+is.stableOne = function(model, x, y, stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps), epsilon=100*tolerance, filterAxis=FALSE){
   points=applyTillFixedOrInf(model,x,y,stride,maxIters,tolerance)
-  anchorX=points$x[1]
-  anchorY=points$x[1]
-  #if two points are tolerance away from a fixed point, they can be at most 2*tolerance away from each other
-  all(is.finite(unlist(points))& ((points$x-anchorX)^2+(points$y-anchorY)^2 <tolerance*2.1))
+  x=points$x
+  y=points$y
+  #take out all points on the axis
+  if(filterAxis){
+    onAxis=abs(x)<tolerance | abs(y)<tolerance
+    x=x[!onAxis]
+    y=y[!onAxis]
+  }
+  anchorX=x[1]
+  anchorY=y[1]
+  all(is.finite(unlist(points)))&& all((x-anchorX)^2+(y-anchorY)^2 < epsilon)
 }
+
 
 
 #always diverges
@@ -74,21 +96,21 @@ h <- function(X0,Y0) {
 multConvM <- dsmodel(fun = h)
 
 
-range=dsrange(3,3, discretize = .5)
-centers=range$centers()
+range=dsrange(3,3, discretize = 1)
+centers=range$corners(discretize=.5)
 x=centers$X0
 y=centers$Y0
 
-if(testIS){
-  print(is.stable(divM,1,1, maxIters=10))
-  print(is.stable(convM,1,1, maxIters=10))
-  print(is.stable(divM,1,1))
-  print(is.stable(convM,1,1))
+if(testISA){
+  print(is.stable(divM,1,1, maxIters=10, attractors="any"))
+  print(is.stable(convM,1,1, maxIters=10, attractors="any"))
+  print(is.stable(divM,1,1, attractors="any"))
+  print(is.stable(convM,1,1, attractors="any"))
 
   #i should find a system that converges on some ranges and diverges on others
-  print(is.stable(divM,x,y))
-  print(is.stable(convM,x,y))
-  print(is.stable(multConvM,x,y))
+  print(is.stable(divM,x,y, attractors="any"))
+  print(is.stable(convM,x,y, attractors="any"))
+  print(is.stable(multConvM,x,y, attractors="any"))
 }
 
 if(testATFOI){
@@ -98,10 +120,17 @@ if(testATFOI){
 }
 
 if(testAGTSA){
-  #print(allGoToSameAttractor(divM,1,1))
-  #print(allGoToSameAttractor(convM,1,1))
-  print(allGoToSameAttractor(divM,x,y))
-  print(allGoToSameAttractor(convM,x,y))
-  print(allGoToSameAttractor(multConvM,x,y))
+  multConvM+range+dsarrows(discretize=.2)+simattractors(discretize = .1)
+
+  sb=simbasins(discretize = 100)
+  multConvM+sb
+  multConvM+dspoint(1,1)
+
+  #print(is.stableOne(divM,1,1))
+  #print(is.stableOne(convM,1,1))
+  print(is.stable(divM,x,y,attractors="one"))
+  print(is.stable(convM,x,y,attractors="one"))
+  print(is.stable(multConvM,x,y,attractors="one"))
+  print(is.stable(multConvM,x,y,attractors="oneOffAxis"))
 }
 
