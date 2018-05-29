@@ -52,36 +52,27 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
     bound = FALSE,
     attractors = list(),
     attractorCoords = NULL,
-    grid = NULL,
     cols = cols,
     epsilon = epsilon,
     tolerance=tolerance,
-    X0 = NULL,
-    Y0 = NULL,
+    grid = NULL,
     attractors = NULL,
     on.bind = function(self, model) {
-      corners=model$range$corners(discretize=self$discretize, xlim=self$xlim, ylim=self$ylim)
-
-      self$X0 = corners$X0
-      self$Y0 = corners$Y0
-      self$grid = corners$grid
+      self$grid=model$range$corners(discretize=self$discretize, xlim=self$xlim, ylim=self$ylim)
       if(self$iters == 0)
         self$iters = Inf
       if(is.null(self$epsilon)){
-        if(is.null(self$discretize))
-          self$epsilon <- (model$range$discretize)^2 #May as well work in squared distances.
-        else
-          self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
+        self$epsilon <- (model$range$getDiscretize(self$discretize))^2
       }
       if(self$bound){
         warning("Determining attractors twice: this may result in duplicate points.")
       }
       self$bound <- TRUE
-      self$calcualte.attractors(model)
+      self$calculate.attractors(model)
     },
     calculate.attractors = function(self, model) {
       moved <- TRUE
-      images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$iters, self$initIters, self$tolerance)
+      images <- applyTillFixed(model, self$grid$X0, self$grid$Y0, self$stride, self$iters, self$initIters, self$tolerance)
       found <- 1
       points <- mapply(c,images$x, images$y, SIMPLIFY=FALSE)
       attractorCoords <- list(x=c(images$x[1]), y=c(images$y[1]))

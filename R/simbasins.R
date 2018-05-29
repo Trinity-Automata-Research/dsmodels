@@ -90,15 +90,10 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
     stride = stride,
     epsilon = epsilon,
     tolerance = tolerance,
-    X0 = NULL,
-    Y0 = NULL,
     missingCol = missingCol,
     ... = ...,
     on.bind = function(self, model) {
-      centers=model$range$centers(x=self$xlim, y=self$ylim, discretize=self$discretize)
-      self$X0 = centers$X0
-      self$Y0 = centers$Y0
-      self$grid <- centers$grid
+      self$grid <- model$range$centers(discretize=self$discretize,xlim=self$xlim, ylim=self$ylim)
       attractors <- Filter(
         function(x) { (is.dspoint(x)) && (x$attractor) },
         model$feature)
@@ -120,10 +115,7 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
         }
       }
       if(is.null(self$epsilon)){
-        if(is.null(self$discretize))
-          self$epsilon <- (model$range$discretize)^2 #May as well work in squared distances.
-        else
-          self$epsilon <- (self$discretize)^2 #May as well work in squared distances.
+        self$epsilon <- (model$range$getDiscretize(self$discretize))^2
       }
       self$bound <- TRUE
       self$calculate.basins(model)
@@ -132,17 +124,17 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
     calculate.basins = function(self, model) {
       if(is.null(self$iters)) {
         model$warnPeriodic = FALSE
-        colsMap <- mapply(findFixedPoint, self$X0, self$Y0,
+        colsMap <- mapply(findFixedPoint, self$grid$X0, self$grid$Y0,
                           MoreArgs=list(model=model, points=self$fps, tolerance=self$tolerance, eps=self$epsilon, stride=self$stride))
         if(model$warnPeriodic)
           warning("simbasins: some points appear to be periodic, or attractors not set properly.")
       } else if (is.infinite(iters)) {
-        images <- applyTillFixed(model, self$X0, self$Y0, self$stride, self$iters, initIters = 0, self$tolerance)
+        images <- applyTillFixed(model, self$grid$X0, self$grid$Y0, self$stride, self$iters, initIters = 0, self$tolerance)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
                           MoreArgs=list(points=self$fps, eps=self$epsilon))
       }
       else {
-        images <- model$apply(self$X0, self$Y0, self$iters, crop=FALSE, accumulate=FALSE)
+        images <- model$apply(self$grid$X0, self$grid$Y0, self$iters, crop=FALSE, accumulate=FALSE)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
                           MoreArgs=list(points=self$fps, eps=self$epsilon))
       }

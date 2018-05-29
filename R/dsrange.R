@@ -49,8 +49,6 @@ dsrange <- function(x,y,discretize = 0,
   dsproto(
     `_class` = "range",
     `_inherit` = facade,
-    X0 = NULL, Y0 = NULL,
-    grid = NULL,
     discretize = discretize,
     dims = 2, #originOffset = originOffset,
     appliedFun = list(),
@@ -66,12 +64,17 @@ dsrange <- function(x,y,discretize = 0,
            frame.plot = self$frame.plot)
     },
     #methods for creating grids
-    grid = function(self, discretize=NULL, xlim=NULL, ylim=NULL, center=FALSE){
-      if(is.null(discretize)||discretize==0){
+    getDiscretize = function(self, potential) {
+      if(is.null(potential)||potential==0){
         if(is.null(self$discretize)||self$discretize==0)
           stop("Either the range or the appropriate object must have a discretization parameter")
-        discretize=self$discretize
+        return(self$discretize)
+      } else {
+        return(potential)
       }
+    },
+    grid = function(self, discretize=NULL, xlim=NULL, ylim=NULL, center=FALSE){
+      disc = self$getDiscretize(discretize)
       if(is.null(xlim)){
         x=self$xlim
       } else {
@@ -83,24 +86,25 @@ dsrange <- function(x,y,discretize = 0,
         y=make.lims(ylim)
       }
       if(center){
-        gx = seq(min(x)+(discretize/2),max(x), by = discretize)
-        gy = seq(min(y)+(discretize/2),max(y), by = discretize)
+        midX = x[[1]] + (disc/2)
+        midY = y[[1]] + (disc/2)
+        if((midX > x[[2]]) || (midY > y[[2]])) {
+          stop("Discretization parameter larger than the range limits.")
+        }
+        gx = seq(midX,x[[2]], by = disc)
+        gy = seq(midY,y[[2]], by = disc)
       } else{
-        gx = seq(min(x),max(x), by = discretize)
-        gy = seq(min(y),max(y), by = discretize)
+        gx = seq(x[[1]],x[[2]], by = disc)
+        gy = seq(y[[1]],y[[2]], by = disc)
       }
       N = as.matrix(expand.grid(gx,gy))
-      e <- new.env()
-      e$X0 = N[,1]
-      e$Y0 = N[,2]
-      e$grid = list(x=gx, y=gy)
-      e
+      list(x=gx, y=gy,X0 = N[,1],Y0 = N[,2])
     },
     corners = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
-      self$grid(self, discretize, xlim, ylim)
+      self$grid(discretize=discretize, xlim=xlim, ylim=ylim)
     },
     centers = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
-      self$grid(self, discretize, xlim, ylim, center=TRUE)
+      self$grid(discretize=discretize, xlim=xlim, ylim=ylim, center=TRUE)
     }
 
   )

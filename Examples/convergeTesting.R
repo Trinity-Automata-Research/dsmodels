@@ -1,10 +1,17 @@
 #method to take list of points and test if the points diverge
 #works with pairs of nubers instead of dspoints
+#goals: add a range where if a point leaves, it is considered divergent,
+#       add init iters,   periodicity checking
+
 library(dsmodels)
 
 testISA=FALSE
 testATFOI=FALSE
 testISO=TRUE
+
+finite.points = function(points) {
+  all(is.finite(unlist(points)))
+}
 
 #attractors can be "any", "one","one off axis"
 is.stable = function(model, x, y, attractors="any", stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps),epsilon=100*tolerance){
@@ -26,7 +33,7 @@ is.stableAny = function(model, x, y, stride=8, maxIters=Inf, tolerance=sqrt(.Mac
   counter <- 0
   while (counter<maxIters) {
     tmp <- model$apply(xp,yp,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(any(is.infinite(unlist(tmp))))
+    if(!finite.points(tmp))
       return(FALSE)
     else if(all(abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < tolerance))
       return(TRUE)
@@ -45,7 +52,7 @@ applyTillFixedOrInf = function(model, x, y, stride=8, maxIters=Inf, tolerance=sq
   moving <- TRUE
   while (moving &&counter<maxIters) {
     tmp <- model$apply(xp,yp,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(any(is.infinite(unlist(tmp))) || all(abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < tolerance))
+    if(!finite.points(tmp) || all(abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < tolerance))
       moving <- FALSE
     xp <- tmp[[1]]
     yp <- tmp[[2]]
@@ -55,19 +62,27 @@ applyTillFixedOrInf = function(model, x, y, stride=8, maxIters=Inf, tolerance=sq
   list(x=xp,y=yp)
 }
 
-is.stableOne = function(model, x, y, stride=8, maxIters=Inf, tolerance=sqrt(.Machine$double.eps), epsilon=100*tolerance, filterAxis=FALSE){
+#checks that everything converges to a singel point
+is.stableOne = function(model, x, y, stride=8, maxIters=Inf,
+                        tolerance=sqrt(.Machine$double.eps),
+                        epsilon=100*tolerance, filterAxis=FALSE){
   points=applyTillFixedOrInf(model,x,y,stride,maxIters,tolerance)
   x=points$x
   y=points$y
   #take out all points on the axis
+  #potentialy having an attractor on the axis should return false.
+  #this would check that there is one attractor that is interior,
+  #not that there is only one attractor and it is interior.
+  #changing is simple- if(any(filterAxis)) return(FALSE)
+
   if(filterAxis){
-    onAxis=abs(x)<tolerance | abs(y)<tolerance
+    onAxis=abs(x)<epsilon | abs(y)<epsilon
     x=x[!onAxis]
     y=y[!onAxis]
   }
   anchorX=x[1]
   anchorY=y[1]
-  all(is.finite(unlist(points)))&& all((x-anchorX)^2+(y-anchorY)^2 < epsilon)
+  finite.points(points) && all((x-anchorX)^2+(y-anchorY)^2 < epsilon)
 }
 
 
@@ -119,10 +134,10 @@ if(testATFOI){
   print(applyTillFixedOrInf(multConvM,1,1))
 }
 
-if(testAGTSA){
-  multConvM+range+dsarrows(discretize=.2)+simattractors(discretize = .1)
+if(testISO){
+  multConvM+range+dsarrows(discretize=.2)+simattractors(discretize = 1)
 
-  sb=simbasins(discretize = 100)
+  sb=simbasins(discretize = 0.01)
   multConvM+sb
   multConvM+dspoint(1,1)
 
