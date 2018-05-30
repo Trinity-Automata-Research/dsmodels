@@ -58,7 +58,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
     tmp <- model$apply(x,y,iters=stride,accumulate=FALSE,crop=FALSE)
     if(!in.range(tmp[[1]],tmp[[2]],model,rangeMult))
       return(FALSE)
-    if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < tolerance))
+    if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < stride*tolerance))
       moving <- FALSE
     x <- tmp[[1]]
     y <- tmp[[2]]
@@ -100,57 +100,43 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
 
 }
 
-
-is.periodic = function(model, x, y,
-                       stride=8, initIters=100, maxPeriod=128, numTries=1,
-                       tolerance=sqrt(.Machine$double.eps),epsilon=sqrt(tolerance),
-                       rangeMult=0){
-  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
-  tryCounter <- 0
-  while(tryCounter < numTries){
-    counter <- 0
-    moving <- TRUE
-    while (moving &&counter<initIters) {
-      tmp <- model$apply(x,y,iters=stride,accumulate=FALSE,crop=FALSE)
-      if(!in.range(tmp[[1]],tmp[[2]],model,rangeMult)){
-        print("no period found, diverged")
-        return(FALSE)
-      }
-      if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < tolerance))
-        moving <- FALSE
-      x <- tmp[[1]]
-      y <- tmp[[2]]
-      counter = counter+stride
-    }
-    #periodic checking
-    candidates=model$apply(x,y,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
-    period=FALSE
-    counter=0
-    while(counter<maxPeriod && !period){
-      if(abs((x-candidates[[counter+2]][[1]])^2 + (y-candidates[[counter+2]][[2]])^2) < tolerance)
-        period=TRUE
-      counter=counter+1
-    }
-    if(period){
-      if(counter==1){
-        print("found a fixed point")
-        return(FALSE)
-      }
-      else{
-        print(paste("found a period of length", counter))
-        #print(candidates[1:counter+1])
-        return(TRUE)
-      }
-    }
-    tryCounter=tryCounter+1
-    x=candidates[[maxPeriod+1]]$x
-    y=candidates[[maxPeriod+1]]$y
-  }
-  print("no period found, still moving after initIters*stride*numTries applications") #caculate that and give them an actual number?
-  FALSE
+sqdist <- function(a, b) {
+  return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
-
+find.period = function(model, x, y,
+                       initIters=1000, maxPeriod=128, numTries=1,
+                       tolerance=sqrt(.Machine$double.eps),epsilon=sqrt(tolerance), #should be using epsilon instead?
+                       rangeMult=0){
+  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(model$range)){
+    stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
+  }
+  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
+  for(i in 1:numTries) {
+    startPoint <- model$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
+    if(!in.range(startPoint$x,startPoint$y,model,rangeMult)){
+      #print("no period found, diverged")
+      return(FALSE)
+    }
+    candidates=model$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+    period=FALSE
+    i=1
+    while(i<maxPeriod && !period){
+      ithPoint=candidates[[i+1]]
+      if(sqdist(startPoint, ithPoint) < tolerance)
+        period=TRUE
+      else
+        i=i+1
+    }
+    if(period){
+      return(i)
+    }
+    x=ithPoint$x
+    y=ithPoint$y
+  }
+  warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
+  return(FALSE)
+}
 
 #testing
 if(TRUE){
@@ -198,8 +184,11 @@ if(testISA){
   #print(is.stable(convM,1,1, attractors="any"))
 
   #i should find a system that converges on some ranges and diverges on others
+  print("Testing any stability for divM")
   print(is.stable(divM,x,y, attractors="any"))
+  print("Testing any stability for convM")
   print(is.stable(convM,x,y, attractors="any"))
+  print("Testing any stability for multConvM")
   print(is.stable(multConvM,x,y, attractors="any"))
 }
 
@@ -214,6 +203,7 @@ if(testISO){
   #print(is.stableOne(convM,1,1))
   #system.time((is.stable(divM,x,y,attractors="one")))
   #system.time((is.stable(divM,x,y,attractors="one")))
+  print("testing single-point stability")
   print(is.stable(divM,x,y,attractors="one",rangeMult = 3))
   print(is.stable(divM,x,y,attractors="one"))
   print(is.stable(convM,x,y,attractors="one"))
@@ -222,23 +212,50 @@ if(testISO){
   print(is.stable(periodicM,c(2),c(2),attractors="one"))
 }
 }
-
+#testPeriod=FALSE
 if(testPeriod){
-  is.periodic(convM,2,2)
-  is.periodic(divM,2,2)
-  is.periodic(divM,100,100, initIters=1000, numTries = 8)
-  is.periodic(periodicM,2,2)
+  print("testing periodicity")
+
+  #fixed point
+  print("Convm, 2,2 - should be fixed")
+  print(find.period(convM,2,2))
+  #inconclusive
+  print("Divm, 2,2")
+  print(find.period(divM,2,2))
+  #limit the range
+  print("Divm, 2,2 with range bounding")
+  print(find.period(divM,2,2,rangeMult=3))
+  #increase the iterations
+  print("Divm, 100,100 with 8 tries of 1k iters")
+  print(find.period(divM,100,100, initIters=1000, numTries = 8))
+  #find a period of 2
+  print("periodicM 2,2, should be 2")
+  print(find.period(periodicM,2,2))
   #multi periodic
+  #try to find systems with periods that arent a power of two
   i=function(x,y) list(1/(x^3-2*x^2-3*x+1),y)
   multiPeriodicM=dsmodel(i)
-  is.periodic(multiPeriodicM, initIters=10000,.8,.8)
-  #this function gives a problem. it dosent stop, but also dosent have a period
-  #i=function(x,y) list(1/(x^3-2*x^2-2*x+1),y)
-  #multiPeriodicM=dsmodel(i)
-  #is.periodic(multiPeriodicM, initIters=100000,.8,.8)
+  print(find.period(multiPeriodicM, initIters=1000,.8,.8))
+
   i=function(x,y) list(x/(-2*x^3-x^2+x),y)
   multiPeriodicM=dsmodel(i)
-  is.periodic(multiPeriodicM, initIters=100000,.8,.8)
+  print(find.period(multiPeriodicM, initIters=1000,.8,.8))
 
+
+
+  #this function takes a long time to find its period and then dosent agree.
+  #i think epsilon and tolerance do weird things with rounding preciscion
+
+  i=function(x,y) list(1/(x^3-2*x^2-2*x+1),y)
+  multiPeriodicM=dsmodel(i)
+  multiPeriodicM+dsrange(c(-4,4), c(-4,4))
+  multiPeriodicM + dspoint(1.11,2,iters=10,col = "yellow", image = "blue")
+  multiPeriodicM+dsarrows(discretize=0.5)
+  print("Multiperiodicm checking")
+  tol=sqrt(sqrt(.Machine$double.eps))*10
+  print(find.period(multiPeriodicM,.8,.8, tolerance = tol))
+  print(find.period(multiPeriodicM,-0.414963938818,.8, initIters=100000, tolerance = tol))
+  print(find.period(multiPeriodicM, initIters=150000,numTries=10,.8,.8, tolerance = tol))
+  print(find.period(multiPeriodicM, initIters=100000,numTries=10,.8,.8, tolerance = tol))
+  print(find.period(multiPeriodicM, initIters=10000,numTries=10,.8,.8, tolerance = tol))
 }
-
