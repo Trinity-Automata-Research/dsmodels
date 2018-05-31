@@ -13,7 +13,7 @@ finite.points = function(points) {
   all(is.finite(unlist(points)))
 }
 
-in.range = function(x,y, model, rangeMult=0){
+has.diverged = function(x,y, model, rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
     finite.points(c(x,y))
   else
@@ -56,7 +56,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
   moving <- TRUE
   while (moving &&counter<maxIters) {
     tmp <- model$apply(x,y,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(!in.range(tmp[[1]],tmp[[2]],model,rangeMult))
+    if(!has.diverged(tmp[[1]],tmp[[2]],model,rangeMult))
       return(FALSE)
     if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < stride*tolerance))
       moving <- FALSE
@@ -104,26 +104,26 @@ sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
-find.period = function(model, x, y,
+find.period = function(self, x, y,
                        initIters=1000, maxPeriod=128, numTries=1,
-                       tolerance=sqrt(.Machine$double.eps),epsilon=sqrt(tolerance), #should be using epsilon instead?
+                       epsilon=sqrt(sqrt(.Machine$double.eps)), #should be using epsilon instead?
                        rangeMult=0){
-  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(model$range)){
+  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
     stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
   }
   #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
   for(i in 1:numTries) {
-    startPoint <- model$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-    if(!in.range(startPoint$x,startPoint$y,model,rangeMult)){
+    startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
+    if(!has.diverged(startPoint$x,startPoint$y,self,rangeMult)){
       #print("no period found, diverged")
       return(FALSE)
     }
-    candidates=model$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+    candidates=self$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
     period=FALSE
     i=1
     while(i<maxPeriod && !period){
       ithPoint=candidates[[i+1]]
-      if(sqdist(startPoint, ithPoint) < tolerance)
+      if(sqdist(startPoint, ithPoint) < epsilon)
         period=TRUE
       else
         i=i+1
@@ -253,9 +253,9 @@ if(testPeriod){
   multiPeriodicM+dsarrows(discretize=0.5)
   print("Multiperiodicm checking")
   tol=sqrt(sqrt(.Machine$double.eps))*10
-  print(find.period(multiPeriodicM,.8,.8, tolerance = tol))
-  print(find.period(multiPeriodicM,-0.414963938818,.8, initIters=100000, tolerance = tol))
-  print(find.period(multiPeriodicM, initIters=150000,numTries=10,.8,.8, tolerance = tol))
-  print(find.period(multiPeriodicM, initIters=100000,numTries=10,.8,.8, tolerance = tol))
-  print(find.period(multiPeriodicM, initIters=10000,numTries=10,.8,.8, tolerance = tol))
+  print(find.period(multiPeriodicM,.8,.8, epsilon = tol))
+  print(find.period(multiPeriodicM,-0.414963938818,.8, initIters=100000, epsilon = tol))
+  print(find.period(multiPeriodicM, initIters=150000,numTries=10,.8,.8, epsilon = tol))
+  print(find.period(multiPeriodicM, initIters=100000,numTries=10,.8,.8, epsilon = tol))
+  print(find.period(multiPeriodicM, initIters=10000,numTries=10,.8,.8, epsilon = tol))
 }

@@ -1,4 +1,5 @@
-#find.period but it returns a list of points
+#get.fps is find.period but it returns a list of points instead of the amount of points
+#currently its some insanely nested list. probably can be cleaned up
 #make a 1d bif diagram for 1d mod
 
 
@@ -32,7 +33,7 @@ sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
-find.period = function(model, x, y,
+get.fps = function(model, x, y,
                        initIters=1000, maxPeriod=128, numTries=1,
                        tolerance=sqrt(.Machine$double.eps),epsilon=sqrt(tolerance), #should be using epsilon instead?
                        rangeMult=0){
@@ -44,7 +45,7 @@ find.period = function(model, x, y,
     startPoint <- model$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
     if(!in.range(startPoint$x,startPoint$y,model,rangeMult)){
       #print("no period found, diverged")
-      return(list())
+      return(list(list(x=NA,y=NA)))
     }
     candidates=model$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
     period=FALSE
@@ -63,7 +64,7 @@ find.period = function(model, x, y,
     y=ithPoint$y
   }
   warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
-  return(list())
+  return(list(list(x=NA,y=NA)))
 }
 
 
@@ -77,7 +78,7 @@ g = function(a=.5){
 
 evalPoint=function(a){
   m<-dsmodel(g(a),display = FALSE)
-  period=find.period(m,.5,.5,numTries = 3,tolerance=.001)
+  period=get.fps(m,.5,.5,numTries = 3,maxPeriod = 1024)
   period
 }
 
@@ -86,9 +87,14 @@ fps=mapply(evalPoint,as)
 z=matrix(NA,length(as),length(xs))
 #using for for now
 for(i in 1:length(fps)){
-  z[i,1/xdisc*mapply(dist.origin,fps[[i]])]=1
-  z[i,-1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
-  z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  #for 2d systems, find dist origin
+  #z[i,1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  #z[i,-1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  #z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  #for 1d models, just the xval of the fixed point.
+  z[i,1+1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
+  z[i,1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
+  #z[i,-1+1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
 }
 
 image(as,xs, z)
