@@ -44,19 +44,11 @@
 dsrange <- function(x,y,discretize = 0,
                     #originOffset = c(-.1,-.1),
                     renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
-  if(length(x) == 1)
-    xlim <- c(0,x)
-  else
-    xlim <- c(min(x),max(x))
-  if(length(y) == 1)
-    ylim <- c(0,y)
-  else
-    ylim <- c(min(y),max(y))
+  xlim <- make.lims(x)
+  ylim <- make.lims(y)
   dsproto(
     `_class` = "range",
     `_inherit` = facade,
-    X0 = NULL, Y0 = NULL,
-    grid = NULL,
     discretize = discretize,
     dims = 2, #originOffset = originOffset,
     appliedFun = list(),
@@ -64,24 +56,66 @@ dsrange <- function(x,y,discretize = 0,
     rendered = FALSE,
     axes = axes,
     frame.plot = frame.plot,
-    on.bind = function(self, model) {
-      if(self$discretize != 0)
-      {
-        gx = seq(min(self$xlim),max(self$xlim), by = self$discretize)
-        gy = seq(min(self$ylim),max(self$ylim), by = self$discretize)
-        N = as.matrix(expand.grid(gx,gy))
-        self$X0 = N[,1]
-        self$Y0 = N[,2]
-        self$grid = list(x=gx, y=gy)
-      }
-    },
+    #visualization methods
     render = function(self, model) {
       self$rendered = TRUE
       plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
            xlab = "", ylab = "", xlim = self$xlim, ylim = self$ylim,
            frame.plot = self$frame.plot)
+    },
+    #methods for creating grids
+    getDiscretize = function(self, potential) {
+      if(is.null(potential)||potential==0){
+        if(is.null(self$discretize)||self$discretize==0)
+          stop("Either the range or the appropriate object must have a discretization parameter")
+        return(self$discretize)
+      } else {
+        return(potential)
+      }
+    },
+    grid = function(self, discretize=NULL, xlim=NULL, ylim=NULL, center=FALSE){
+      disc = self$getDiscretize(discretize)
+      if(is.null(xlim)){
+        x=self$xlim
+      } else {
+        x=make.lims(xlim)
+      }
+      if(is.null(ylim)){
+        y=self$ylim
+      } else {
+        y=make.lims(ylim)
+      }
+      if(center){
+        midX = x[[1]] + (disc/2)
+        midY = y[[1]] + (disc/2)
+        if((midX > x[[2]]) || (midY > y[[2]])) {
+          stop("Discretization parameter larger than the range limits.")
+        }
+        gx = seq(midX,x[[2]], by = disc)
+        gy = seq(midY,y[[2]], by = disc)
+      } else{
+        gx = seq(x[[1]],x[[2]], by = disc)
+        gy = seq(y[[1]],y[[2]], by = disc)
+      }
+      N = as.matrix(expand.grid(gx,gy))
+      list(x=gx, y=gy,X0 = N[,1],Y0 = N[,2])
+    },
+    corners = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
+      self$grid(discretize=discretize, xlim=xlim, ylim=ylim)
+    },
+    centers = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
+      self$grid(discretize=discretize, xlim=xlim, ylim=ylim, center=TRUE)
     }
+
   )
+}
+
+make.lims <- function(x){
+  if(length(x) == 1)
+    lim <- c(0,x)
+  else
+    lim <- c(min(x),max(x))
+  lim
 }
 
 #' Reports whether x is a range.

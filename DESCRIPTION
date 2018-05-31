@@ -32,7 +32,8 @@ Collate:
     'dspoint.R'
     'dsrange.R'
     'dsregion.R'
-    'dssimulation.R'
+    'simattractors.R'
+    'simbasins.R'
     'features.R'
     'modelConstruction.R'
 Imports:

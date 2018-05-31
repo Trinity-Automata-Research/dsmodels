@@ -74,85 +74,43 @@ dsarrows <- function(
       X1 = NULL, Y1 = NULL,
       X2 = NULL, Y2 = NULL,
       length = length,
-      arrowsComputed = FALSE,
       iters = iters,
       col = col,
       type = type,
       angle= angle,
       discretize = discretize,
-      selfDiscretized = !is.null(discretize),
       crop = crop,
       head.length = head.length,
       ... = ...,
-      # getLims = function(self,model) {
-      #   if(is.null(self$X0))
-      #     self$X0 = model$range$X0
-      #   if(is.null(self$Y0))
-      #     self$Y0 = model$range$Y0
-      # },
-      computeArrows = function(self, model) {
-        if(is.null(self$discretize) || is.null(self$X0) || is.null(self$Y0) )
-          stop("Critical error in dsarrows: attempting to compute arrows but discretization failed. Please notify developers.")
-        if(!self$arrowsComputed) {
-          tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, self$iters, crop = self$crop)
-          self$X1 <- tmp$x
-          self$Y1 <- tmp$y
-          if((length(self$X0) > 1500 || length(self$Y0) > 1500))
-            warning("arrows: We suggest coarser discretization")
-          self$arrowsComputed <- TRUE
-          if(is.null(self$length))
-          {
-            self$length <- self$scale*self$discretize
-          }
-          L = self$length
-          a=(self$Y1-self$Y0)/(self$X1-self$X0)
-          b=self$Y0-a*self$X0
-          self$X2 <- self$X0+sign((self$X1-self$X0))*L/sqrt(a^2+1)
-          self$Y2 <- a*self$X2+b
-        }
-      },
       on.bind = function(self, model) {
-        self$rediscretize(model)
+        corners=model$range$corners(discretize=self$discretize)
+        self$X0 = corners$X0
+        self$Y0 = corners$Y0
+        if(is.null(self$length))
+        {
+          self$length <- self$scale*model$range$getDiscretize(self$discretize)
+        }
         self$computeArrows(model)
         self$bound=TRUE
+      },
+      computeArrows = function(self, model) {
+        tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, self$iters, crop = self$crop)
+        self$X1 <- tmp$x
+        self$Y1 <- tmp$y
+        if((length(self$X0) > 1500 || length(self$Y0) > 1500))
+          warning("arrows: We suggest coarser discretization")
+        a=(self$Y1-self$Y0)/(self$X1-self$X0)
+        b=self$Y0-a*self$X0
+        self$X2 <- self$X0+sign((self$X1-self$X0))*self$length/sqrt(a^2+1)
+        self$Y2 <- a*self$X2+b
       },
       render = function(self, model) {
         if(!self$bound)
           stop("Critical error. Attempting to render before object is bound. Please notify developers.")
-        if(!self$arrowsComputed)
-          stop("Critical error. Attempting to render dsarrows, but arrows were not computed.")
         Arrows(self$X0, self$Y0,
                self$X2, self$Y2,
                col = self$col, arr.length = self$head.length,
                angle = self$angle, arr.type = self$type, ... = self$...)
-      },
-      recalculate = function(self, model) {
-        self$X1 = NULL
-        self$X2 = NULL
-        self$Y1 = NULL
-        self$Y2 = NULL
-        self$arrowsComputed = FALSE
-        self$on.bind(model)
-      },
-      rediscretize = function(self, model) { # if recalculate needed, include model
-        if(self$selfDiscretized){
-          x <- model$range$xlim
-          y <- model$range$ylim
-
-          gx = seq(min(x),max(x), by = self$discretize)
-          gy = seq(min(y),max(y), by = self$discretize)
-          N = as.matrix(expand.grid(gx,gy))
-
-          self$X0 = N[,1]
-          self$Y0 = N[,2]
-        }
-        else{
-          if(model$range$discretize == 0)
-            stop("dsarrows: Either the dsrange or the dsarrows have to have a non-empty discretization parameter.")
-          self$X0 = model$range$X0
-          self$Y0 = model$range$Y0
-          self$discretize = model$range$discretize
-        }
       }
     )
 }

@@ -86,19 +86,15 @@ dsdots <- function(col = "black",image = "", iters = 1,
     `_class` = "dots", `_inherit` = parent,
     ... = ...,
     cex = size,
-    X0 = NULL, Y0 = NULL,
     col = col,
     iters = iters,
-    dotsComputed = FALSE,
     discretize = discretize,
-    selfDiscretized = !is.null(discretize),
     toPlot = c(), #when filled should be a list
     crop = crop,
     on.bind = function(self, model) {
       self$bound = TRUE
-      self$dotsComputed <- TRUE
-      self$rediscretize(model)
-      self$toPlot <- model$apply(self$X0, self$Y0, self$iters, crop = self$crop)
+      corners=model$range$corners(discretize=self$discretize)
+      self$toPlot <- model$apply(corners$X0, corners$Y0, self$iters, crop = self$crop)
     },
     render = function(self,model) {
       for(i in 1:(self$iters)){
@@ -109,27 +105,7 @@ dsdots <- function(col = "black",image = "", iters = 1,
           ... = self$...
         )
       }
-    },
-    rediscretize = function(self, model) {
-      if(self$selfDiscretized) {
-      	x <- model$range$xlim
-      	y <- model$range$ylim
-
-      	gx = seq(min(x),max(x), by = self$discretize)
-      	gy = seq(min(y),max(y), by = self$discretize)
-      	N = as.matrix(expand.grid(gx,gy))
-
-      	self$X0 = N[,1]
-      	self$Y0 = N[,2]
-      }
-	  else {
-	    if(model$range$discretize == 0)
-	      stop("dsdots: Either the dsrange or the dsdots have to have a non-empty discretization parameter.")
-        self$X0 = model$range$X0
-        self$Y0 = model$range$Y0
-        self$discretize = model$range$discretize
-	  }
-	}
+    }
   )
 }
 

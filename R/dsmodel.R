@@ -83,6 +83,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     visualization = c(),
     dots = c(),
     autoDisplay = display,
+    properNames = NULL,
     print = function(self, ...) {
       invisible(self)
     },
@@ -90,16 +91,20 @@ dsmodel <- function(fun, title="", display = TRUE) {
     apply = function(self, x, y, iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
-      tmp = self$fun(x[1], y[1])
-      if(length(tmp) != 2)
-        stop("dsmodel: Please make sure your function outputs a list with 2 values. (for example: list(x+1,y^2)")
-      if(is.element("x", names(tmp)) && is.element("y", names(tmp)))
-        properNames = TRUE
-      else {
-        properNames = FALSE
-        if(!is.null(names(tmp)))
-          warning("dsmodel function has outputs names that are not \"x\" and \"y\". Assuming first output is x, and second is y.")
+      if(is.null(self$properNames))
+      {
+        tmp = self$fun(x[1], y[1])
+        if(length(tmp) != 2)
+          stop("dsmodel: Please make sure your function outputs a list with 2 values. (for example: list(x+1,y^2)")
+        if(is.element("x", names(tmp)) && is.element("y", names(tmp)))
+          self$properNames = TRUE
+        else {
+          self$properNames = FALSE
+          if(!is.null(names(tmp)))
+            warning("dsmodel function has outputs names that are not \"x\" and \"y\". Assuming first output is x, and second is y.")
+        }
       }
+      properNames <- self$properNames
       if(accumulate) {
         iterAccum = vector("list",iters+1)
         startvals = list(x=x, y=y)
@@ -133,12 +138,14 @@ dsmodel <- function(fun, title="", display = TRUE) {
           if(crop){
             tmp <- self$cropframe(tmp)
           }
-          if(!properNames)
-            names(tmp) <- c("x","y")
-          x = tmp$x
-          y = tmp$y
-          x = tmp[[1]]
-          y = tmp[[2]]
+          if(!properNames) {
+            x = tmp[[1]]
+            y = tmp[[2]]
+          }
+          else {
+            x = tmp$x
+            y = tmp$y
+          }
         }
         if(!properNames)
           names(tmp) <- c("x","y")
@@ -408,7 +415,7 @@ NaNRemove <- function(twoDList){
     )
   }
 }
-
+#can this just be replaced with > k[is.finite(k)&is.finite(r)]? (yes. why god why)
 
 #' Abstract a Function which does not Crash Upon Failure
 #'
