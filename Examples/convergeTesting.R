@@ -9,15 +9,19 @@ testISA=FALSE
 testISO=FALSE
 testPeriod=TRUE
 
+sqdist <- function(a, b) {
+  return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
+}
+
 finite.points = function(points) {
   all(is.finite(unlist(points)))
 }
 
-has.diverged = function(x,y, model, rangeMult=0){
+has.diverged = function(self,x,y,  rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
     finite.points(c(x,y))
   else
-    all(x < rangeMult*model$range$xlim[[2]] & y < rangeMult*model$range$ylim[[2]])
+    all(x < rangeMult*self$range$xlim[[2]] & y < rangeMult*self$range$ylim[[2]])
 }
 
 
@@ -56,7 +60,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
   moving <- TRUE
   while (moving &&counter<maxIters) {
     tmp <- model$apply(x,y,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(!has.diverged(tmp[[1]],tmp[[2]],model,rangeMult))
+    if(!has.diverged(model,tmp[[1]],tmp[[2]],rangeMult))
       return(FALSE)
     if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < stride*tolerance))
       moving <- FALSE
@@ -100,9 +104,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
 
 }
 
-sqdist <- function(a, b) {
-  return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
-}
+
 
 
 getxy = function(x=NaN,y=NaN,point=NaN){
@@ -130,7 +132,7 @@ find.period = function(self, x, y,
   #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
   for(i in 1:numTries) {
     startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-    if(!has.diverged(startPoint$x,startPoint$y,self,rangeMult)){
+    if(!has.diverged(self,startPoint$x,startPoint$y,rangeMult)){
       #print("no period found, diverged")
       return(FALSE)
     }
