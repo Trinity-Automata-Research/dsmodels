@@ -104,6 +104,22 @@ sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
+
+getxy = function(x=NaN,y=NaN,point=NaN){
+  if(is.vector(x) || is.environment(x)){
+    point=x
+    x=NaN
+  }
+  if(!is.nan(x) && !is.nan(y))
+    return(list(x=x,y=y))
+  else if(is.vector(point))
+    return(list(x=point[[1]],y=point[[2]]))
+  else if(is.dspoint(point))
+    return(list(x=point$x, y=point$y))
+  else
+    stop("valid input types are x=scalar and y=scalar, point=vector, or point=dspoint")
+}
+
 find.period = function(self, x, y,
                        initIters=1000, maxPeriod=128, numTries=1,
                        epsilon=sqrt(sqrt(.Machine$double.eps)), #should be using epsilon instead?
