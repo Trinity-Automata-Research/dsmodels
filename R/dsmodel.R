@@ -313,8 +313,21 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y, initIters=1000, maxPeriod=128, numTries=1,
+		find.period= function(self, x, y=NULL, initIters=1000, maxPeriod=128, numTries=1,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
+		  if(!(!is.null(y) && length(x)==1 && length(y)==1)){
+		    if(is.dspoint(x)){
+		      y=x$y
+		      x=x$x
+		    }
+		    else if(is.vector(x) && length(x)==2){
+		      y=x[[2]]
+		      x=x[[1]]
+		    }
+		    else {
+	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
+		    }
+		  }
 		  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
 		    stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
 		  }

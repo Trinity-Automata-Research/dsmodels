@@ -33,21 +33,21 @@ sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
-get.fps = function(model, x, y,
+get.fps = function(self, x, y,
                        initIters=1000, maxPeriod=128, numTries=1,
                        tolerance=sqrt(.Machine$double.eps),epsilon=sqrt(tolerance), #should be using epsilon instead?
                        rangeMult=0){
-  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(model$range)){
+  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
     stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
   }
   #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
   for(i in 1:numTries) {
-    startPoint <- model$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-    if(!in.range(startPoint$x,startPoint$y,model,rangeMult)){
+    startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
+    if(!in.range(startPoint$x,startPoint$y,self,rangeMult)){
       #print("no period found, diverged")
       return(list(list(x=NA,y=NA)))
     }
-    candidates=model$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+    candidates=self$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
     period=FALSE
     i=1
     while(i<maxPeriod && !period){

@@ -107,21 +107,18 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
 
 
 
-getxy = function(x=NaN,y=NaN,point=NaN){
-  if(is.vector(x) || is.environment(x)){
-    point=x
-    x=NaN
-  }
-  if(!is.nan(x) && !is.nan(y))
+getxy = function(x=NULL,y=NULL){
+  if(!is.null(y))
     return(list(x=x,y=y))
-  else if(is.vector(point))
-    return(list(x=point[[1]],y=point[[2]]))
-  else if(is.dspoint(point))
-    return(list(x=point$x, y=point$y))
+  else if(is.vector(x))
+    return(list(x=x[[1]],y=x[[2]]))
+  else if(is.dspoint(x))
+    return(list(x=x$x, y=x$y))
   else
-    stop("valid input types are x=scalar and y=scalar, point=vector, or point=dspoint")
+    stop("expected input formats are two scalars, a vector of length two or a dspoint")
 }
 
+#in dsmodel
 find.period = function(self, x, y,
                        initIters=1000, maxPeriod=128, numTries=1,
                        epsilon=sqrt(sqrt(.Machine$double.eps)), #should be using epsilon instead?
