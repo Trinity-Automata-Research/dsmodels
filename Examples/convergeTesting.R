@@ -8,15 +8,15 @@ library(dsmodels)
 testISA=FALSE
 testISO=FALSE
 testPeriod=TRUE
-
+#in dspoint
 sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
-
+#in dspoint
 finite.points = function(points) {
   all(is.finite(unlist(points)))
 }
-
+#in dsmodel
 has.diverged = function(self,x,y,  rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
     finite.points(c(x,y))
@@ -106,7 +106,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
 
 
 
-
+#in dsmodel's find period
 getxy = function(x=NULL,y=NULL){
   if(!is.null(y))
     return(list(x=x,y=y))
