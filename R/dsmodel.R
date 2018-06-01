@@ -81,7 +81,6 @@ dsmodel <- function(fun, title="", display = TRUE) {
     background = c(),
     feature = c(),
     visualization = c(),
-    dots = c(),
     autoDisplay = display,
     properNames = NULL,
     print = function(self, ...) {
