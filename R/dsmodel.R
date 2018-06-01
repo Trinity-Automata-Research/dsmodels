@@ -286,6 +286,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
         warning("dsmodel$basins: simbasins did not find an attractor for every point.")
       res
 		},
+		has.diverged = function(self, x, y, rangeMult=0){
+		  if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
+		    finite.points(c(x,y))
+		  else
+		    all(x < rangeMult*self$range$xlim[[2]] & y < rangeMult*self$range$ylim[[2]])
+		},
 		sim.is.stable = function(self) {
 		  attractors <- Filter(
 		    function(x) {
@@ -306,7 +312,52 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    basin$recalculate(self)
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
+		},
+		find.period= function(self, x, y=NULL, initIters=1000, maxPeriod=128, numTries=1,
+                          epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
+		  if(!(!is.null(y) && length(x)==1 && length(y)==1)){
+		    if(is.dspoint(x)){
+		      y=x$y
+		      x=x$x
+		    }
+		    else if(is.vector(x) && length(x)==2){
+		      y=x[[2]]
+		      x=x[[1]]
+		    }
+		    else {
+	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
+		    }
+		  }
+		  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
+		    stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
+		  }
+		  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
+		  for(i in 1:numTries) {
+		    startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
+		    if(!self$has.diverged(startPoint$x,startPoint$y,rangeMult)){
+		      #print("no period found, diverged")
+		      return(FALSE)
+		    }
+		    candidates=self$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+		    period=FALSE
+		    i=1
+		    while(i<maxPeriod && !period){
+		      ithPoint=candidates[[i+1]]
+		      if(sqdist(startPoint, ithPoint) < epsilon)
+		        period=TRUE
+		      else
+		        i=i+1
+		    }
+		    if(period){
+		      return(i)
+		    }
+		    x=ithPoint$x
+		    y=ithPoint$y
+		  }
+		  warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
+		  return(FALSE)
 		}
+
   )
 }
 #' Checks if object is a mode.
