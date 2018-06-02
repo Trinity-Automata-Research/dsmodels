@@ -13,14 +13,13 @@
 #' @section Calling methods in a parent:
 #'
 #' To explicitly call a methods in a parent, use
-#' \code{dsproto_parent(Parent, self)}.
+#' \code{dsproto_parent(Parent, self)} or \code{self$parent}.
 #'
 #' @param _class Class name to assign to the object. This is stored as the class
 #'   attribute of the object. If \code{NULL} (the default), no class name will
 #'   be added to the object.
 #' @param _inherit dsproto object to inherit from. If \code{NULL}, don't inherit
 #'   from any object.
-#' @param parent,self Access parent class \code{parent} of object \code{self}.
 #' @param ... A list of members in the dsproto object.
 #' @examples
 #' #Create a class called "dog"
@@ -63,6 +62,7 @@ dsproto <- function(`_class` = NULL, `_inherit` = NULL, ...) {
       stop("`_inherit` must be a dsproto object.")
     }
     e$super <- `_inherit`
+    e$parent <- dsproto_parent(`_inherit`, e)
     class(e) <- c(`_class`, class(`_inherit`))
 
   } else {
