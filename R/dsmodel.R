@@ -87,12 +87,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
       invisible(self)
     },
     #methods for applying the underlying function of the model
-    apply = function(self, x, y, iters=1, accumulate=TRUE, crop = TRUE) {
+    apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
       if(is.null(self$properNames))
       {
-        tmp = self$fun(x[1], y[1])
+        tmp = self$fun(x[1], y[1],...)
         if(length(tmp) != 2)
           stop("dsmodel: Please make sure your function outputs a list with 2 values. (for example: list(x+1,y^2)")
         if(is.element("x", names(tmp)) && is.element("y", names(tmp)))
@@ -115,7 +115,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(iters==0)
           iterSeq <- NULL
         for(i in iterSeq){
-          tmp=self$fun(x,y)
+          tmp=self$fun(x,y,...)
           if(any(is.nan(tmp[[1]])) || any(is.nan(tmp[[2]])))
           {
             warning("dsmodel: model undefined, NaN computed. (Division by zero). Removing points with NaN value and continuing procedure..")
@@ -133,7 +133,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         iterAccum
       } else {
         for(i in 1:iters){
-          tmp=self$fun(x,y)
+          tmp=self$fun(x,y,...)
           if(crop){
             tmp <- self$cropframe(tmp)
           }
@@ -192,7 +192,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(self$autoDisplay)
           self$display(obj)
       }
-      else if(!is.null(self$range)) {
+      else if(!is.null(self$range) && obj$requiresRange) {
         obj$on.bind(self)
         if(self$autoDisplay)
           self$display(obj)
@@ -312,28 +312,29 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y=NULL, initIters=1000, maxPeriod=128, numTries=1,
+		find.period= function(self, x, y=NULL, ..., initIters=1000, maxPeriod=128, numTries=1,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
-		  if(!(!is.null(y) && length(x)==1 && length(y)==1)){
-		    if(is.dspoint(x)){
-		      y=x$y
-		      x=x$x
-		    }
-		    else if(is.vector(x) && length(x)==2){
-		      y=x[[2]]
-		      x=x[[1]]
-		    }
-		    else {
-	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
-		    }
-		  }
+		  #i dont think this works with ...
+		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
+		  #  if(is.dspoint(x)){
+		  #    y=x$y
+		  #    x=x$x
+		  #  }
+		  #  else if(is.vector(x) && length(x)==2){
+		  #    y=x[[2]]
+		  #    x=x[[1]]
+		  #  }
+		  #  else {
+	  	#    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
+		  #  }
+		  #}
 		  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
 		    stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
 		  }
 		  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-		    if(!self$has.diverged(startPoint$x,startPoint$y,rangeMult)){
+		    if(!self$has.diverged(startPoint[[1]],startPoint[[2]],rangeMult)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
@@ -350,8 +351,14 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    if(period){
 		      return(i)
 		    }
-		    x=ithPoint$x
-		    y=ithPoint$y
+		    if(properNames){
+		      x=ithPoint$x
+		      y=ithPoint$y
+		    }
+		    else{
+		      x=ithPoint[[1]]
+		      y=ithPoint[[2]]
+		    }
 		  }
 		  warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
 		  return(FALSE)

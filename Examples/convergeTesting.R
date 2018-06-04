@@ -60,7 +60,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
   moving <- TRUE
   while (moving &&counter<maxIters) {
     tmp <- model$apply(x,y,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(!has.diverged(model,tmp[[1]],tmp[[2]],rangeMult))
+    if(has.diverged(model,tmp[[1]],tmp[[2]],rangeMult))
       return(FALSE)
     if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < stride*tolerance))
       moving <- FALSE
@@ -129,7 +129,7 @@ find.period = function(self, x, y,
   #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
   for(i in 1:numTries) {
     startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-    if(!has.diverged(self,startPoint$x,startPoint$y,rangeMult)){
+    if(has.diverged(self,startPoint$x,startPoint$y,rangeMult)){
       #print("no period found, diverged")
       return(FALSE)
     }

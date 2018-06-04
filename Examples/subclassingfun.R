@@ -292,7 +292,7 @@ bif$on.bind(logisticmodel)
 
 sometimesstable= parammodel( function(x,y,a,b){list(a*x,b*y)})
 #right now numtires breaks it
-bif=bifmap(1,1,numTries = 5)
+bif=bifmap(1,1,numTries = 3)
 bif$on.bind(sometimesstable)
 
 #bif$calculate.grid(sometimesstable)

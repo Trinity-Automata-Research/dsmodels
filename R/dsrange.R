@@ -42,7 +42,6 @@
 #' #Since no features are added, only the area and title are displayed.
 #' model + dsrange(3, 3, discretize = .09)
 dsrange <- function(x,y,discretize = 0,
-                    #originOffset = c(-.1,-.1),
                     renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
   xlim <- make.lims(x)
   ylim <- make.lims(y)
