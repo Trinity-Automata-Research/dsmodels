@@ -8,8 +8,8 @@ amax=4
 xmin=0
 xmax=1
 
-adisc=.001
-xdisc=.001
+adisc=.01
+xdisc=.01
 as=seq(amin,amax,by=adisc)
 xs=seq(xmin,xmax,by=xdisc)
 
