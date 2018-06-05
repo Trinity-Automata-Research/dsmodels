@@ -141,7 +141,8 @@ getParamsOfModelFunc = function(func) { #returns list of up to 4 parameter names
 
 parammodel = function(fun, ..., paramNames = NULL) {
   givenNames = substitute(paramNames)
-  if(is.null(givenNames)) {
+  #for some reason substitute(paramnames) gives the symbol paramnames instead of null now.
+  if(is.null(givenNames)||givenNames==quote(paramNames)) {
     paramNames = getParamsOfModelFunc(fun)
     aname <- paramNames[1]
     bname <- paramNames[2]

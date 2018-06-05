@@ -76,6 +76,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     fun = fun,
     title = texTitle,
     dim = 2,
+    defaultParamNames=getParamsOfFunc(fun), #has to be done here because once fun is put into a dsproto, retrieving it gives a dswrapper function whose parameters are just ...
     range = NULL,
     facade = c(),
     background = c(),
@@ -87,6 +88,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
       invisible(self)
     },
     #methods for applying the underlying function of the model
+    getParamNames=function(self, potential=NULL){
+     if(is.null(potential)){
+       dsassert(!is.null(self$defaultParamNames),"Your most recent action expects model's function to have at least 4 parameters")
+       self$defaultParamNames
+     }
+    },
     apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
@@ -495,4 +502,27 @@ sqdist <- function(a, b) {
 #returns true if all points in points are finite
 finite.points = function(points) {
   all(is.finite(unlist(points)))
+}
+
+getParamsOfFunc = function(func) { #returns list of up to 4 parameter names-x,y,a,b
+  fformals = formals(func)
+  allparams = names(fformals)
+  defaults = unlist(lapply(allparams, function(k) { hasDefault(fformals[[k]]) }))
+  openParams = allparams[!defaults]
+  if(length(openParams) == 4)
+    params = openParams
+  else if (length(allparams) >= 4)
+    params = allparams
+  else
+    return(NULL)#stop("AAAAA")
+  if(any(c("x", "X") %in% params) && any(c("y","Y") %in% params)) {
+    modelParams = setdiff(params, c("x", "X", "y", "Y"))
+    if(length(modelParams)<2){
+      return(NULL)
+    }
+    #dsassert(length(modelParams)>=2, "AAAAAHMORE")
+    modelParams[1:2]
+  } else {
+    params[1:2]
+  }
 }
