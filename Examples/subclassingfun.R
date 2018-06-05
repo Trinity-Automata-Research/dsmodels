@@ -97,12 +97,12 @@ absmodel = dsproto(
   }
 )
 
-dsmodel = function(fun){
-  dsproto(`_class` = "dsmodel",
-          `_inherit` = absmodel,
-          fun=fun
-  )
-}
+#dsmodel = function(fun){
+#  dsproto(`_class` = "dsmodel",
+#          `_inherit` = absmodel,
+#          fun=fun
+#  )
+#}
 
 hasDefault = function(x) {
   return(!is.name(x) || nzchar(x))

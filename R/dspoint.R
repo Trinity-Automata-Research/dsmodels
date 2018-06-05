@@ -216,13 +216,5 @@ findNearestPoint <- function(x, y, points, eps, deep=TRUE) {
     points$inds[which.min(dsq)]
 }
 
-#returns the squared distance from a to b
-sqdist <- function(a, b) {
-  return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
-}
 
-#returns true if all points in points are finite
-finite.points = function(points) {
-  all(is.finite(unlist(points)))
-}
 

@@ -68,8 +68,8 @@
 #' }, title = "Another function showing $f(x)=x^{\\alpha}$!")
 dsmodel <- function(fun, title="", display = TRUE) {
   texTitle <- TeX(title)
-  if(length(formals(fun)) != 2)
-    stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
+  #if(length(formals(fun)) != 2)
+  #  stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
   dsproto(
     `_class` = "model",
     `_inherit` = NULL,
@@ -192,7 +192,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(self$autoDisplay)
           self$display(obj)
       }
-      else if(!is.null(self$range) && obj$requiresRange) {
+      else if(!(is.null(self$range) && obj$requiresRange)) {
         obj$on.bind(self)
         if(self$autoDisplay)
           self$display(obj)
@@ -333,12 +333,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  }
 		  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
 		  for(i in 1:numTries) {
-		    startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
+		    startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
 		    if(!self$has.diverged(startPoint[[1]],startPoint[[2]],rangeMult)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    candidates=self$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+		    candidates=self$apply(startPoint[[1]], startPoint[[2]], ...,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
 		    while(i<maxPeriod && !period){
@@ -351,7 +351,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    if(period){
 		      return(i)
 		    }
-		    if(properNames){
+		    if(self$properNames){
 		      x=ithPoint$x
 		      y=ithPoint$y
 		    }
@@ -487,4 +487,12 @@ safe.apply <- function(fun,inp){
            error=function(e) { FALSE })
 }
 
+#returns the squared distance from a to b
+sqdist <- function(a, b) {
+  return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
+}
 
+#returns true if all points in points are finite
+finite.points = function(points) {
+  all(is.finite(unlist(points)))
+}
