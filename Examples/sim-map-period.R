@@ -89,7 +89,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
         names=self$map
         names[1]="Divergent"
         names[2]="Fixed"
-        legend("topright", inset=c(-0.2,0), legend=names,
+        legend("topright", inset=c(-0.25,0), legend=names,
                fill=self$cols, title="Periods", xpd=TRUE)
       }
     }
