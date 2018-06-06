@@ -22,7 +22,6 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
     discretize=discretize,
     aname=aname,
     bname=bname,
-    cap=cap,
     initIters=initIters, maxPeriod=maxPeriod, numTries=numTries,
     epsilon=epsilon, rangeMult=rangeMult,
     grid=NULL,
@@ -40,7 +39,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
           self$aname <- model$range$aname
           self$bname <- model$range$bname
         } else {
-          assert(!is.null(self$bname), "aname set in sim.map.period, but not bname.", critical=TRUE)
+          dsassert(!is.null(self$bname), "aname set in sim.map.period, but not bname.", critical=TRUE)
         }
         self$grid=model$range$paramcorners(discretize,alim=self$alim,blim=self$blim)
         self$bound=TRUE
