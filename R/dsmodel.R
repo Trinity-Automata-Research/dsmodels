@@ -503,7 +503,7 @@ sqdist <- function(a, b) {
 
 #' Check if points are finite
 #'
-#' This function takes a list of points and returns true if all points in points are finite.
+#' This function takes a list of points and returns true if all values in points are finite.
 #' @keywords internal
 #' @param points a list of points to test
 #' @export

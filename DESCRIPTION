@@ -32,10 +32,10 @@ Collate:
     'dspoint.R'
     'dsrange.R'
     'dsregion.R'
-    'simattractors.R'
-    'simbasins.R'
     'features.R'
     'modelConstruction.R'
+    'simattractors.R'
+    'simbasins.R'
 Imports:
     shape,
     graphics,

@@ -10,6 +10,6 @@ finite.points(points)
 \item{points}{a list of points to test}
 }
 \description{
-This function takes a list of points and returns true if all points in points are finite.
+This function takes a list of points and returns true if all values in points are finite.
 }
 \keyword{internal}
