@@ -4,7 +4,7 @@
 \name{feature}
 \alias{feature}
 \title{Feature}
-\format{An object of class \code{feature} (inherits from \code{facade}, \code{dsproto}) of length 1.}
+\format{An object of class \code{feature} (inherits from \code{facade}, \code{dsproto}) of length 2.}
 \usage{
 feature
 }

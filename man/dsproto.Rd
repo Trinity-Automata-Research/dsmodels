@@ -34,8 +34,6 @@ from any object.}
 
 \item{...}{A list of members in the dsproto object.}
 
-\item{parent, self}{Access parent class \code{parent} of object \code{self}.}
-
 \item{x}{A dsproto object to convert to a list.}
 
 \item{inherit}{If \code{TRUE} (the default), flatten all inherited items into}
@@ -64,7 +62,7 @@ it is a regular method; if it's absent, it's a "static" method.
 
 
 To explicitly call a methods in a parent, use
-\code{dsproto_parent(Parent, self)}.
+\code{dsproto_parent(Parent, self)} or \code{self$parent}.
 }
 
 \examples{
