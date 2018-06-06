@@ -4,7 +4,7 @@
 \name{visualization}
 \alias{visualization}
 \title{Visualization}
-\format{An object of class \code{visualization} (inherits from \code{facade}, \code{dsproto}) of length 2.}
+\format{An object of class \code{visualization} (inherits from \code{facade}, \code{dsproto}) of length 3.}
 \usage{
 visualization
 }

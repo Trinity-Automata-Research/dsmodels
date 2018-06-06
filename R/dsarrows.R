@@ -94,7 +94,7 @@ dsarrows <- function(
         self$bound=TRUE
       },
       computeArrows = function(self, model) {
-        tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, self$iters, crop = self$crop)
+        tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, iters=self$iters, crop = self$crop)
         self$X1 <- tmp$x
         self$Y1 <- tmp$y
         if((length(self$X0) > 1500 || length(self$Y0) > 1500))

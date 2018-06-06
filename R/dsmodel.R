@@ -68,32 +68,32 @@
 #' }, title = "Another function showing $f(x)=x^{\\alpha}$!")
 dsmodel <- function(fun, title="", display = TRUE) {
   texTitle <- TeX(title)
-  if(length(formals(fun)) != 2)
-    stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
+  #if(length(formals(fun)) != 2)
+  #  stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
   dsproto(
     `_class` = "model",
     `_inherit` = NULL,
     fun = fun,
     title = texTitle,
     dim = 2,
+    funParams=formals(fun),
     range = NULL,
     facade = c(),
     background = c(),
     feature = c(),
     visualization = c(),
-    dots = c(),
     autoDisplay = display,
     properNames = NULL,
     print = function(self, ...) {
       invisible(self)
     },
     #methods for applying the underlying function of the model
-    apply = function(self, x, y, iters=1, accumulate=TRUE, crop = TRUE) {
+    apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
       if(is.null(self$properNames))
       {
-        tmp = self$fun(x[1], y[1])
+        tmp = self$fun(x[1], y[1],...)
         if(length(tmp) != 2)
           stop("dsmodel: Please make sure your function outputs a list with 2 values. (for example: list(x+1,y^2)")
         if(is.element("x", names(tmp)) && is.element("y", names(tmp)))
@@ -116,7 +116,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(iters==0)
           iterSeq <- NULL
         for(i in iterSeq){
-          tmp=self$fun(x,y)
+          tmp=self$fun(x,y,...)
           if(any(is.nan(tmp[[1]])) || any(is.nan(tmp[[2]])))
           {
             warning("dsmodel: model undefined, NaN computed. (Division by zero). Removing points with NaN value and continuing procedure..")
@@ -134,7 +134,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         iterAccum
       } else {
         for(i in 1:iters){
-          tmp=self$fun(x,y)
+          tmp=self$fun(x,y,...)
           if(crop){
             tmp <- self$cropframe(tmp)
           }
@@ -193,7 +193,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(self$autoDisplay)
           self$display(obj)
       }
-      else if(!is.null(self$range)) {
+      else if(!(is.null(self$range) && obj$requiresRange)) {
         obj$on.bind(self)
         if(self$autoDisplay)
           self$display(obj)
@@ -313,32 +313,33 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y=NULL, initIters=1000, maxPeriod=128, numTries=1,
+		find.period= function(self, x, y=NULL, ..., initIters=1000, maxPeriod=128, numTries=1,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
-		  if(!(!is.null(y) && length(x)==1 && length(y)==1)){
-		    if(is.dspoint(x)){
-		      y=x$y
-		      x=x$x
-		    }
-		    else if(is.vector(x) && length(x)==2){
-		      y=x[[2]]
-		      x=x[[1]]
-		    }
-		    else {
-	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
-		    }
-		  }
+		  #i dont think this works with ...
+		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
+		  #  if(is.dspoint(x)){
+		  #    y=x$y
+		  #    x=x$x
+		  #  }
+		  #  else if(is.vector(x) && length(x)==2){
+		  #    y=x[[2]]
+		  #    x=x[[1]]
+		  #  }
+		  #  else {
+	  	#    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
+		  #  }
+		  #}
 		  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
 		    stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
 		  }
 		  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
 		  for(i in 1:numTries) {
-		    startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-		    if(!self$has.diverged(startPoint$x,startPoint$y,rangeMult)){
+		    startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
+		    if(!self$has.diverged(startPoint[[1]],startPoint[[2]],rangeMult)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    candidates=self$apply(startPoint[[1]], startPoint[[2]] ,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+		    candidates=self$apply(startPoint[[1]], startPoint[[2]], ...,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
 		    while(i<maxPeriod && !period){
@@ -351,8 +352,14 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    if(period){
 		      return(i)
 		    }
-		    x=ithPoint$x
-		    y=ithPoint$y
+		    if(self$properNames){
+		      x=ithPoint$x
+		      y=ithPoint$y
+		    }
+		    else{
+		      x=ithPoint[[1]]
+		      y=ithPoint[[2]]
+		    }
 		  }
 		  warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
 		  return(FALSE)
@@ -474,11 +481,50 @@ NaNRemove <- function(twoDList){
 #' @keywords internal
 #' @param fun Input function to abstract.
 #' @param inp Input to that function.
-
+#' @export
 safe.apply <- function(fun,inp){
   tryCatch({fun(inp)},
            warning=function(w) { FALSE},
            error=function(e) { FALSE })
 }
 
+
+#' Returns the squared distance from a to b
+#'
+#' This function takes two list of points returns a list conaining
+#' the squared distance between each pair of points.
+#' @keywords internal
+#' @param a a list of points to test
+#' @param b a list of points to test
+sqdist <- function(a, b) {
+  return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
+}
+
+
+#' Check if points are finite
+#'
+#' This function takes a list of points and returns true if all values in points are finite.
+#' @keywords internal
+#' @param points a list of points to test
+#' @export
+finite.points = function(points) {
+  all(is.finite(unlist(points)))
+}
+
+#' Asserts a boolean condition is true
+#'
+#' This function takes a boolean and a string, replicating the common assert pattern.
+#' @keywords internal
+#' @param t Boolean condition which must be true.
+#' @param str Error message to return if the condition fails.
+#' @param critical If the condition can only arise from a bug in dsmodels.
+#' @export
+dsassert = function(t,str,critical=FALSE) {
+  if(!t) {
+    if(critical)
+      stop(paste("Critical error:",str,"Please notify developers."))
+    else
+      stop(str)
+  }
+}
 

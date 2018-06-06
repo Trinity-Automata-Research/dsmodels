@@ -134,7 +134,7 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
                           MoreArgs=list(points=self$fps, eps=self$epsilon))
       }
       else {
-        images <- model$apply(self$grid$X0, self$grid$Y0, self$iters, crop=FALSE, accumulate=FALSE)
+        images <- model$apply(self$grid$X0, self$grid$Y0, iters=self$iters, crop=FALSE, accumulate=FALSE)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
                           MoreArgs=list(points=self$fps, eps=self$epsilon))
       }

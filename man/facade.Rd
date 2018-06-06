@@ -4,7 +4,7 @@
 \name{facade}
 \alias{facade}
 \title{Facade}
-\format{An object of class \code{facade} (inherits from \code{dsproto}) of length 4.}
+\format{An object of class \code{facade} (inherits from \code{dsproto}) of length 5.}
 \usage{
 facade
 }
