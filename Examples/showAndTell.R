@@ -13,7 +13,6 @@ model = dsmodel(f)
 model + paramrange(3,3,discretize = .05, paramNames = c(s,r))
 #generate an image based on periodicity tested at the point (.5,.5). Takes a bit of time.
 #maxperiodicity=8 makes every periodicity above 8 count as divergent or 0.
-#warmer colors mean lower periodicity with red for 0, the cooler the color the higher the periodicity.
 model + sim.map.period(.5,.5,maxPeriod = 8)
 
 

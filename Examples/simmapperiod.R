@@ -57,10 +57,14 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
       args[[self$aname]]=self$grid$X0
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)
-      numCol=max(z)
+      numCol=max(z)+1 # 0 to max(z), inclusive
       if(is.null(self$cols) || length(self$cols)<numCol){
-        self$cols=rainbow(numCol+1)
-        #warning? More colors needed
+        if (numCol <= 6)
+          self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
+        else if (numCol <= 28)
+          self$cols <- c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f")
+        else
+          self$cols <- rainbow(numCol) #warning? More colors needed
       }
       self$colMatrix=matrix(z,length(self$grid$x))
     },
