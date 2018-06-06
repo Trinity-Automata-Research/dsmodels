@@ -2,7 +2,8 @@
 #currently its some insanely nested list. probably can be cleaned up
 #make a 1d bif diagram for 1d mod
 
-
+logistic=FALSE
+competition=TRUE
 
 in.range = function(x,y, model, rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
@@ -86,6 +87,8 @@ evalPoint=function(a){
 
 fps=mapply(evalPoint,as)
 
+
+if(logistic){
 z=matrix(NA,length(as),length(xs))
 #using for for now
 for(i in 1:length(fps)){
@@ -101,3 +104,65 @@ for(i in 1:length(fps)){
 }
 
 image(as,xs, z)
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#bifurcation for
+#list(x*exp(r-x-a*y),
+#     y*exp(s-b*x-y))
+#varying r and s together
+
+#library(dsmodels), library(latex2exp), source paramrange, simmap
+
+
+gen=function(s){
+  f=function(x,y,a=.5,b=.5,dummy=0){
+    list(x*exp(s-x-a*y),
+         y*exp(s-b*x-y))
+  }
+}
+amin=0 #1
+amax=3
+xmin=0
+xmax=4
+
+adisc=.01 #.05
+xdisc=.01 #.05
+as=seq(amin,amax,by=adisc)
+xs=seq(xmin,xmax,by=xdisc)
+
+evalPoint=function(s){
+  m<-dsmodel(gen(s),display = FALSE)
+  period=get.fps(m,.5,.5)
+  period
+}
+
+if(competition){
+fps=mapply(evalPoint,as)
+
+z=matrix(NA,length(as),length(xs))
+
+
+get=function(a){
+  if(length(a)>0)
+    mapply(min,xmax,a[[1]])
+  else
+    c()
+}
+#using for for now
+for(i in 1:length(fps)){
+  #for 2d systems, find dist origin
+  #z[i,1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  #z[i,-1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  #z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+
+  #for 1d models, just the xval of the fixed point.
+  z[i,1+1/xdisc*mapply(get,fps[[i]])]=1
+  z[i,1/xdisc*mapply(get,fps[[i]])]=1
+  z[i,-1+1/xdisc*mapply(get,fps[[i]])]=1
+}
+
+image(as,xs, z)
+}
+
+
