@@ -68,6 +68,7 @@
 #' }, title = "Another function showing $f(x)=x^{\\alpha}$!")
 dsmodel <- function(fun, title="", display = TRUE) {
   texTitle <- TeX(title)
+  par(mar=c(5, 4, 4, 2) + 0.1)
   #if(length(formals(fun)) != 2)
   #  stop("dsmodel: Please make sure your function has 2 distinct, variable inputs.")
   dsproto(

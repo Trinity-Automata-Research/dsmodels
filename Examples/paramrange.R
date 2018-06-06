@@ -34,7 +34,6 @@ paramrange = function(a,b,x=0,y=0, paramNames=NULL,discretize=0, renderCount=101
     },
     render = function(self, model) {
       self$rendered = TRUE
-      par(mar=c(3,6,3,6))
       plot(0, type = "l", lwd = 3, axes=self$axes, main = model$title,
            xlab = "", ylab = "", xlim = self$alim, ylim = self$blim,
            frame.plot = self$frame.plot)
