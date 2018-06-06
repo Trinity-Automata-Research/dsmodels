@@ -1,6 +1,6 @@
 #testing sim.map.period. some of the parameter and function names are subjectto change
 
-#expected outputs:
+#expected outputs: ~~~note red and blue are probably different. as of now it is yellow and magenta
 #red(r) and blue(b)-
 # rrrr
 # bbrr

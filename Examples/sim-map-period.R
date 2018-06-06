@@ -77,7 +77,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
       }
       self$map=map
       self$numCol=numCol
-      self$colMatrix=matrix(new,length(self$grid$x))
+      self$colMatrix=matrix(z,length(self$grid$x))
     },
     render = function(self, model){
       dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
