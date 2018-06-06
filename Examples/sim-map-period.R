@@ -58,28 +58,15 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)
 
-      normalize=function(x,m){
-        spot=which(m==x)
-        print(m)
-        print(spot)
-        if(length(spot)==0){
-          spot=length(m)+1
-          m[spot]=x
-        }
-        else if(length(spot)!=1)
+      map=sort(unique(c(z,1,0)))
+      normalize=function(x){
+        spot=which(map==x)
+        if(length(spot)!=1)
           stop("aaa again")
-        print(m)
-        list(spot=spot,m=m)
+        spot
       }
-      new=NULL
-      m=NULL
-      for(i in 1:length(z)){
-        stuff=normalize(z[i],m)
-        m=stuff$m
-        new[i]=stuff$spot  #probably can be done in place- z[i]=...
-      }
-
-      numCol=length(m) # 0 to max(z), inclusive
+      z=mapply(normalize,z)
+      numCol=length(map)
       if(is.null(self$cols) || length(self$cols)<numCol){
         if (numCol <= 6)
           self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
@@ -88,7 +75,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
         else
           self$cols <- rainbow(numCol) #warning? More colors needed
       }
-      self$m=m
+      self$map=map
       self$numCol=numCol
       self$colMatrix=matrix(new,length(self$grid$x))
     },
