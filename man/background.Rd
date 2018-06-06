@@ -4,7 +4,7 @@
 \name{background}
 \alias{background}
 \title{Background}
-\format{An object of class \code{background} (inherits from \code{facade}, \code{dsproto}) of length 2.}
+\format{An object of class \code{background} (inherits from \code{facade}, \code{dsproto}) of length 3.}
 \usage{
 background
 }

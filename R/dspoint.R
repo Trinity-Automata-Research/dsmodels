@@ -111,9 +111,9 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     crop = crop,
     on.bind = function(self, model) {
       if(iters == 0)
-        self$toPlot <- model$apply(self$x, self$y, length(self$col), crop = self$crop)
+        self$toPlot <- model$apply(self$x, self$y, iters=length(self$col), crop = self$crop)
       else
-        self$toPlot <- model$apply(self$x, self$y, self$iters, crop = self$crop)
+        self$toPlot <- model$apply(self$x, self$y, iters=self$iters, crop = self$crop)
     },
     render = function(self, model) {
       if(self$display) {

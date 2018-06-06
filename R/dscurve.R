@@ -156,11 +156,8 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
         tValues = seq(self$tstart,self$tend,length.out=model$range$renderCount)
       else
         tValues = self$renderInputs
-      self$toPlot <- model$apply(
-          self$xfun(tValues),
-          self$yfun(tValues),
-          self$iters,
-          crop = self$crop)
+      self$toPlot <- model$apply(self$xfun(tValues), self$yfun(tValues),
+                                 iters = self$iters, crop = self$crop)
     },
     render = function(self, model) {
       if(self$discretize){
@@ -204,7 +201,7 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
       self$xValues <-seq(min(model$range$xlim),max(model$range$xlim), length.out = numPoints)
       self$xValues <- self$prune(self$xlim,self$xValues)
       self$yValues <- mapply(self$fun,self$xValues)
-      self$toPlot <- model$apply(self$xValues, self$yValues, self$iters, crop = self$crop)
+      self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
     },
     render = function(self, model) {
       if(self$discretize){

@@ -108,6 +108,11 @@ dsrange <- function(x,y,discretize = 0,
   )
 }
 
+#' returns a vector of length 2 containing the limits of the range,
+#' formatted how range expects lims to be formatted
+#' @param x a vector of any length to be formatted
+#' @keywords internal
+#' @export
 make.lims <- function(x){
   if(length(x) == 1)
     lim <- c(0,x)

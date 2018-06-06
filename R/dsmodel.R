@@ -76,7 +76,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     fun = fun,
     title = texTitle,
     dim = 2,
-    defaultParamNames=getParamsOfFunc(fun), #has to be done here because once fun is put into a dsproto, retrieving it gives a dswrapper function whose parameters are just ...
+    funParams=formals(fun),
     range = NULL,
     facade = c(),
     background = c(),
@@ -88,12 +88,6 @@ dsmodel <- function(fun, title="", display = TRUE) {
       invisible(self)
     },
     #methods for applying the underlying function of the model
-    getParamNames=function(self, potential=NULL){
-     if(is.null(potential)){
-       dsassert(!is.null(self$defaultParamNames),"Your most recent action expects model's function to have at least 4 parameters")
-       self$defaultParamNames
-     }
-    },
     apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
@@ -487,42 +481,50 @@ NaNRemove <- function(twoDList){
 #' @keywords internal
 #' @param fun Input function to abstract.
 #' @param inp Input to that function.
-
+#' @export
 safe.apply <- function(fun,inp){
   tryCatch({fun(inp)},
            warning=function(w) { FALSE},
            error=function(e) { FALSE })
 }
 
-#returns the squared distance from a to b
+
+#' Returns the squared distance from a to b
+#'
+#' This function takes two list of points returns a list conaining
+#' the squared distance between each pair of points.
+#' @keywords internal
+#' @param a a list of points to test
+#' @param b a list of points to test
 sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
-#returns true if all points in points are finite
+
+#' Check if points are finite
+#'
+#' This function takes a list of points and returns true if all points in points are finite.
+#' @keywords internal
+#' @param points a list of points to test
+#' @export
 finite.points = function(points) {
   all(is.finite(unlist(points)))
 }
 
-getParamsOfFunc = function(func) { #returns list of up to 4 parameter names-x,y,a,b
-  fformals = formals(func)
-  allparams = names(fformals)
-  defaults = unlist(lapply(allparams, function(k) { hasDefault(fformals[[k]]) }))
-  openParams = allparams[!defaults]
-  if(length(openParams) == 4)
-    params = openParams
-  else if (length(allparams) >= 4)
-    params = allparams
-  else
-    return(NULL)#stop("AAAAA")
-  if(any(c("x", "X") %in% params) && any(c("y","Y") %in% params)) {
-    modelParams = setdiff(params, c("x", "X", "y", "Y"))
-    if(length(modelParams)<2){
-      return(NULL)
-    }
-    #dsassert(length(modelParams)>=2, "AAAAAHMORE")
-    modelParams[1:2]
-  } else {
-    params[1:2]
+#' Asserts a boolean condition is true
+#'
+#' This function takes a boolean and a string, replicating the common assert pattern.
+#' @keywords internal
+#' @param t Boolean condition which must be true.
+#' @param str Error message to return if the condition fails.
+#' @param critical If the condition can only arise from a bug in dsmodels.
+#' @export
+dsassert = function(t,str,critical=FALSE) {
+  if(!t) {
+    if(critical)
+      stop(paste("Critical error:",str,"Please notify developers."))
+    else
+      stop(str)
   }
 }
+

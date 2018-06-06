@@ -72,7 +72,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
   if(counter >maxIters && moving)
     warning("hit maxIters in is.stable")
   if(!moving) {
-    noStrideImages = model$apply(x, y, 1, accumulate=FALSE, crop=FALSE)
+    noStrideImages = model$apply(x, y, iters=1, accumulate=FALSE, crop=FALSE)
     if(!all(((noStrideImages$x - x)^2 + (noStrideImages$y - y)^2)<tolerance))
       warning("points are only stable under stride, may have periodic attractors.")
       #tolernace here is the wrong parameter, because we're moving once instead of 8 times.

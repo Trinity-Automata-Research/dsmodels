@@ -104,10 +104,6 @@ absmodel = dsproto(
 #  )
 #}
 
-hasDefault = function(x) {
-  return(!is.name(x) || nzchar(x))
-}
-
 dsassert = function(t,str,critical=FALSE) {
   if(!t) {
     if(critical)
