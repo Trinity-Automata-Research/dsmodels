@@ -1,5 +1,5 @@
 sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=NULL, ylim=NULL,cols=NULL,
-                paramNames=NULL, initIters=1000, maxPeriod=128, numTries=1,
+                paramNames=NULL, key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -22,6 +22,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
     discretize=discretize,
     aname=aname,
     bname=bname,
+    key=key,
     initIters=initIters, maxPeriod=maxPeriod, numTries=numTries,
     epsilon=epsilon, rangeMult=rangeMult,
     grid=NULL,
@@ -84,6 +85,12 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
       range=1:self$numCol
       image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
       model+xlabel(label=self$aname)+ylabel(label=self$bname)
+      if(key){
+        names=self$map
+        names[1]="Divergent"
+        names[2]="Fixed"
+        legend("topleft",inset=.02,legend=names,fill=self$cols,title="Periods")
+      }
     }
   )
 }
