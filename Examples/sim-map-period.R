@@ -81,21 +81,25 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
       self$colMatrix=matrix(z,length(self$grid$x))
     },
     render = function(self, model){
-      if(self$key && is.null(self$firstRender) || self$firstRender==TRUE){
-        self$firstRender=FALSE
-        par(mar=c(5, 4, 4, 6) + 0.1)
-        model$redisplay()
+      if(is.null(self$firstRender) || self$firstRender==TRUE){
+        if(self$key){
+          self$firstRender=FALSE
+          par(mar=c(5, 4, 4, 6) + 0.1)
+          model$redisplay()
+        }
+        model+xlabel(label=self$aname)+ylabel(label=self$bname)
       }
-      dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
-      range=1:self$numCol
-      image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
-      model+xlabel(label=self$aname)+ylabel(label=self$bname)
-      if(self$key){
-        names=self$map
-        names[1]="Divergent"
-        names[2]="Fixed"
-        legend("topright", inset=c(-0.25,0), legend=names,
-               fill=self$cols, title="Periods", xpd=TRUE)
+      else{
+        dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
+        range=1:self$numCol
+        image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
+        if(self$key){
+          names=self$map
+          names[1]="Divergent"
+          names[2]="Fixed"
+          legend("topright", inset=c(-0.25,0), legend=names,
+                 fill=self$cols, title="Periods", xpd=TRUE)
+        }
       }
     }
   )
