@@ -33,5 +33,6 @@ m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 m+sim.map.period(1,1,alim=2,blim=2,discretize = 1)
 
 #dont add range, param defaults and x,y defaults in sim (should give no warnigs about assuming divergence, red and blue)
+#also no key for this one
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
-m+sim.map.period(1,1,alim=2,blim=2, xlim=2,ylim=2,discretize = 1, rangeMult = 3)
+m+sim.map.period(1,1,alim=2,blim=2, xlim=2,ylim=2,discretize = 1, rangeMult = 3, key=FALSE)
