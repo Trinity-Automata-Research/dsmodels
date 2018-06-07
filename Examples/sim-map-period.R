@@ -45,6 +45,9 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
         self$grid=model$range$paramcenters(discretize,alim=self$alim,blim=self$blim)
         self$bound=TRUE
         self$calculate.bifmap(model)
+        if(all(!is.xlabel(model$facade))){
+          model+xlabel(label=self$aname)+ylabel(label=self$bname)
+        }
       }
     },
     calculate.bifmap = function(self,model){
@@ -87,7 +90,6 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
           par(mar=c(5, 4, 4, 6) + 0.1)
           model$redisplay()
         }
-        model+xlabel(label=self$aname)+ylabel(label=self$bname)
       }
       else{
         dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
