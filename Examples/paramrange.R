@@ -1,5 +1,55 @@
-paramrange = function(a,b,x=0,y=0, paramNames=NULL,discretize=0, renderCount=101, axes = TRUE, frame.plot = TRUE, ...){
-  #im not sure how the inherit should work
+#' Range of parameters for a model
+#'
+#' \code{paramrange} creates a discrete or continuous
+#' range of parameters and inputs for the model to be computed over.
+#'
+#' You may either specify a numeric a, b, x and y, in which case 0 is the lower bound and that value is
+#' the upper bound; or a range of values, in which case the min and the max of the range will be used.
+#' To specify a range from \code{min} to \code{max}, use either \code{c(min,max)} or
+#' \code{min:max}.
+#' @include dsproto.R dsrange.R
+#' @param alim Specifies the minimum and maximum for the first parameter.
+#'  If only one value is specified, it is used as the maximum, and the minimum will default to 0.
+#'  If a collection of values are provided, the minimum and maximum are used as the range.
+#' @param blim Specifies the minimum and maximum for the second parameter.
+#'  If only one value is specified, it is used as the maximum, and the minimum will default to 0.
+#'  If a collection of values are provided, the minimum and maximum are used as the range.
+#' @param xlim Specifies the minimum and maximum for the x axis.
+#'  If only one value is specified, it is used as the maximum, and the minimum will default to 0.
+#'  If a collection of values are provided, the minimum and maximum are used as the range.
+#' @param ylim Specifies the minimum and maximum for the y axis.
+#'  If only one value is specified, it is used as the maximum, and the minimum will default to 0.
+#'  If a collection of values are provided, the minimum and maximum are used as the range.
+#' @param paramNames Specifies the names of parameters to be varied. Expects a vetcor of
+#'  either the names of the variables, or strings containing the names. If left blank, a geuss will be
+#'  made for which arguments of the function are the parameters to vary, usualy the third and fourht arguments.
+#' @param discretize If a value is provided, the field is discretized into an array of points. The value
+#'  specifies the distance between each point.
+#'  This becomes the default when displaying \code{\link{dsarrows}} or \code{\link{dsdots}}.
+#'  The number of points in the field is defined by:
+#' @param axes If \code{FALSE}, the axes will not be drawn. Defaults to \code{TRUE}.
+#' @param frame.plot If \code{FALSE}, the frame of the plot will not be drawn. Defaults to \code{TRUE}.
+#'  \deqn{(xmax-xmin+1)(ymax-ymin+1)/discretize.}{ascii}
+# @param originOffset Currently not supported. Allows you to place an xlim and ylim
+#  for the graph without including extra discretized space.
+#' @param renderCount The number of points that a curve will be computed at when being
+#'   displayed. Default 101.
+#' @param ... Further fields for the dsrange object.
+#' @seealso \code{\link{dsmodel}}
+#' @seealso \code{\link{sim-is-stable}}
+#' @export
+#' @examples
+#' fun <- function(X,Y,a,b) {
+#'   list(
+#'     a*X/exp(Y),
+#'     b*Y/exp(X)
+#'   )
+#' }
+#' model <- dsmodel(fun, title = "A range with no features!")
+#' #Since no features are added, only the area and title are displayed.
+#' model + paramrange(3, 3, discretize = .09, paramNames=c(a,b))
+
+paramrange = function(alim,blim,xlim=0,ylim=0, paramNames=NULL,discretize=0, renderCount=101, axes = TRUE, frame.plot = TRUE, ...){
   ds=dsrange(x,y,discretize, renderCount=renderCount, axes = axes, frame.plot = frame.plot, ...=...)
   alim = make.lims(a)
   blim = make.lims(b)
@@ -38,7 +88,8 @@ paramrange = function(a,b,x=0,y=0, paramNames=NULL,discretize=0, renderCount=101
            xlab = "", ylab = "", xlim = self$alim, ylim = self$blim,
            frame.plot = self$frame.plot)
     },
-    #returns potential or paramdisc or disc, depeding on which one exists. right now paramdisc and disc are the same so this is the same as paramdisc
+    #returns potential or paramdisc or disc, depeding on which one exists.
+    #right now paramdisc and disc are the same so this is the same as paramdisc
     #only needed if paramdisc if different from disc
     getParamDiscretize = function(self, potential) {
     #  if(is.null(potential)||potential==0){
@@ -56,7 +107,7 @@ paramrange = function(a,b,x=0,y=0, paramNames=NULL,discretize=0, renderCount=101
       if(is.null(blim))
         blim=self$blim
       ret=self$grid(self$getParamDiscretize(discretize),alim,blim,center)
-      #rename stuff in grin
+      #rename stuff in grid? part of issue #139
       #names(ret)=list("as","bs","A0","B0")
       ret
     },
@@ -75,13 +126,12 @@ paramrange = function(a,b,x=0,y=0, paramNames=NULL,discretize=0, renderCount=101
       else if (length(allparams) >= 4)
         params = allparams
       else
-        return(NULL)#stop("AAAAA")
+        return(NULL)
       if(any(c("x", "X") %in% params) && any(c("y","Y") %in% params)) {
         modelParams = setdiff(params, c("x", "X", "y", "Y"))
         if(length(modelParams)<2){
           return(NULL)
         }
-        #dsassert(length(modelParams)>=2, "AAAAAHMORE")
         modelParams[1:2]
       } else {
         params[3:4]
