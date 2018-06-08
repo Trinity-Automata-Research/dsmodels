@@ -87,7 +87,7 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
     bound=FALSE,
     on.bind = function(self, model){
       if(is.null(model$range)){
-        model+paramrange(a=alim,b=blim,discretize=discretize,x=xlim,y=ylim)
+        model+paramrange(alim=alim,blim=blim,discretize=discretize,x=xlim,y=ylim)
       }
       else{
         if(is.null(self$aname)) {
