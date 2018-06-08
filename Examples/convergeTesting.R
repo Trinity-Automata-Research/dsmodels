@@ -8,15 +8,15 @@ library(dsmodels)
 testISA=FALSE
 testISO=FALSE
 testPeriod=TRUE
-
+#in dspoint
 sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
-
+#in dspoint
 finite.points = function(points) {
   all(is.finite(unlist(points)))
 }
-
+#in dsmodel
 has.diverged = function(self,x,y,  rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
     finite.points(c(x,y))
@@ -60,7 +60,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
   moving <- TRUE
   while (moving &&counter<maxIters) {
     tmp <- model$apply(x,y,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(!has.diverged(model,tmp[[1]],tmp[[2]],rangeMult))
+    if(has.diverged(model,tmp[[1]],tmp[[2]],rangeMult))
       return(FALSE)
     if(all(abs((x-tmp[[1]])^2 + (y-tmp[[2]])^2) < stride*tolerance))
       moving <- FALSE
@@ -72,7 +72,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
   if(counter >maxIters && moving)
     warning("hit maxIters in is.stable")
   if(!moving) {
-    noStrideImages = model$apply(x, y, 1, accumulate=FALSE, crop=FALSE)
+    noStrideImages = model$apply(x, y, iters=1, accumulate=FALSE, crop=FALSE)
     if(!all(((noStrideImages$x - x)^2 + (noStrideImages$y - y)^2)<tolerance))
       warning("points are only stable under stride, may have periodic attractors.")
       #tolernace here is the wrong parameter, because we're moving once instead of 8 times.
@@ -106,7 +106,7 @@ is.stableOne = function(model, x, y, stride, maxIters, tolerance, epsilon,
 
 
 
-
+#in dsmodel's find period
 getxy = function(x=NULL,y=NULL){
   if(!is.null(y))
     return(list(x=x,y=y))
@@ -129,7 +129,7 @@ find.period = function(self, x, y,
   #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
   for(i in 1:numTries) {
     startPoint <- self$apply(x,y,iters=initIters,accumulate=FALSE,crop=FALSE)
-    if(!has.diverged(self,startPoint$x,startPoint$y,rangeMult)){
+    if(has.diverged(self,startPoint$x,startPoint$y,rangeMult)){
       #print("no period found, diverged")
       return(FALSE)
     }

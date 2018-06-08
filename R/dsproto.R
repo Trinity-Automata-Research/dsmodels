@@ -325,6 +325,7 @@ dsproto_formals <- function(x) formals(environment(x)$f)
 #' @export
 facade <- dsproto("facade", NULL,
   bound = FALSE,
+  requiresRange = TRUE,
   recalculate = function(self, model) {self$on.bind(model)},
   render = function(self, model) {
     if(!self$bound)

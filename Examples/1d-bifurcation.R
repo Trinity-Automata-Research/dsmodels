@@ -3,22 +3,7 @@
 #make a 1d bif diagram for 1d mod
 
 
-amin=2
-amax=4
-xmin=0
-xmax=1
 
-adisc=.001
-xdisc=.001
-as=seq(amin,amax,by=adisc)
-xs=seq(xmin,xmax,by=xdisc)
-
-
-
-
-finite.points = function(points) {
-  all(is.finite(unlist(points)))
-}
 
 in.range = function(x,y, model, rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
@@ -27,7 +12,7 @@ in.range = function(x,y, model, rangeMult=0){
     all(x < rangeMult*model$range$xlim[[2]] & y < rangeMult*model$range$ylim[[2]])
 }
 
-dist.origin <- function(a) sqdist(a,c(0,0))
+dist.origin <- function(a) sqrt(sqdist(a,c(0,0)))
 
 sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
@@ -68,10 +53,31 @@ get.fps = function(self, x, y,
 }
 
 
+# bif for    x'=s*x*(1-x)
+logistic=FALSE
+if(logistic){
+fps=mapply(evalPoint,as)
 
-g = function(a=.5){
+amin=2 #1
+amax=4
+xmin=0
+xmax=1
+
+adisc=.01 #.05
+xdisc=.01 #.05
+as=seq(amin,amax,by=adisc)
+xs=seq(xmin,xmax,by=xdisc)
+
+
+g = function(s=.5){
   function(x,y){
-    list(x=a*x*(1-x),y=0)
+    a=.5
+    b=.5
+    r=1
+    #list(x=x*exp(r-x-a*y),
+    #     y=y*exp(s-b*x-y))
+    list(x=s*x*(1-x),y=0)
+
   }
 }
 
@@ -82,7 +88,7 @@ evalPoint=function(a){
   period
 }
 
-fps=mapply(evalPoint,as)
+
 
 z=matrix(NA,length(as),length(xs))
 #using for for now
@@ -91,10 +97,83 @@ for(i in 1:length(fps)){
   #z[i,1/xdisc*mapply(dist.origin,fps[[i]])]=1
   #z[i,-1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
   #z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+
   #for 1d models, just the xval of the fixed point.
-  z[i,1+1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
-  z[i,1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
-  #z[i,-1+1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
+  z[i,1+1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
+  z[i,1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
+  z[i,-1+1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
 }
 
 image(as,xs, z)
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#bifurcation for
+#list(x*exp(r-x-a*y),
+#     y*exp(s-b*x-y))
+#varying r and s together
+
+#library(dsmodels), library(latex2exp), source paramrange, simmap
+competition=TRUE
+if(competition){
+
+gen=function(s){
+  f=function(x,y,a=.5,b=.5,dummy=0){
+    list(x*exp(s-x-a*y),
+         y*exp(s-b*x-y))
+  }
+}
+amin=0 #1
+amax=3
+xmin=0
+xmax=7
+
+adisc=.01 #.05
+xdisc=.01 #.05
+as=seq(amin,amax,by=adisc)
+distance.origin=seq(xmin,xmax,by=xdisc)
+
+evalPoint=function(s){
+  m<-dsmodel(gen(s),display = FALSE)
+  period=get.fps(m,.5,.5)
+  period
+}
+
+
+
+
+fps=mapply(evalPoint,as)
+
+z=matrix(NA,length(as),length(distance.origin))
+
+
+get=function(a){
+  if(length(a)>0)
+    mapply(min,xmax,a[[1]])
+  else
+    c()
+}
+
+list.to.dist=function(x){
+
+
+}
+
+#using for for now
+for(i in 1:length(fps)){
+  #for 2d systems, find dist origin
+  print(i)
+  z[i,1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  z[i,-1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+  z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+
+  #for 1d models, just the xval of the fixed point.
+  #z[i,1+1/xdisc*mapply(get,fps[[i]])]=1
+  #z[i,1/xdisc*mapply(get,fps[[i]])]=1
+  #z[i,-1+1/xdisc*mapply(get,fps[[i]])]=1
+}
+r=as
+image(r,distance.origin, z)
+}
+
+

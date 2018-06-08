@@ -19,7 +19,12 @@ Description: An expressive language to facilitate simulation and visualization
     can also approximate attractors and their basins through simulation.
 License: GPL-2 | file LICENSE
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.1.0),
+    shape,
+    graphics,
+    grDevices,
+    latex2exp,
+    pryr
 LazyData: TRUE
 RoxygenNote: 6.0.1
 Collate: 
@@ -32,15 +37,9 @@ Collate:
     'dspoint.R'
     'dsrange.R'
     'dsregion.R'
-    'simattractors.R'
-    'simbasins.R'
     'features.R'
     'modelConstruction.R'
-Imports:
-    shape,
-    graphics,
-    grDevices,
-    latex2exp,
-    pryr
+    'simattractors.R'
+    'simbasins.R'
 BugReports: https://github.com/Trinity-Automata-Research/dsmodels/issues
 URL: https://github.com/Trinity-Automata-Research/dsmodels
