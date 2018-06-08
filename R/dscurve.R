@@ -105,7 +105,7 @@ dscurve <- function(fun, yfun = NULL,
                     col = "black", image = NULL,
                     lwd = 3, n=NULL, iters = 0,
                     crop = FALSE,  tstart=0, tend=1,
-                    discretize=FALSE, xlim = NULL,
+                    discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {
 
   colors <- colorVector(col, image, iters)
@@ -119,19 +119,19 @@ dscurve <- function(fun, yfun = NULL,
     dscurveParam(xfun = xfunc, yfun = yfunc,
                  colors = colors, lwd = lwd,
                  n = n, iters = iters, crop, discretize = discretize,
-                 tstart = tstart, tend = tend,
+                 tstart = tstart, tend = tend, display,
                  ...)
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
     dscurveGraph(fun = func, colors = colors,
                  lwd = lwd, n = n, iters = iters, discretize = discretize,
-                 crop, xlim = xlim, ...)
+                 crop, xlim = xlim, display, ...)
 
   }
 }
 
 dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
-                        iters, crop = TRUE, discretize = FALSE, ...){
+                        iters, crop = TRUE, discretize = FALSE, display, ...){
   if(is.null(n))
     renderInputs = NULL
   else
@@ -149,6 +149,7 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
     renderInputs = renderInputs,
     crop = crop,
     discretize = discretize,
+    display = display,
         ... = ...,
     on.bind = function(self, model) {
       if(is.null(model$range)) stop("dscurve: Add range first")
@@ -160,15 +161,17 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
                                  iters = self$iters, crop = self$crop)
     },
     render = function(self, model) {
-      if(self$discretize){
-        for(i in 1:(self$iters+1))
-          points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
-                 col = self$col[[i]], ... = self$...)
-      }
-      else{
-        for(i in 1:(self$iters+1))
-          lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                col = self$col[[i]], ... = self$...)
+      if(display){
+        if(self$discretize){
+          for(i in 1:(self$iters+1))
+            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
+                   col = self$col[[i]], ... = self$...)
+        }
+        else{
+          for(i in 1:(self$iters+1))
+            lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
+                  col = self$col[[i]], ... = self$...)
+        }
       }
     }
   )
@@ -177,7 +180,7 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
 
 dscurveGraph <- function(fun, colors, lwd, n, iters,
                             crop = FALSE, discretize = FALSE,
-                            xlim = NULL, ...){
+                            xlim = NULL, display, ...){
   dsproto(
     `_class` = "curve", `_inherit` = feature,
     fun = fun,
@@ -191,6 +194,7 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
     xlim = xlim,
     discretize = discretize,
     crop = crop,
+    display = display,
     ... = ...,
     on.bind = function(self, model) {
       self$bound = TRUE
@@ -212,15 +216,17 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
       self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
     },
     render = function(self, model) {
-      if(self$discretize){
-        for(i in 1:(self$iters+1))
-          points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
-                col = self$col[[i]], ... = self$...)
-      }
-      else{
-        for(i in 1:(self$iters+1))
-          lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                col = self$col[[i]], ... = self$...)
+      if(display){
+        if(self$discretize){
+          for(i in 1:(self$iters+1))
+            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
+                  col = self$col[[i]], ... = self$...)
+        }
+        else{
+          for(i in 1:(self$iters+1))
+            lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
+                  col = self$col[[i]], ... = self$...)
+        }
       }
     },
     prune = function(self, lim, values) {
