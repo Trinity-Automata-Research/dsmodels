@@ -22,11 +22,10 @@
 #'  If a collection of values are provided, the minimum and maximum are used as the range.
 #' @param paramNames Specifies the names of parameters to be varied. Expects a vetcor of
 #'  either the names of the variables, or strings containing the names. If left blank, a geuss will be
-#'  made for which arguments of the function are the parameters to vary, usualy the third and fourht arguments.
+#'  made for which arguments of the function are the parameters to vary, usualy the third and fourth arguments.
 #' @param discretize If a value is provided, the field is discretized into an array of points. The value
 #'  specifies the distance between each point.
-#'  This becomes the default when displaying \code{\link{dsarrows}} or \code{\link{dsdots}}.
-#'  The number of points in the field is defined by:
+#'  This becomes the default when displaying \code{\link{sim-map-period}}
 #' @param axes If \code{FALSE}, the axes will not be drawn. Defaults to \code{TRUE}.
 #' @param frame.plot If \code{FALSE}, the frame of the plot will not be drawn. Defaults to \code{TRUE}.
 #'  \deqn{(xmax-xmin+1)(ymax-ymin+1)/discretize.}{ascii}
@@ -36,7 +35,7 @@
 #'   displayed. Default 101.
 #' @param ... Further fields for the dsrange object.
 #' @seealso \code{\link{dsmodel}}
-#' @seealso \code{\link{sim-is-stable}}
+#' @seealso \code{\link{sim-map-period}}
 #' @export
 #' @examples
 #' fun <- function(X,Y,a,b) {

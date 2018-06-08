@@ -1,3 +1,13 @@
+#' Creates an image describing periodicity over a range of parameters
+#'
+#' Attempts to determine periodicity
+#'
+
+
+
+
+
+
 sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=NULL, ylim=NULL,cols=NULL,
                 paramNames=NULL, key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
