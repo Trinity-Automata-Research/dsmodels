@@ -3,22 +3,6 @@
 #make a 1d bif diagram for 1d mod
 
 
-amin=2
-amax=4
-xmin=0
-xmax=1
-
-adisc=.001
-xdisc=.001
-as=seq(amin,amax,by=adisc)
-xs=seq(xmin,xmax,by=xdisc)
-
-
-
-
-finite.points = function(points) {
-  all(is.finite(unlist(points)))
-}
 
 in.range = function(x,y, model, rangeMult=0){
   if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
@@ -69,9 +53,27 @@ get.fps = function(self, x, y,
 
 
 
-g = function(a=.5){
+
+amin=2 #1
+amax=4
+xmin=0
+xmax=1
+
+adisc=.01 #.05
+xdisc=.01 #.05
+as=seq(amin,amax,by=adisc)
+xs=seq(xmin,xmax,by=xdisc)
+
+
+g = function(s=.5){
   function(x,y){
-    list(x=a*x*(1-x),y=0)
+    a=.5
+    b=.5
+    r=1
+    #list(x=x*exp(r-x-a*y),
+    #     y=y*exp(s-b*x-y))
+    list(x=s*x*(1-x),y=0)
+
   }
 }
 
@@ -91,9 +93,10 @@ for(i in 1:length(fps)){
   #z[i,1/xdisc*mapply(dist.origin,fps[[i]])]=1
   #z[i,-1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
   #z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
+
   #for 1d models, just the xval of the fixed point.
-  z[i,1+1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
-  z[i,1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
+  z[i,1+1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
+  z[i,1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
   #z[i,-1+1/xdisc*mapply(function(a)a$x,fps[[i]])]=1
 }
 

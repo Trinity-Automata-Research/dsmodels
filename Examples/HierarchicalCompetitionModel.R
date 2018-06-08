@@ -64,3 +64,17 @@ model + dsregion(A1F, A2F, pnt(A1,3), pnt(3,3), pnt(3, K11y), K1F, col= "green")
 model + dsregion(pnt(0,A2), pnt(0,3), pnt(A1,3), A1F, col="orange")
 #If you prefer to use the polygon function, dspolygon will accept all the same parameters and be rendered appropriately.
 model + dspolygon(x=c(A1,A1,K1,3,3,K1,A1),y=c(0,A11y,K11y,K11y,0,0,0),col="magenta",border=NA)
+
+testFun <- function(paramNames) {
+  givenNames = substitute(paramNames)
+  print(length(givenNames))
+  if(length(givenNames) == 3 && givenNames[1] == substitute(c())) {
+    aname <- as.character(givenNames[2])
+    bname <- as.character(givenNames[3])
+  } else {
+    aname <- NULL
+    bname <- NULL
+  }
+  c(aname, bname)
+}
+
