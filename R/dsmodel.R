@@ -349,7 +349,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    candidates=self$apply(startPoint[[1]], startPoint[[2]], ...,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
+		    candidates=self$apply(startPoint[[1]], startPoint[[2]], ...,iters=maxPeriod*2,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
 		    while(i<=maxPeriod && !period){
