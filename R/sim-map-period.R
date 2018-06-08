@@ -55,7 +55,7 @@
 
 
 sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
+                key=TRUE, initIters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -79,7 +79,7 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
     aname=aname,
     bname=bname,
     key=key,
-    initIters=initIters, maxPeriod=maxPeriod, numTries=numTries,
+    initIters=initIters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
     epsilon=epsilon, rangeMult=rangeMult,
     grid=NULL,
     colMatrix=NULL,
@@ -110,10 +110,10 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
       #has to be mapply because find.period cant take in lists.
       ##z=mapply(model$find.period,self$x,self$y,self$grid$X0,self$grid$Y0,
       #        initIters=initIters, maxPeriod=maxPeriod,
-      #         numTries=numTries,epsilon=epsilon, rangeMult=rangeMult)
+      #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, rangeMult=rangeMult)
 
       args=list(FUN=model$find.period, x=self$x, y=self$y, initIters=initIters, maxPeriod=maxPeriod,
-           numTries=numTries,epsilon=epsilon, rangeMult=rangeMult)
+           numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, rangeMult=rangeMult)
       args[[self$aname]]=self$grid$X0
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)

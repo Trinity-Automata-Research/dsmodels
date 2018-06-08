@@ -314,7 +314,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y=NULL, ..., initIters=1000, maxPeriod=128, numTries=1,
+		find.period= function(self, x, y=NULL, ..., initIters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
 		  #i dont think this works with ...
 		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
@@ -347,8 +347,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      ithPoint=candidates[[i+1]]
 		      if(sqdist(startPoint, ithPoint) < epsilon)
 		        period=TRUE
-		      else
-		        i=i+1
+		      else{
+		        if(powerOf2)
+		          i=2*i
+		        else
+		          i=i+1
+		      }
 		    }
 		    if(period){
 		      return(i)
