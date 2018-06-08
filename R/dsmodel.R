@@ -323,7 +323,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y=NULL, ..., initIters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+		find.period= function(self, x, y=NULL, ..., iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
 		  #i dont think this works with ...
 		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
@@ -344,12 +344,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  }
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
-		    startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
+		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
 		    if(self$has.diverged(startPoint$x,startPoint$y,crop=crop)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2,accumulate=TRUE,crop=FALSE)
+		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
 		    while(i<=maxPeriod && !period){
@@ -368,16 +368,17 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    if(period){
 		      return(i)
 		    }
+		    last=candidates[[2*maxPeriod]]
 		    if(self$properNames){
-		      x=ithPoint$x
-		      y=ithPoint$y
+		      x=last$x
+		      y=last$y
 		    }
 		    else{
-		      x=ithPoint[[1]]
-		      y=ithPoint[[2]]
+		      x=last[[1]]
+		      y=last[[2]]
 		    }
 		  }
-		  warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
+		  warning(paste("Assuming divergance: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
 		  return(FALSE)
 		}
 
