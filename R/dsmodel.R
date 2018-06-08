@@ -287,11 +287,11 @@ dsmodel <- function(fun, title="", display = TRUE) {
         warning("dsmodel$basins: simbasins did not find an attractor for every point.")
       res
 		},
-		has.diverged = function(self, x, y, rangeMult=0){
-		  if(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult))
-		    finite.points(c(x,y))
+		has.diverged = function(self, x, y, crop=FALSE){
+		  if(!crop)
+		    !finite.points(c(x,y))
 		  else
-		    all(x < rangeMult*self$range$xlim[[2]] & y < rangeMult*self$range$ylim[[2]])
+		    !all(x <= self$range$xlim[[2]] & x >= self$range$xlim[[1]] & y <= self$range$ylim[[2]] & y >= self$range$ylim[[1]])
 		},
 		sim.is.stable = function(self) {
 		  attractors <- Filter(
@@ -315,7 +315,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  (length(res) == 1) && !(is.element(0,res))
 		},
 		find.period= function(self, x, y=NULL, ..., initIters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
-                          epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
+                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
 		  #i dont think this works with ...
 		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
 		  #  if(is.dspoint(x)){
@@ -330,13 +330,15 @@ dsmodel <- function(fun, title="", display = TRUE) {
 	  	#    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
 		  #  }
 		  #}
-		  if(!(rangeMult==0 || rangeMult==Inf ||is.null(rangeMult)) && is.null(self$range)){
-		    stop("is.stable with rangeMult!=0 requires range() to have been composed with the model.")
+
+		  if(crop){
+		    dsassert(!(is.null(self$range) || all(self$range$xlim==c(0,0)) || all(self$range$ylim==c(0,0))),
+		             "Finding period with crop set to true requires xlim and ylim to be set.")
 		  }
-		  #moves all the points untill they are either all infinite, fixed, or outside of range*rangeMult
+		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
-		    if(!self$has.diverged(startPoint[[1]],startPoint[[2]],rangeMult)){
+		    if(self$has.diverged(startPoint[[1]],startPoint[[2]],crop=crop)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }

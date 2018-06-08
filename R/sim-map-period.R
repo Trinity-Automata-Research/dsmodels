@@ -20,8 +20,8 @@
 #' @param maxPeriod The largest period looked for. Any periods larger are considered divergent. defaults to 128.
 #' @param numTries The number of times a period is looked for. Defaults to 1.
 #' @param epsilon The distance at which two points are considered to be the same attractor. Defaults to \code{sqrt(sqrt(.Machine$double.eps))}
-#' @param rangeMult How many times past xlim or ylim a point must go before it is considered divergent.
-#'  If 0, a point must reach Inf to be considered divergent. Defaults to 0.
+#' @param crop Logical. If \code{TRUE}, points that go past xlim or ylim are considered divergent. If \code{FALSE},
+#'  a point must reach Inf to be considered divergent. Defaults to \code{FALSE}.
 #' @import graphics
 #' @import grDevices
 #' @seealso \code{\link{paramrange}}
@@ -56,7 +56,7 @@
 
 sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
                 key=TRUE, initIters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
-                epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
+                epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
     aname <- NULL
@@ -80,7 +80,7 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
     bname=bname,
     key=key,
     initIters=initIters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
-    epsilon=epsilon, rangeMult=rangeMult,
+    epsilon=epsilon, crop=crop,
     grid=NULL,
     colMatrix=NULL,
     cols=cols,
@@ -110,10 +110,10 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
       #has to be mapply because find.period cant take in lists.
       ##z=mapply(model$find.period,self$x,self$y,self$grid$X0,self$grid$Y0,
       #        initIters=initIters, maxPeriod=maxPeriod,
-      #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, rangeMult=rangeMult)
+      #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 
       args=list(FUN=model$find.period, x=self$x, y=self$y, initIters=initIters, maxPeriod=maxPeriod,
-           numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, rangeMult=rangeMult)
+           numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
       args[[self$aname]]=self$grid$X0
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)
