@@ -343,7 +343,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    candidates=self$apply(startPoint[[1]], startPoint[[2]], ...,iters=maxPeriod,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
-		    while(i<maxPeriod && !period){
+		    while(i<=maxPeriod && !period){
 		      ithPoint=candidates[[i+1]]
 		      if(sqdist(startPoint, ithPoint) < epsilon)
 		        period=TRUE
