@@ -10,7 +10,7 @@ f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
 #create a model with the function
 model = dsmodel(f)
 #add a range of parameters, set discretize, specify that I want to vary s and r
-model + paramrange(3,3,discretize = .2, paramNames = c(s,r))
+model + paramrange(3,3,discretize = .02, paramNames = c(s,r))
 #generate an image based on periodicity tested at the point (.5,.5). Takes a bit of time.
 #maxperiodicity=8 makes every periodicity above 8 count as divergent or 0.
 model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, initIters = 1000, numTries = 1, powerOf2=TRUE)

@@ -36,3 +36,4 @@ m+sim.map.period(1,1,alim=2,blim=2,discretize = 1)
 #also no key for this one
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 m+sim.map.period(1,1,alim=2,blim=2, xlim=2,ylim=2,discretize = 1, crop = 3, key=FALSE)
+

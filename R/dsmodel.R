@@ -353,8 +353,10 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    period=FALSE
 		    i=1
 		    while(i<=maxPeriod && !period){
-		      ithPoint=candidates[[i+1]]
-		      if(sqdist(startPoint, ithPoint) < epsilon)
+		      test=candidates[1:i]
+		      image=candidates[i+1:2*i]
+		      dists=mapply(sqdist,test,image)
+		      if(all(dists < epsilon))
 		        period=TRUE
 		      else{
 		        if(powerOf2)
