@@ -18,7 +18,7 @@ m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 m+paramrange(a=2,b=2,x=2,y=2,discretize = 1)
 m+sim.map.period(1,1,rangeMult=3)
 
-#FIXME------- if model has a range, x/ylims dont get overidden. not that important.
+#FIXME part of issue #139------- if model has a range, x/ylims dont get overidden. not that important.
 #add range first, defaults in sim (should give warnigs about assuming divergence, only show blue)
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 m+paramrange(a=2,b=2,x=2,y=2,discretize = 1)
@@ -33,5 +33,6 @@ m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 m+sim.map.period(1,1,alim=2,blim=2,discretize = 1)
 
 #dont add range, param defaults and x,y defaults in sim (should give no warnigs about assuming divergence, red and blue)
+#also no key for this one
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
-m+sim.map.period(1,1,alim=2,blim=2, xlim=2,ylim=2,discretize = 1, rangeMult = 3)
+m+sim.map.period(1,1,alim=2,blim=2, xlim=2,ylim=2,discretize = 1, rangeMult = 3, key=FALSE)

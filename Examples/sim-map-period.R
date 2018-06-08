@@ -1,5 +1,5 @@
 sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=NULL, ylim=NULL,cols=NULL,
-                paramNames=NULL, initIters=1000, maxPeriod=128, numTries=1,
+                paramNames=NULL, key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -22,6 +22,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
     discretize=discretize,
     aname=aname,
     bname=bname,
+    key=key,
     initIters=initIters, maxPeriod=maxPeriod, numTries=numTries,
     epsilon=epsilon, rangeMult=rangeMult,
     grid=NULL,
@@ -44,6 +45,9 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
         self$grid=model$range$paramcenters(discretize,alim=self$alim,blim=self$blim)
         self$bound=TRUE
         self$calculate.bifmap(model)
+        if(all(!is.xlabel(model$facade))){
+          model+xlabel(label=self$aname)+ylabel(label=self$bname)
+        }
       }
     },
     calculate.bifmap = function(self,model){
@@ -80,10 +84,23 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
       self$colMatrix=matrix(z,length(self$grid$x))
     },
     render = function(self, model){
-      dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
-      range=1:self$numCol
-      image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
-      model+xlabel(label=self$aname)+ylabel(label=self$bname)
+      if((is.null(self$firstRender) || self$firstRender==TRUE) && self$key){
+        self$firstRender=FALSE
+        par(mar=c(5, 4, 4, 6) + 0.1)
+        model$redisplay()
+      }
+      else{
+        dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
+        range=1:self$numCol
+        image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
+        if(self$key){
+          names=self$map
+          names[1]="Divergent"
+          names[2]="Fixed"
+          legend("topright", inset=c(-0.25,0), legend=names,
+                 fill=self$cols, title="Periods", xpd=TRUE)
+        }
+      }
     }
   )
 }
