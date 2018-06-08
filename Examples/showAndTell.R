@@ -13,8 +13,9 @@ model = dsmodel(f)
 model + paramrange(3,3,discretize = .1, paramNames = c(s,r))
 #generate an image based on periodicity tested at the point (.5,.5). Takes a bit of time.
 #maxperiodicity=8 makes every periodicity above 8 count as divergent or 0.
-model + sim.map.period(.5,.5,maxPeriod = 32, epsilon=.0001, iters = 1000, numTries = 1, powerOf2=TRUE)
+model + sim.map.period(.5,.5,maxPeriod = 32, epsilon=.001, iters = 100, numTries = 1, powerOf2=TRUE)
 
+model + dscurve(2*x)
 
 #varying only one variable can be done by using a dummy variable.
 #also see 1d-bifurcation

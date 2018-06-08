@@ -104,7 +104,7 @@
 dscurve <- function(fun, yfun = NULL,
                     col = "black", image = NULL,
                     lwd = 3, n=NULL, iters = 0,
-                    crop = TRUE,  tstart=0, tend=1,
+                    crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL,
                     ...) {
 
@@ -176,7 +176,7 @@ dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
 
 
 dscurveGraph <- function(fun, colors, lwd, n, iters,
-                            crop = TRUE, discretize = FALSE,
+                            crop = FALSE, discretize = FALSE,
                             xlim = NULL, ...){
   dsproto(
     `_class` = "curve", `_inherit` = feature,
@@ -198,7 +198,15 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
         numPoints <- model$range$renderCount
       else
         numPoints <- self$n
-      self$xValues <-seq(min(model$range$xlim),max(model$range$xlim), length.out = numPoints)
+      if(is.paramrange(model$range)){
+        from=min(model$range$alim)
+        to=max(model$range$alim)
+      }
+      else{
+        from=min(model$range$xlim)
+        to=max(model$range$xlim)
+      }
+      self$xValues <-seq(from,to, length.out = numPoints)
       self$xValues <- self$prune(self$xlim,self$xValues)
       self$yValues <- mapply(self$fun,self$xValues)
       self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
