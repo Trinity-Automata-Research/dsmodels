@@ -345,11 +345,11 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
-		    if(self$has.diverged(startPoint[[1]],startPoint[[2]],crop=crop)){
+		    if(self$has.diverged(startPoint$x,startPoint$y,crop=crop)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    candidates=self$apply(startPoint[[1]], startPoint[[2]], ...,iters=maxPeriod*2,accumulate=TRUE,crop=FALSE)
+		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
 		    while(i<=maxPeriod && !period){
