@@ -26,6 +26,7 @@
 #' @import grDevices
 #' @seealso \code{\link{paramrange}}
 #' @seealso \code{\link{simbasins}}
+#' @export
 #' @examples
 #' f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
 #'   list(x*exp(r-x-a*y),
