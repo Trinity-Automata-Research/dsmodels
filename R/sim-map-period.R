@@ -1,5 +1,61 @@
-sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=NULL, ylim=NULL,cols=NULL,
-                paramNames=NULL, key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
+#' Creates an image describing periodicity over a range of parameters
+#'
+#' Attempts to determine the periodicity of the model's function accross a range
+#' of parameters. Discretizes the parameterspace into squares and repeated iteration
+#' of the function at \code{testX,testY} with the parameters of that square is used to
+#' determine the periodicity of that square. It is then colored accordingly.
+#'
+#' @include dsproto.R
+#' @param testX the x value of the point at which periodicity is tested.
+#' @param testY the y value of the point at which periodicity is tested.
+#' @param xlim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
+#' @param ylim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
+#' @param xlim The range of x values to calculate periods over. Defaults to the limits of the range.
+#' @param ylim The range of y values to calculate periods over. Defaults to the limits of the range.
+#' @param paramNames Specifies the names of parameters to be varied. Defaults to the paramNames of the range.
+#' @param discretize The discretization for the parameters. Defaults to the discretization of the range.
+#' @param cols The colors of the periods. If insufficient not provided, reasonable defaults are used.
+#' @param key it \code{TRUE}, displays a key showing what period each color signifies. Defaults to \code{TRUE}
+#' @param initIters The number of iterations of the function applied before looking for a period. Defaults to 1000.
+#' @param maxPeriod The largest period looked for. Any periods larger are considered divergent. defaults to 128.
+#' @param numTries The number of times a period is looked for. Defaults to 1.
+#' @param epsilon The distance at which two points are considered to be the same attractor. Defaults to \code{sqrt(sqrt(.Machine$double.eps))}
+#' @param rangeMult How many times past xlim or ylim a point must go before it is considered divergent.
+#'  If 0, a point must reach Inf to be considered divergent. Defaults to 0.
+#' @import graphics
+#' @import grDevices
+#' @seealso \code{\link{paramrange}}
+#' @seealso \code{\link{simbasins}}
+#' @export
+#' @examples
+#' f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
+#'   list(x*exp(r-x-a*y),
+#'        y*exp(s-b*x-y))
+#' }
+#' #create a model with the function
+#' model = dsmodel(f)
+#' #add a range of parameters, set discretize, specify that I want to vary s and r
+#' model + paramrange(3,3,discretize = .02, paramNames = c(s,r))
+#' #generate an image based on periodicity tested at the point (.5,.5). Takes a bit of time.
+#' #maxperiodicity=8 makes every periodicity above 8 count as divergent or 0.
+#' model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, initIters = 1000, numTries = 1)
+#' #varying only one variable can be done by using a dummy variable.
+#' #create a model with the function
+#' model = dsmodel(f)
+#' #add a range and image. set blim very small because it dosent matter. we want to vary s and dummy
+#' model + sim.map.period(.5,.5,alim=3,blim=.05, discretize=.05, paramNames=c(s,dummy), maxPeriod = 8)
+#'
+
+
+
+
+
+
+
+
+
+sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
+                key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -31,7 +87,7 @@ sim.map.period = function(testX,testY, alim=NULL, blim=NULL, discretize=0, xlim=
     bound=FALSE,
     on.bind = function(self, model){
       if(is.null(model$range)){
-        model+paramrange(a=alim,b=blim,discretize=discretize,x=xlim,y=ylim)
+        model+paramrange(alim=alim,blim=blim,discretize=discretize,x=xlim,y=ylim)
       }
       else{
         if(is.null(self$aname)) {

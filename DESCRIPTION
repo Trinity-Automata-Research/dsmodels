@@ -39,6 +39,8 @@ Collate:
     'dsregion.R'
     'features.R'
     'modelConstruction.R'
+    'paramrange.R'
+    'sim-map-period.R'
     'simattractors.R'
     'simbasins.R'
 BugReports: https://github.com/Trinity-Automata-Research/dsmodels/issues
