@@ -176,6 +176,15 @@ dsmodel <- function(fun, title="", display = TRUE) {
         )
       }
     },
+    has.xyrange= function(self){
+      !is.null(self$range) && self$has.xlim() && self$has.ylim()
+    },
+    has.xlim = function(self){
+      !all(self$range$xlim==c(0,0))
+    },
+    has.ylim = function(self){
+      !all(self$range$ylim==c(0,0))
+    },
     #visualization methods
     bind = function(self, obj = NULL) {
       if(is.null(obj)) {
@@ -330,10 +339,8 @@ dsmodel <- function(fun, title="", display = TRUE) {
 	  	#    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
 		  #  }
 		  #}
-
 		  if(crop){
-		    dsassert(!(is.null(self$range) || all(self$range$xlim==c(0,0)) || all(self$range$ylim==c(0,0))),
-		             "Finding period with crop set to true requires xlim and ylim to be set.")
+		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires xlim and ylim to be set.")
 		  }
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
