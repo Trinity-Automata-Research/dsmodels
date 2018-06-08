@@ -94,7 +94,7 @@ dsdots <- function(col = "black",image = "", iters = 1,
     on.bind = function(self, model) {
       self$bound = TRUE
       corners=model$range$corners(discretize=self$discretize)
-      self$toPlot <- model$apply(corners$X0, corners$Y0, self$iters, crop = self$crop)
+      self$toPlot <- model$apply(corners$X0, corners$Y0, iters=self$iters, crop = self$crop)
     },
     render = function(self,model) {
       for(i in 1:(self$iters)){

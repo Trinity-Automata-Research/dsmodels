@@ -79,7 +79,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       for(p in points) {
         dists  <- (attractorCoords$x - p[1])^2 + (attractorCoords$y-p[2])^2
         if(min(dists) > self$epsilon) {
-          pointImage = model$apply(p[1],p[2], self$stride, accumulate=FALSE, crop=FALSE)
+          pointImage = model$apply(p[1],p[2], iters=self$stride, accumulate=FALSE, crop=FALSE)
           imageDist = (pointImage$x - p[1])^2 + (pointImage$y - p[2])^2
           if(imageDist < self$tolerance) {
             found <- found + 1
@@ -117,7 +117,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
     prev <- model$apply(prev$x, prev$y, iters=initIters, accumulate=FALSE, crop=FALSE)
   }
   while(moved && iters < maxIters) {
-    images <- model$apply(prev$x, prev$y, stride, accumulate=FALSE, crop=FALSE) #crop=TRUE?
+    images <- model$apply(prev$x, prev$y, iters=stride, accumulate=FALSE, crop=FALSE) #crop=TRUE?
     if (length(prev$x) != length(images$x)){
       print("Oops!")
       print(length(prev$x))
@@ -145,7 +145,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
   if(iters == maxIters && moved)
     warning("dssimulation: hit iteration threshhold in simattractors.")
   if(!moved) {
-    noStrideImages = model$apply(images$x, images$y, 1, accumulate=FALSE, crop=FALSE)
+    noStrideImages = model$apply(images$x, images$y, iters=1, accumulate=FALSE, crop=FALSE)
     dists = (noStrideImages$x - images$x)^2 + (noStrideImages$y - images$y)^2
     if(!all(is.finite(dists))){
       warning("dssimulation: Model is potentially unstable.")
