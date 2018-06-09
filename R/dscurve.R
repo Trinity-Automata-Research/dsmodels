@@ -210,8 +210,12 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
         from=min(model$range$xlim)
         to=max(model$range$xlim)
       }
+      if(!is.null(xlim)){
+        from=max(from,min(xlim))
+        to=min(to,max(xlim))
+      }
       self$xValues <-seq(from,to, length.out = numPoints)
-      self$xValues <- self$prune(self$xlim,self$xValues)
+      #self$xValues <- self$prune(self$xlim,self$xValues)
       self$yValues <- mapply(self$fun,self$xValues)
       self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
     },

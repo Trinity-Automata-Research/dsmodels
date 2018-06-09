@@ -354,7 +354,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    i=1
 		    while(i<=maxPeriod && !period){
 		      test=candidates[1:i]
-		      image=candidates[i+1:2*i]
+		      image=candidates[(i+1):(2*i)]
 		      dists=mapply(sqdist,test,image)
 		      if(all(dists < epsilon))
 		        period=TRUE
