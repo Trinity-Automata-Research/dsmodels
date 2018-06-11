@@ -53,11 +53,39 @@ segments=lapply(FUN=function (s) {list(x=segments[[s]]$x, y=segments[[s]]$y, col
 mkphase = function(x){
   pre=max(segments[[x]]$x)
   post=min(segments[[x+1]]$x)
-  p = segments[[x+1]]$color
+  #p=segments[[x+1]]$color #we want both?
+  p = c(segments[[x]]$color,segments[[x+1]]$color)
   list(pre=pre,period=p,post=post)
 }
 #skip 0 to 1 by starting at 2. probably not what we actually want. we should filter segments for divergent and chaotic
 phases=mapply(mkphase,2:(length(segments)-1))
+
+
+#binary search for inflection
+#takes in 2 periods and 2 x(a) values
+#base case x1-x2<epsilon- return x1
+#compute p=periodicity of x=(x1+x2)/2.
+#if p>p1 return(binsearch(x,p,x2,p2))
+#else p<p2, so return(binsearch(x1,p1,x,p))
+binSearch= function(x1,p1,x2,p2, epsilon=sqrt(sqrt(.Machine$double.eps))){
+  if(x2-x1<epsilon){
+    return(x1)
+  }
+  x=(x1+x2)/2
+  y=curve$fun(x)
+  args=list(FUN=model$find.period,x=testX,y=testY, numTries=10) #,the rest of args
+  args[[range$aname]]=x
+  args[[range$bname]]=y
+  p=do.call(model$find.period,args)
+  if(p>p1){
+    if(p<p2)
+      return(c(binSearch(x1,p1,x,p,epsilon),binSearch(x,p,x2,p2,epsilon)))
+    return(binSearch(x1,p1,x,p,epsilon))
+  }
+  return(binSearch(x,p,x2,p2,epsilon))
+}
+
+
 
 processPhase=function(phaseNum){
   phase=phases[,phaseNum]
@@ -70,6 +98,7 @@ processPhase=function(phaseNum){
 }
 inflections=mapply(processPhase,1:ncol(phases))
 
+#from https://gist.github.com/Jfortin1/72ef064469d1703c6b30
 darken <- function(color, factor=1.4){
   col <- col2rgb(color)
   col <- col/factor
