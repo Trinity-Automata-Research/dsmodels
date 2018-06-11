@@ -8,7 +8,7 @@ model=dsmodel(f)
 range = paramrange(alim=3,blim=3,paramNames = c(s,r))
 model + range
 #curve=dscurve(function(x)x/2, display = TRUE)
-curve=dscurve(x/2, n=100, xlim=c(2,2.71))
+curve=dscurve(x/2, n=100, xlim=c(0,4),display = FALSE)
 model+curve
 #model + sim.map.period(.5,.5, discretize=.2, maxPeriod = 4, epsilon=.001, iters = 100, numTries = 1, powerOf2=TRUE)
 
@@ -39,7 +39,7 @@ periods=do.call(what=mapply,args=args)
   #}
 #}
 
-
+#we should stop this when we hit chaos
 #turn list of data frames into list of segments
 points = list(x=curve$xValues, y=curve$yValues, periods=periods)
 #list.group(points, periods)
@@ -56,4 +56,33 @@ mkphase = function(x){
   p = segments[[x+1]]$color
   list(pre=pre,period=p,post=post)
 }
-phases=mapply(mkphase,1:(length(segments)-1))
+#skip 0 to 1 by starting at 2
+phases=mapply(mkphase,2:(length(segments)-1))
+
+processPhase=function(phaseNum){
+  phase=phases[,phaseNum]
+  #bin search for inflection. for now just taking pre
+  inflectionX=phase$pre
+  inflectionY=curve$fun(inflectionX)
+  segments[[phaseNum+1]]$x=append(segments[phaseNum+1]$x,inflectionX)
+  segments[[phaseNum+1]]$y=append(segments[phaseNum+1]$y,inflectionY)
+  list(period=phase$period,x=inflectionX,y=inflectionY)
+}
+inflections=mapply(processPhase,1:ncol(phases))
+
+numCol=length(segmens)
+self=list(color=NULL) #temporary. will be removed when this is converted into a dsproto
+if(is.null(self$cols) || length(self$cols)<numCol){
+  if (numCol <= 6)
+    self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
+  else if (numCol <= 28)
+    self$cols <- c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f")
+  else
+    self$cols <- rainbow(numCol) #warning? More colors needed
+}
+
+for(i in 1:(length(segments))){
+  print(segments[[i]]$y)
+  lines(segments[[i]]$x, segments[[i]]$y, lwd = curve$lwd,
+        col = self$cols[[i]], ... = curve$...)
+}
