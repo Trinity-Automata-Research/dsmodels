@@ -118,7 +118,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)
 
-      map=sort(unique(c(z,1,0)))
+      map=sort(unique(append(z,c(1,0))))
       normalize=function(x){
         spot=which(map==x)
         if(length(spot)!=1)

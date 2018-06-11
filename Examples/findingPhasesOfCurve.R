@@ -170,8 +170,11 @@ if(is.null(self$cols) || length(self$cols)<numCol){
     self$cols <- rainbow(numCol) #warning? More colors needed
 }
 
+colMap=sort(unique(append(mapply(function(seg)seg$color,segments),c(1,0))))
+
+
 for(i in 1:(length(segments))){
   print(segments[[i]]$y)
   lines(segments[[i]]$x, segments[[i]]$y, lwd = curve$lwd,
-        col = self$cols[[i]], ... = curve$...)
+        col = self$cols[[which(colMap==segments[[i]]$color)]], ... = curve$...)
 }
