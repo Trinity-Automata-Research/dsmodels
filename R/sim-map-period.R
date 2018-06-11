@@ -146,7 +146,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
         model$redisplay()
       }
       else{
-        dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
+        dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound.", critical = TRUE)
         range=1:self$numCol
         image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
         if(self$key){

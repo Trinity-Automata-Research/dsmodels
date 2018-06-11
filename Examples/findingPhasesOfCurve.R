@@ -56,7 +56,7 @@ mkphase = function(x){
   p = segments[[x+1]]$color
   list(pre=pre,period=p,post=post)
 }
-#skip 0 to 1 by starting at 2
+#skip 0 to 1 by starting at 2. probably not what we actually want. we should filter segments for divergent and chaotic
 phases=mapply(mkphase,2:(length(segments)-1))
 
 processPhase=function(phaseNum){
@@ -70,13 +70,21 @@ processPhase=function(phaseNum){
 }
 inflections=mapply(processPhase,1:ncol(phases))
 
+darken <- function(color, factor=1.4){
+  col <- col2rgb(color)
+  col <- col/factor
+  col <- rgb(t(col), maxColorValue=255)
+  col
+}
+
 numCol=length(segmens)
 self=list(color=NULL) #temporary. will be removed when this is converted into a dsproto
+#slightly darker version of simmapperiod's colors
 if(is.null(self$cols) || length(self$cols)<numCol){
   if (numCol <= 6)
-    self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
+    self$cols <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
   else if (numCol <= 28)
-    self$cols <- c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f")
+    self$cols <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
   else
     self$cols <- rainbow(numCol) #warning? More colors needed
 }
