@@ -49,3 +49,11 @@ segments=split.data.frame(points,as.factor(periods))
 segments=lapply(FUN=function (s) {list(x=segments[[s]]$x, y=segments[[s]]$y, color=as.numeric(s))}, X=names(segments))
 #print(segments)
 
+#make list of phases
+mkphase = function(x){
+  pre=max(segments[[x]]$x)
+  post=min(segments[[x+1]]$x)
+  p = segments[[x+1]]$color
+  list(pre=pre,period=p,post=post)
+}
+phases=mapply(mkphase,1:(length(segments)-1))
