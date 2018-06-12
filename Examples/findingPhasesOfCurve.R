@@ -1,5 +1,6 @@
 #make points
 #similar to dscruve
+if(!exists("model")){
 f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(x*exp(r-x-a*y),
        y*exp(s-b*x-y))
@@ -7,8 +8,13 @@ f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
 model=dsmodel(f)
 range = paramrange(alim=3,blim=3,paramNames = c(s,r))
 model + range
+}
 #curve=dscurve(function(x)x/2, display = TRUE)
-curve=dscurve(x/2, n=100, xlim=c(0,2.68),display = FALSE)
+
+
+#start here if show and tell has already been run
+
+curve=dscurve(x/1.5, n=100, xlim=c(0,3),display = FALSE)
 model+curve
 #model + sim.map.period(.5,.5, discretize=.2, maxPeriod = 4, epsilon=.001, iters = 100, numTries = 1, powerOf2=TRUE)
 
@@ -19,7 +25,8 @@ model+curve
 #bs=mapply(curve$fun,as)
 testX=1
 testY=1
-args=list(FUN=model$find.period,x=testX,y=testY, numTries=10) #,the rest of args
+
+args=list(FUN=model$find.period,x=testX,y=testY, numTries=10, maxPeriod=512) #,the rest of args
 args[[range$aname]]=curve$xValues
 args[[range$bname]]=curve$yValues
 periods=do.call(what=mapply,args=args)
@@ -96,7 +103,7 @@ narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
   p2=post$period
   x=(x1+x2)/2
   y=curve$fun(x)
-  args=list(x=testX,y=testY, numTries=10) #,the rest of args
+  args=list(x=testX,y=testY, numTries=10, maxPeriod=512) #,the rest of args
   args[[range$aname]]=x
   args[[range$bname]]=y
   p=do.call(model$find.period,args)
@@ -157,8 +164,8 @@ darken <- function(color, factor=1.4){
   col <- rgb(t(col), maxColorValue=255)
   col
 }
-
-numCol=length(segments)
+colMap=sort(unique(append(mapply(function(seg)seg$color,segments),c(1,0))))
+numCol=length(colMap)
 self=list(color=NULL) #temporary. will be removed when this is converted into a dsproto
 #slightly darker version of simmapperiod's colors
 if(is.null(self$cols) || length(self$cols)<numCol){
@@ -170,11 +177,20 @@ if(is.null(self$cols) || length(self$cols)<numCol){
     self$cols <- rainbow(numCol) #warning? More colors needed
 }
 
-colMap=sort(unique(append(mapply(function(seg)seg$color,segments),c(1,0))))
-
 
 for(i in 1:(length(segments))){
-  print(segments[[i]]$y)
   lines(segments[[i]]$x, segments[[i]]$y, lwd = curve$lwd,
         col = self$cols[[which(colMap==segments[[i]]$color)]], ... = curve$...)
 }
+
+
+#to find bifucation points
+narrow(phases[,2],phases[,ncol(phases)],tolerance=.000001)
+
+#when r=s/1.5, periodicity at s=2.826480 is 128
+#
+curve=dscurve(x/1.5)
+prev=list(start=0,period=1,stop=0)
+post=list(start=2.826480,period=256,stop=2.826480)
+narrow(prev,post,tolerance=.000001)
+
