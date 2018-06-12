@@ -23,8 +23,8 @@ model+curve
 #amax = max(range$alim)
 #as=seq(amin,amax,length.out=numPoints)
 #bs=mapply(curve$fun,as)
-testX=1
-testY=1
+testX=.1
+testY=.1
 
 args=list(FUN=model$find.period,x=testX,y=testY, numTries=10, maxPeriod=512) #,the rest of args
 args[[range$aname]]=curve$xValues
@@ -183,14 +183,46 @@ for(i in 1:(length(segments))){
         col = self$cols[[which(colMap==segments[[i]]$color)]], ... = curve$...)
 }
 
+addDistanceToPhase=function(phases){
+  findDist=function(index,phases){
+    phases[,index]$stop-phases[,index]$start
+  }
+  dist=mapply(findDist,1:ncol(phases),MoreArgs=list(phases))
+  withDist=rbind(phases,dist)
+  findRatio=function(index,phases){
+    (phases[,index]$dist)/(phases[,index+1]$dist)
+  }
+  ratio=append(NA,mapply(findRatio,1:(ncol(phases)-1),MoreArgs=list(withDist)))
+  rbind(withDist,ratio)
+}
 
 #to find bifucation points
-narrow(phases[,2],phases[,ncol(phases)],tolerance=.000001)
+addDistanceToPhase(narrow(phases[,2],phases[,ncol(phases)],tolerance=.000001))
 
 #when r=s/1.5, periodicity at s=2.826480 is 128
 #
 curve=dscurve(x/1.5)
 prev=list(start=0,period=1,stop=0)
 post=list(start=2.826480,period=256,stop=2.826480)
-narrow(prev,post,tolerance=.000001)
+addDistanceToPhase(narrow(prev,post,tolerance=.000001))
+
+make.phases=function(startA,endA,tolerance=sqrt(sqrt(.Machine$double.eps))){
+  startB=curve$fun(startA)
+  endB=curve$fun(endA)
+  args=list(x=testX,y=testY, numTries=10) #,the rest of args
+  args[[range$aname]]=startA
+  args[[range$bname]]=startB
+  startP=do.call(model$find.period,args)
+  args=list(x=testX,y=testY, numTries=10) #,the rest of args
+  args[[range$aname]]=endA
+  args[[range$bname]]=endB
+  endP=do.call(model$find.period,args)
+
+  prev=list(start=startA,period=startP,stop=startA)
+  post=list(start=endA,period=endP,stop=endA)
+  addDistanceToPhase(narrow(prev,post,tolerance))
+}
+
+
+
 
