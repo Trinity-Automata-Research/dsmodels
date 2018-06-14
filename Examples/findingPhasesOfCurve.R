@@ -47,39 +47,36 @@ periods=do.call(what=mapply,args=args)
 
 #we should stop this when we hit chaos
 #turn list of data frames into list of segments
-points = list(x=curve$xValues, y=curve$yValues, periods=periods)
-#list.group(points, periods)
-points=data.frame(points)
-segments=split.data.frame(points,as.factor(periods))
 
-segments=lapply(FUN=function (s) {list(x=segments[[s]]$x, y=segments[[s]]$y, color=as.numeric(s))}, X=names(segments))
-#print(segments)
+transitions = rle(periods)
+p = cumsum(transitions$lengths)
+n = length(p)
+starts = c(1,(p+1)[-n])
+ends = p
+phases = data.frame(astart = curve$xValues[starts],
+                    bstart = curve$yValues[starts],
+                    period = transitions$values,
+                    astop  = curve$xValues[ends],
+                    bstop  = curve$yValues[ends])
 
-#make list of phases
-mkphase = function(seg){
-  start=min(seg$x)
-  stop=max(seg$x)
-  p = seg$color
-  list(start=start,period=p,stop=stop)
+
+
+segments = vector("list", length=length(ends))
+for(i in 1:length(ends)) {
+  phase = starts[i]:ends[i]
+  segments[[i]] = data.frame(x = curve$xValues[phase], y = curve$yValues[phase], period=periods[phase])
 }
-#skip 0 by starting at 2? probably not what we actually want. we should filter segments for divergent and chaotic
-phases=mapply(mkphase,segments)
 
 
-
-
-
-
-processPhase=function(phaseNum){ #done for 1:(length(phases)-1)
-  phase=phases[,phaseNum]
-  phase=phases[,phaseNum]
-  #bin search for inflection. for now just taking the end of the phase
-  inflectionX=phase$stop
-  inflectionY=curve$fun(inflectionX)
-  segments[[phaseNum+1]]$x=append(segments[phaseNum+1]$x,inflectionX)
-  segments[[phaseNum+1]]$y=append(segments[phaseNum+1]$y,inflectionY)
-  list(period=phase$period,x=inflectionX,y=inflectionY)
-}
+#processPhase=function(phaseNum){ #done for 1:(length(phases)-1)
+#  phase=phases[,phaseNum]
+#  #bin search for inflection. for now just taking the end of the phase
+#  inflectionX=phase$stop
+#  inflectionY=curve$fun(inflectionX)
+#  segments[[phaseNum+1]]$x=append(segments[phaseNum+1]$x,inflectionX)
+#  segments[[phaseNum+1]]$y=append(segments[phaseNum+1]$y,inflectionY)
+#  list(period=phase$period,x=inflectionX,y=inflectionY)
+#}
 #inflections=mapply(processPhase,1:ncol(phases))
 
 #narrowing:
@@ -90,41 +87,56 @@ processPhase=function(phaseNum){ #done for 1:(length(phases)-1)
 # newPhases=cbind(newPhases[,1:(last-1)],new) #newPhases-last of newPhases +new
 #}
 
- #also takes curvefun, model but for now thoes are int hte global scope
+#sqdist from end of prev to start of post
+#eventually should be abstracted for parametric functions too
+phaseDist=function(prev,post){
+  x1=prev$astop
+  y1=prev$bstop
+  x2=post$astart
+  y2=post$bstart
+  sqdist(c(x1,y1),c(x2,y2))
+}
+
+ #also takes curvefun, model but for now thoes are in the global scope
 #if not within tolerance, add midpoint to appropriate segment?, call again with mid
 #else make new phases with right stop,start
 narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
-  x1=prev$stop
-  x2=post$start
-  if(x2-x1<tolerance){
-    return(cbind(prev,post))
+  #print(c(prev,post))
+  if(phaseDist(prev,post) < tolerance){ #xydist
+    return(rbind(prev,post))
   }
+  x1=prev$astop
+  x2=post$astart
   p1=prev$period
   p2=post$period
   x=(x1+x2)/2
   y=curve$fun(x)
-  args=list(x=testX,y=testY, numTries=10, maxPeriod=512) #,the rest of args
+  args=list(x=testX,y=testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
   args[[range$aname]]=x
   args[[range$bname]]=y
   p=do.call(model$find.period,args)
-  if(p>p1){
-    if(p<p2){ #new phase in between
-      mid=list(start=x,period=p,stop=x)
-      prev=narrow(prev,mid,tolerance)
+  if(p!=p1){
+    if(p!=p2){ #new phase in between
+      mid=list(astart=x,bstart=y ,period=p,astop=x, bstop=y)
+      prev=narrow(prev,mid,tolerance)   #compute both sides
       post=narrow(mid,post,tolerance)
-      lenPrev=ncol(prev)
-      midStart=prev[,lenPrev]$start
-      post[,1]$start=midStart
-      return(cbind(prev[,1:(lenPrev-1)],post))
+      lenPrev=nrow(prev)
+      midaStart=prev[lenPrev,]$astart   #merge the result from both sides
+      midbStart=prev[lenPrev,]$bstart
+      post[1,]$astart=midaStart
+      post[1,]$bstart=midbStart
+      return(rbind(prev[1:(lenPrev-1),],post))
     }
     else{
       #midpoint goes into post
-      post$start=x
+      post$astart=x
+      post$bstart=y
     }
   }
   else{
     #midpoint goes into prev
-    prev$stop=x
+    prev$astop=x
+    prev$bstop=y
   }
   return(narrow(prev,post,tolerance))
 
@@ -136,24 +148,24 @@ narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
 #compute p=periodicity of x=(x1+x2)/2.
 #if p>p1 return(binsearch(x,p,x2,p2))
 #else p<p2, so return(binsearch(x1,p1,x,p))
-binSearch= function(x1,p1,x2,p2, epsilon=sqrt(sqrt(.Machine$double.eps))){
-  if(x2-x1<epsilon){
-    return(x1)
-  }
-  x=(x1+x2)/2
-  y=curve$fun(x)
-  args=list(x=testX,y=testY, numTries=10) #,the rest of args
-  args[[range$aname]]=x
-  args[[range$bname]]=y
-  p=do.call(model$find.period,args)
-  if(p>p1){
-    if(p<p2)
-      return(c(binSearch(x1,p1,x,p,epsilon),binSearch(x,p,x2,p2,epsilon)))
-    return(binSearch(x1,p1,x,p,epsilon))
-  }
-  return(binSearch(x,p,x2,p2,epsilon))
-}
-
+##binSearch= function(x1,p1,x2,p2, epsilon=sqrt(sqrt(.Machine$double.eps))){
+#  if(x2-x1<epsilon){
+#    return(x1)
+#  }
+#  x=(x1+x2)/2
+#  y=curve$fun(x)
+#  args=list(x=testX,y=testY, numTries=10) #,the rest of args
+#  args[[range$aname]]=x
+#  args[[range$bname]]=y
+#  p=do.call(model$find.period,args)
+#  if(p>p1){
+#    if(p<p2)
+#      return(c(binSearch(x1,p1,x,p,epsilon),binSearch(x,p,x2,p2,epsilon)))
+#    return(binSearch(x1,p1,x,p,epsilon))
+#  }
+#  return(binSearch(x,p,x2,p2,epsilon))
+#}
+#
 
 
 
@@ -183,27 +195,27 @@ for(i in 1:(length(segments))){
         col = self$cols[[which(colMap==segments[[i]]$color)]], ... = curve$...)
 }
 
-addDistanceToPhase=function(phases){
+addDistanceToPhase=function(inPhase){
   findDist=function(index,phases){
-    phases[,index]$stop-phases[,index]$start
+    sqrt((phases[index,]$astop-phases[index,]$astart)^2 + (phases[index,]$bstop-phases[index,]$bstart)^2)
   }
-  dist=mapply(findDist,1:ncol(phases),MoreArgs=list(phases))
-  withDist=rbind(phases,dist)
+  dist=mapply(findDist,1:nrow(inPhase),MoreArgs=list(inPhase))
+  withDist=cbind(inPhase,dist)
   findRatio=function(index,phases){
-    (phases[,index]$dist)/(phases[,index+1]$dist)
+    (phases[index,]$dist)/(phases[index+1,]$dist)
   }
-  ratio=append(NA,mapply(findRatio,1:(ncol(phases)-1),MoreArgs=list(withDist)))
-  rbind(withDist,ratio)
+  ratio=append(NA,mapply(findRatio,1:(nrow(inPhase)-1),MoreArgs=list(withDist)))
+  cbind(withDist,ratio)
 }
 
 #to find bifucation points
-addDistanceToPhase(narrow(phases[,2],phases[,ncol(phases)],tolerance=.000001))
+addDistanceToPhase(narrow(phases[1,],phases[nrow(phases),],tolerance=.000001))
 
 #when r=s/1.5, periodicity at s=2.826480 is 128
-#
+
 curve=dscurve(x/1.5)
-prev=list(start=0,period=1,stop=0)
-post=list(start=2.826480,period=256,stop=2.826480)
+prev=list(astart=0,bstart=0,period=1,astop=0,bstart=0)
+post=list(astart=2.826480,bstart=2.826480/1.5, period=256,astop=2.826480,bstop=2.826480/1.5)
 addDistanceToPhase(narrow(prev,post,tolerance=.000001))
 
 make.phases=function(startA,endA,tolerance=sqrt(sqrt(.Machine$double.eps))){
@@ -218,11 +230,20 @@ make.phases=function(startA,endA,tolerance=sqrt(sqrt(.Machine$double.eps))){
   args[[range$bname]]=endB
   endP=do.call(model$find.period,args)
 
-  prev=list(start=startA,period=startP,stop=startA)
-  post=list(start=endA,period=endP,stop=endA)
+  prev=list(astart=startA,bstart=startB,period=startP,astop=startA,bstop=startB)
+  post=list(astart=endA,bstart=endB,period=endP,astop=endA,bstop=endB)
   addDistanceToPhase(narrow(prev,post,tolerance))
 }
 
+#chaos is hanled much nicer now, but there is still
+#a chance that you pick a phase whose endPoints share a periodicity even
+#though there is a different periodicity in between.
+#that means it is better to pick an endpoint very slightly into the chaos.
+# for x/1.5, 2.82648 is just outside of non- chaos.
+# i think 2.82647 is inside non- chaos
+
+#out? 2.826447 2.8248105
+#in?
 
 
 

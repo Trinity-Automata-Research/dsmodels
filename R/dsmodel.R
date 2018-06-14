@@ -508,11 +508,12 @@ safe.apply <- function(fun,inp){
 
 #' Returns the squared distance from a to b
 #'
-#' This function takes two list of points returns a list conaining
-#' the squared distance between each pair of points.
+#' This function takes two points and  returns
+#' the squared distance between the points.
 #' @keywords internal
-#' @param a a list of points to test
-#' @param b a list of points to test
+#' @param a a list of points to test in the form c(xValue,Yvalue)
+#' @param b a list of points to test in the form c(xValue,Yvalue)
+#' @export
 sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
