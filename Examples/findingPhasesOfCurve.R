@@ -1,14 +1,15 @@
 #make points
 #similar to dscruve
-if(!exists("model")){
+#\/ this adds to an existing model if one exists
+#if(!exists("model")){
 f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(x*exp(r-x-a*y),
        y*exp(s-b*x-y))
 }
 model=dsmodel(f)
-range = paramrange(alim=3,blim=3,paramNames = c(s,r))
-model + range
-}
+prange = paramrange(alim=3,blim=3,paramNames = c(s,r))
+model + prange
+#}
 #curve=dscurve(function(x)x/2, display = TRUE)
 
 
@@ -27,8 +28,8 @@ testX=.1
 testY=.1
 
 args=list(FUN=model$find.period,x=testX,y=testY, numTries=10, maxPeriod=512) #,the rest of args
-args[[range$aname]]=curve$xValues
-args[[range$bname]]=curve$yValues
+args[[prange$aname]]=curve$xValues
+args[[prange$bname]]=curve$yValues
 periods=do.call(what=mapply,args=args)
 
 #pointsWithPeriods=mapply(c,as,periods)
@@ -90,18 +91,21 @@ for(i in 1:length(ends)) {
 #sqdist from end of prev to start of post
 #eventually should be abstracted for parametric functions too
 phaseDist=function(prev,post){
+  print(c("prev",prev,"post",post))
   x1=prev$astop
   y1=prev$bstop
   x2=post$astart
   y2=post$bstart
-  sqdist(c(x1,y1),c(x2,y2))
+  p1=c(x1,y1)
+  p2=c(x2,y2)
+  sqdist(p1,p2)
 }
 
  #also takes curvefun, model but for now thoes are in the global scope
 #if not within tolerance, add midpoint to appropriate segment?, call again with mid
 #else make new phases with right stop,start
 narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
-  #print(c(prev,post))
+  print(c("prev",prev,"post",post))
   if(phaseDist(prev,post) < tolerance){ #xydist
     return(rbind(prev,post))
   }
@@ -112,12 +116,12 @@ narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
   x=(x1+x2)/2
   y=curve$fun(x)
   args=list(x=testX,y=testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
-  args[[range$aname]]=x
-  args[[range$bname]]=y
+  args[[prange$aname]]=x
+  args[[prange$bname]]=y
   p=do.call(model$find.period,args)
   if(p!=p1){
     if(p!=p2){ #new phase in between
-      mid=list(astart=x,bstart=y ,period=p,astop=x, bstop=y)
+      mid=data.frame(astart=x,bstart=y ,period=p,astop=x, bstop=y)
       prev=narrow(prev,mid,tolerance)   #compute both sides
       post=narrow(mid,post,tolerance)
       lenPrev=nrow(prev)
@@ -155,8 +159,8 @@ narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
 #  x=(x1+x2)/2
 #  y=curve$fun(x)
 #  args=list(x=testX,y=testY, numTries=10) #,the rest of args
-#  args[[range$aname]]=x
-#  args[[range$bname]]=y
+#  args[[prange$aname]]=x
+#  args[[prange$bname]]=y
 #  p=do.call(model$find.period,args)
 #  if(p>p1){
 #    if(p<p2)
@@ -176,7 +180,7 @@ darken <- function(color, factor=1.4){
   col <- rgb(t(col), maxColorValue=255)
   col
 }
-colMap=sort(unique(append(mapply(function(seg)seg$color,segments),c(1,0))))
+colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],segments),c(1,0))))
 numCol=length(colMap)
 self=list(color=NULL) #temporary. will be removed when this is converted into a dsproto
 #slightly darker version of simmapperiod's colors
@@ -192,7 +196,7 @@ if(is.null(self$cols) || length(self$cols)<numCol){
 
 for(i in 1:(length(segments))){
   lines(segments[[i]]$x, segments[[i]]$y, lwd = curve$lwd,
-        col = self$cols[[which(colMap==segments[[i]]$color)]], ... = curve$...)
+        col = self$cols[[which(colMap==segments[[i]]$period[[1]])]], ... = curve$...)
 }
 
 addDistanceToPhase=function(inPhase){
@@ -222,12 +226,12 @@ make.phases=function(startA,endA,tolerance=sqrt(sqrt(.Machine$double.eps))){
   startB=curve$fun(startA)
   endB=curve$fun(endA)
   args=list(x=testX,y=testY, numTries=10) #,the rest of args
-  args[[range$aname]]=startA
-  args[[range$bname]]=startB
+  args[[prange$aname]]=startA
+  args[[prange$bname]]=startB
   startP=do.call(model$find.period,args)
   args=list(x=testX,y=testY, numTries=10) #,the rest of args
-  args[[range$aname]]=endA
-  args[[range$bname]]=endB
+  args[[prange$aname]]=endA
+  args[[prange$bname]]=endB
   endP=do.call(model$find.period,args)
 
   prev=list(astart=startA,bstart=startB,period=startP,astop=startA,bstop=startB)
