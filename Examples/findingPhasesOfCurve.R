@@ -91,7 +91,7 @@ for(i in 1:length(ends)) {
 #sqdist from end of prev to start of post
 #eventually should be abstracted for parametric functions too
 phaseDist=function(prev,post){
-  print(c("prev",prev,"post",post))
+  #print(c("prev",prev,"post",post))
   x1=prev$astop
   y1=prev$bstop
   x2=post$astart
@@ -105,7 +105,7 @@ phaseDist=function(prev,post){
 #if not within tolerance, add midpoint to appropriate segment?, call again with mid
 #else make new phases with right stop,start
 narrow= function(prev,post,tolerance=sqrt(sqrt(.Machine$double.eps))){
-  print(c("prev",prev,"post",post))
+  #print(c("prev",prev,"post",post))
   if(phaseDist(prev,post) < tolerance){ #xydist
     return(rbind(prev,post))
   }
@@ -218,7 +218,7 @@ addDistanceToPhase(narrow(phases[1,],phases[nrow(phases),],tolerance=.000001))
 #when r=s/1.5, periodicity at s=2.826480 is 128
 
 curve=dscurve(x/1.5)
-prev=list(astart=0,bstart=0,period=1,astop=0,bstart=0)
+prev=list(astart=0,bstart=0,period=1,astop=0,bstop=0)
 post=list(astart=2.826480,bstart=2.826480/1.5, period=256,astop=2.826480,bstop=2.826480/1.5)
 addDistanceToPhase(narrow(prev,post,tolerance=.000001))
 
