@@ -533,64 +533,62 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         }
       }
     },
-    phaseDist=function(prev,post){
-      #print(c("prev",prev,"post",post))
-      x1=prev$astop
-      y1=prev$bstop
-      x2=post$astart
-      y2=post$bstart
+    phaseDist=function(self, prev, post){
+      x1=self$getX(prev$stop)
+      x2=self$getX(post$start)
+      y1=self$getY(prev$stop)
+      y2=self$getY(post$start)
       p1=c(x1,y1)
       p2=c(x2,y2)
       sqdist(p1,p2)
     },
-    narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
-      recurNarrow= function(prev,post,tolerance){
-        if(self$phaseDist(prev,post) < tolerance){ #xydist
-          return(rbind(prev,post))
-        }
-        x1=prev$astop
-        x2=post$astart
-        p1=prev$period
-        p2=post$period
-        x=(x1+x2)/2
-        y=self$fun(x)
-        args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
-        args[[model$range$aname]]=x
-        args[[model$range$bname]]=y
-        p=do.call(model$find.period,args)
-        if(p!=p1){
-          if(p!=p2){ #new phase in between
-            mid=data.frame(astart=x,bstart=y ,period=p,astop=x, bstop=y)
-            prev=recurNarrow(prev,mid,tolerance)   #compute both sides
-            post=recurNarrow(mid,post,tolerance)
-            lenPrev=nrow(prev)
-            midaStart=prev[lenPrev,]$astart   #merge the result from both sides
-            midbStart=prev[lenPrev,]$bstart
-            post[1,]$astart=midaStart
-            post[1,]$bstart=midbStart
-            return(rbind(prev[1:(lenPrev-1),],post))
-          }
-          else{
-            #midpoint goes into post
-            post$astart=x
-            post$bstart=y
-          }
+    recurNarrow= function(self, prev,post,tolerance){
+      if(self$phaseDist(prev,post) < tolerance){ #xydist
+        return(rbind(prev,post))
+      }
+      midPoint=(prev$stop+post$start)/2
+      p1=prev$period
+      p2=post$period
+      x=self$getX(midPoint)
+      y=self$getY(midPoint)
+      args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
+      args[[model$range$aname]]=x
+      args[[model$range$bname]]=y
+      p=do.call(model$find.period,args)
+      if(p!=p1){
+        if(p!=p2){ #new phase in between
+          mid=data.frame(start=midPoint ,period=p,stop=midPoint)
+          prev=self$recurNarrow(prev,mid,tolerance)   #compute both sides
+          post=self$recurNarrow(mid,post,tolerance)
+          lenPrev=nrow(prev)
+          midStart=prev[lenPrev,]$start   #merge the result from both sides
+          post[1,]$start=midStart
+          return(rbind(prev[1:(lenPrev-1),],post))
         }
         else{
-          #midpoint goes into prev
-          prev$astop=x
-          prev$bstop=y
+          #midpoint goes into post
+          post$start=midPoint
         }
-        return(recurNarrow(prev,post,tolerance))
-
       }
-      pha=recurNarrow(self$phaseFrame[1,],self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
+      else{
+        #midpoint goes into prev
+        prev$stop=midPoint
+      }
+      return(self$recurNarrow(prev,post,tolerance))
+
+    },
+    narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
+      pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
       self$phaseFrame=pha
       pha
     },
-    addDistanceToPhase=function(inPhase){
+    addDistanceToPhase=function(self,inPhase){
       findDist=function(index,phases){
-        sqrt((phases[index,]$astop-phases[index,]$astart)^2 + (phases[index,]$bstop-phases[index,]$bstart)^2)
+        x1=self$getX(phases[index,]$stop)
+        x2=self$getX(phases[index,]$start)
+        y1=self$getY(phases[index,]$stop)
+        y2=self$getY(phases[index,]$start)
+        sqrt((x1-x2)^2 + (y1-y2)^2)
       }
       dist=mapply(findDist,1:nrow(inPhase),MoreArgs=list(inPhase))
       withDist=cbind(inPhase,dist)
