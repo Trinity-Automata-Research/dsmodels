@@ -436,32 +436,6 @@ simcurve= function(getX, getY, colors, testX, testY, lwd, n, iters,
   )
 }
 
-simcurveParam= function(getX, getY, colors, testX, testY, lwd, n, lims,
-                        iters, discretize = FALSE, display, ...){
-  parent=simcurve(getX=getX, getY=getY, colors=colors, testX=testX, testY=testY, lwd=lwd, n=n,
-                  iters=iters, discretize = discretize , lims=lims, display=display, ...=...)
-  dsproto(
-    `_class` = "curve", `_inherit` = parent
-  )
-}
-
-
-simcurveGraph= function(getX, getY, colors, testX, testY, lwd, n, iters,
-                        discretize = FALSE,
-                        lims = NULL, display, ...){
-  parent=simcurve(getX=getX, getY=getY, colors=colors, testX=testX, testY=testY, lwd=lwd, n=n,
-                  iters=iters, discretize = discretize, lims=lims, display=display, ...=...)
-
-  dsproto(
-    `_class` = "curve", `_inherit` = parent
-  )
-}
-
-
-
-
-
-
 #' Reports whether x is a dscurves object.
 #' @param x An object to test.
 # @rdname dscurve
