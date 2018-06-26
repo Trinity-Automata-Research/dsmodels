@@ -268,7 +268,7 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
                         iters, discretize = FALSE, display, ...){
   dsproto(
     `_class` = "curve", `_inherit` = feature,
-    xfun = xfun, yfun=yfun,
+    xfun = xfun, yfun = yfun,
     col = colors,
     testX=testX, testY=testY,
     lwd = lwd,
@@ -282,6 +282,12 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
     discretize = discretize,
     display = display,
     ... = ...,
+    getX = function(self, source){
+      self$xfun(source)
+    },
+    getY = function(self, source){
+      self$yfun(source)
+    },
     on.bind = function(self, model) {
       dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
       self$bound = TRUE
@@ -289,9 +295,9 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
         numPoints <- model$range$renderCount
       else
         numPoints <- self$n
-      self$tValues <-seq(self$tstart, self$tend, length.out = numPoints)
-      self$xValues <-self$xfun(self$tValues)
-      self$yValues <-self$yfun(self$tValues)
+      self$sources <-seq(self$tstart, self$tend, length.out = numPoints)
+      self$xValues <-self$getX(self$sources)
+      self$yValues <-self$getY(self$sources)
 
       args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
       self$aname=model$range$aname
@@ -305,11 +311,9 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
       n = length(p)
       starts = c(1,(p+1)[-n])
       ends = p
-      self$phaseFrame = data.frame(astart = self$xValues[starts],
-                                   bstart = self$yValues[starts],
+      self$phaseFrame = data.frame(start  = self$sources[starts],
                                    period = transitions$values,
-                                   astop  = self$xValues[ends],
-                                   bstop  = self$yValues[ends])
+                                   stop   = self$sources[ends])
 
       segments = vector("list", length=length(ends))
       for(i in 1:length(ends)) {
@@ -353,66 +357,62 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
         }
       }
     },
-    phaseDist=function(prev,post){
-      #print(c("prev",prev,"post",post))
-      x1=prev$astop
-      y1=prev$bstop
-      x2=post$astart
-      y2=post$bstart
+    phaseDist=function(self, prev, post){
+      x1=self$getX(prev$stop)
+      x2=self$getX(post$start)
+      y1=self$getY(prev$stop)
+      y2=self$getY(post$start)
       p1=c(x1,y1)
       p2=c(x2,y2)
       sqdist(p1,p2)
     },
-    narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
-      recurNarrow= function(prev,post,tolerance){
-        if(self$phaseDist(prev,post) < tolerance){ #xydist
-          return(rbind(prev,post))
-        }
-        x1=prev$astop
-        x2=post$astart
-        y1=prev$bstop
-        y2=post$bstart
-        p1=prev$period
-        p2=post$period
-        x=(x1+x2)/2
-        y=(y1+y2)/2 #FIXME: parametric's phaes should store tvalues and calculate the x and y at the average of t, not the average of x and y.
-        args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
-        args[[model$range$aname]]=x
-        args[[model$range$bname]]=y
-        p=do.call(model$find.period,args)
-        if(p!=p1){
-          if(p!=p2){ #new phase in between
-            mid=data.frame(astart=x,bstart=y ,period=p,astop=x, bstop=y)
-            prev=recurNarrow(prev,mid,tolerance)   #compute both sides
-            post=recurNarrow(mid,post,tolerance)
-            lenPrev=nrow(prev)
-            midaStart=prev[lenPrev,]$astart   #merge the result from both sides
-            midbStart=prev[lenPrev,]$bstart
-            post[1,]$astart=midaStart
-            post[1,]$bstart=midbStart
-            return(rbind(prev[1:(lenPrev-1),],post))
-          }
-          else{
-            #midpoint goes into post
-            post$astart=x
-            post$bstart=y
-          }
+    recurNarrow= function(self, prev,post,tolerance){
+      if(self$phaseDist(prev,post) < tolerance){ #xydist
+        return(rbind(prev,post))
+      }
+      midPoint=(prev$stop+post$start)/2
+      p1=prev$period
+      p2=post$period
+      x=self$getX(midPoint)
+      y=self$getY(midPoint)
+      args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
+      args[[model$range$aname]]=x
+      args[[model$range$bname]]=y
+      p=do.call(model$find.period,args)
+      if(p!=p1){
+        if(p!=p2){ #new phase in between
+          mid=data.frame(start=midPoint ,period=p,stop=midPoint)
+          prev=self$recurNarrow(prev,mid,tolerance)   #compute both sides
+          post=self$recurNarrow(mid,post,tolerance)
+          lenPrev=nrow(prev)
+          midStart=prev[lenPrev,]$start   #merge the result from both sides
+          post[1,]$start=midStart
+          return(rbind(prev[1:(lenPrev-1),],post))
         }
         else{
-          #midpoint goes into prev
-          prev$astop=x
-          prev$bstop=y
+          #midpoint goes into post
+          post$start=midPoint
         }
-        return(recurNarrow(prev,post,tolerance))
-
       }
-      pha=recurNarrow(self$phaseFrame[1,],self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
+      else{
+        #midpoint goes into prev
+        prev$stop=midPoint
+      }
+      return(self$recurNarrow(prev,post,tolerance))
+
+    },
+    narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
+      pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
       self$phaseFrame=pha
       pha
     },
-    addDistanceToPhase=function(inPhase){
+    addDistanceToPhase=function(self,inPhase){
       findDist=function(index,phases){
-        sqrt((phases[index,]$astop-phases[index,]$astart)^2 + (phases[index,]$bstop-phases[index,]$bstart)^2)
+        x1=self$getX(phases[index,]$stop)
+        x2=self$getX(phases[index,]$start)
+        y1=self$getY(phases[index,]$stop)
+        y2=self$getY(phases[index,]$start)
+        sqrt((x1-x2)^2 + (y1-y2)^2)
       }
       dist=mapply(findDist,1:nrow(inPhase),MoreArgs=list(inPhase))
       withDist=cbind(inPhase,dist)
@@ -451,6 +451,12 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
     discretize = discretize,
     display = display,
     ... = ...,
+    getX = function(self, source){
+      source
+    },
+    getY = function(self, source){
+      self$fun(source)
+    },
     on.bind = function(self, model) {
       dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
       self$bound = TRUE
@@ -594,7 +600,7 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
       ratio=append(NA,mapply(findRatio,1:(nrow(inPhase)-1),MoreArgs=list(withDist)))
       cbind(withDist,ratio)
     },
-    phases=function(self, distances=FALSE){
+    phases=function(self, distances=FALSE){ #sources=TRUE, params=FALSE #add or take out columns of phaseFrame accordingly.
       if(distances){
         self$phaseFrame=self$addDistanceToPhase(self$phaseFrame)
       }
