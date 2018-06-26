@@ -353,13 +353,13 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         if(self$discretize){
           for(i in 1:(self$iters+1)){
             points(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = curve$...)
+                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = self$...)
           }
         }
         else{
           for(i in 1:(length(self$toPlot))){
             lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = curve$...)
+                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = self$...)
           }
         }
       }
