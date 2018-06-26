@@ -324,7 +324,7 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
         col <- rgb(t(col), maxColorValue=255)
         col
       }
-      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
+      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0,Inf))))
       numCol=length(colMap)
       #slightly darker version of simmapperiod's colors
       if(is.null(self$col) || length(self$col)<numCol){
@@ -496,7 +496,7 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         col <- rgb(t(col), maxColorValue=255)
         col
       }
-      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
+      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0,Inf))))
       numCol=length(colMap)
       #slightly darker version of simmapperiod's colors
       if(is.null(self$col) || length(self$col)<numCol){
