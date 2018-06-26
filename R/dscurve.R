@@ -133,6 +133,7 @@ dscurve <- function(fun, yfun = NULL,
     }
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
+    xlim=make.lims(xlim)
     if(simPeriod){
       simcurveGraph(fun = func, colors = colors,  testX=testX, testY=testY,
                    lwd = lwd, n = n, iters = iters, discretize = discretize,
@@ -276,18 +277,24 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
     n = n,
     tstart=tstart,
     tend=tend,
+    sources = NULL,
     xValues = NULL,
     yValues = NULL,
     toPlot = NULL,
     discretize = discretize,
     display = display,
     ... = ...,
+    #functions that differ
     getX = function(self, source){
       self$xfun(source)
     },
     getY = function(self, source){
       self$yfun(source)
     },
+    makeSourceSeq= function(self, model, numPoints){
+      self$sources <-seq(self$tstart, self$tend, length.out = numPoints)
+    },
+    #functions to interact with the model
     on.bind = function(self, model) {
       dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
       self$bound = TRUE
@@ -295,7 +302,7 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
         numPoints <- model$range$renderCount
       else
         numPoints <- self$n
-      self$sources <-seq(self$tstart, self$tend, length.out = numPoints)
+      self$sources <-self$makeSourceSeq(model, numPoints)
       self$xValues <-self$getX(self$sources)
       self$yValues <-self$getY(self$sources)
 
@@ -357,6 +364,7 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
         }
       }
     },
+    #functions to give data to the user
     phaseDist=function(self, prev, post){
       x1=self$getX(prev$stop)
       x2=self$getX(post$start)
@@ -451,12 +459,23 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
     discretize = discretize,
     display = display,
     ... = ...,
+    #functions that differ
     getX = function(self, source){
       source
     },
     getY = function(self, source){
       self$fun(source)
     },
+    makeSourceSeq= function(self, model, numPoints){
+      from=min(model$range$alim)#build a sequence inside the range. maybe seqeuences outside the range should be allowed?
+      to=max(model$range$alim)
+      if(!is.null(xlim)){
+        from=max(from,min(xlim))
+        to=min(to,max(xlim))
+      }
+      seq(from,to, length.out = numPoints)
+    },
+    #functions for interacting with the model
     on.bind = function(self, model) {
       dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
       self$bound = TRUE
@@ -464,14 +483,9 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         numPoints <- model$range$renderCount
       else
         numPoints <- self$n
-      from=min(model$range$alim)
-      to=max(model$range$alim)
-      if(!is.null(xlim)){
-        from=max(from,min(xlim))
-        to=min(to,max(xlim))
-      }
-      self$xValues <-seq(from,to, length.out = numPoints)
-      self$yValues <- mapply(self$fun,self$xValues)
+      self$sources <-self$makeSourceSeq(model, numPoints)
+      self$xValues <-self$getX(self$sources)
+      self$yValues <-self$getY(self$sources)
 
       args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
       self$aname=model$range$aname
@@ -485,11 +499,9 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
       n = length(p)
       starts = c(1,(p+1)[-n])
       ends = p
-      self$phaseFrame = data.frame(astart = self$xValues[starts],
-                          bstart = self$yValues[starts],
+      self$phaseFrame = data.frame(start = self$sources[starts],
                           period = transitions$values,
-                          astop  = self$xValues[ends],
-                          bstop  = self$yValues[ends])
+                          stop  = self$sources[ends])
 
       segments = vector("list", length=length(ends))
       for(i in 1:length(ends)) {
@@ -533,6 +545,7 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         }
       }
     },
+    #functions to give data to the user
     phaseDist=function(self, prev, post){
       x1=self$getX(prev$stop)
       x2=self$getX(post$start)
