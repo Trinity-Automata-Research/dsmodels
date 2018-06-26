@@ -14,7 +14,7 @@ model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries
 c=dscurve(x/2,simPeriod = TRUE)
 model+c
 print(c$narrow(model))
-print(c$phases(distances=TRUE))
+print(c$phases(distances=TRUE,params=TRUE))
 
 
 
@@ -23,7 +23,7 @@ print(c$phases(distances=TRUE))
 c=dscurve(1*t,3*t,simPeriod = TRUE)
 model+c
 print(c$narrow(model))
-print(c$phases(distances=TRUE))
+print(c$phases(distances=TRUE,params=TRUE,source=FALSE))
 
 
 #TODO: test with different parameters

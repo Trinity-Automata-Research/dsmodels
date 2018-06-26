@@ -426,11 +426,28 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
     ratio=append(NA,mapply(findRatio,1:(nrow(inPhase)-1),MoreArgs=list(withDist)))
     cbind(withDist,ratio)
   },
-  phases=function(self, distances=FALSE){  #sources=TRUE, params=FALSE #add or take out columns of phaseFrame accordingly.
-    if(distances){
-      self$phaseFrame=self$addDistanceToPhase(self$phaseFrame)
+  phases=function(self, distances=FALSE, sources=TRUE, params=FALSE){  #add or take out columns of phaseFrame accordingly.
+    ret=self$phaseFrame
+    if(params){
+      startA=paste("start",self$aname)
+      stopA=paste("stop",self$aname)
+      startB=paste("start",self$bname)
+      stopB=paste("stop",self$bname)
+      start=ret$start
+      stop=ret$stop
+      add=data.frame(self$getX(start),self$getY(start),self$getX(stop),self$getY(stop))
+      names(add)=c(startA,startB,stopA,stopB)
+      ret=cbind(ret,add)
+      ret=ret[c("start",startA,startB,"period","stop",stopA,stopB)]
     }
-    self$phaseFrame
+    if(distances){
+      ret=self$addDistanceToPhase(ret)
+    }
+
+    if(!sources){
+      ret[,c("start","stop")]=NULL
+    }
+    ret
   }
 
   )
