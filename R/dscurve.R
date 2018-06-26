@@ -307,8 +307,10 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
       self$yValues <- mapply(self$fun,self$xValues)
 
       args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
-      args[[model$range$aname]]=self$xValues
-      args[[model$range$bname]]=self$yValues
+      self$aname=model$range$aname
+      self$bname=model$range$bname
+      args[[self$aname]]=self$xValues
+      args[[self$bname]]=self$yValues
       periods=do.call(what=mapply,args=args)
 
       transitions = rle(periods)
@@ -364,10 +366,19 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         }
       }
     },
-    narrow= function(self,tolerance=sqrt(sqrt(.Machine$double.eps))){
+    phaseDist=function(prev,post){
+      #print(c("prev",prev,"post",post))
+      x1=prev$astop
+      y1=prev$bstop
+      x2=post$astart
+      y2=post$bstart
+      p1=c(x1,y1)
+      p2=c(x2,y2)
+      sqdist(p1,p2)
+    },
+    narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
       recurNarrow= function(prev,post,tolerance){
-        #print(c("prev",prev,"post",post))
-        if(phaseDist(prev,post) < tolerance){ #xydist
+        if(self$phaseDist(prev,post) < tolerance){ #xydist
           return(rbind(prev,post))
         }
         x1=prev$astop
@@ -375,10 +386,10 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         p1=prev$period
         p2=post$period
         x=(x1+x2)/2
-        y=curve$fun(x)
-        args=list(x=testX,y=testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
-        args[[prange$aname]]=x
-        args[[prange$bname]]=y
+        y=self$fun(x)
+        args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
+        args[[model$range$aname]]=x
+        args[[model$range$bname]]=y
         p=do.call(model$find.period,args)
         if(p!=p1){
           if(p!=p2){ #new phase in between
@@ -406,7 +417,9 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         return(recurNarrow(prev,post,tolerance))
 
       }
-      recurNarrow(phases[1,],phases[nrow(phases),],tolerance=tolerance)
+      pha=recurNarrow(self$phases[1,],self$phases[nrow(self$phases),],tolerance=tolerance)
+      self$phases=pha
+      pha
     }
   )
 }
