@@ -10,7 +10,6 @@
 #'
 #' If the parameter \code{yfun} is not provided, then \code{dscurve} contains
 #' the curve of points (x,fun(x)). The inputs to \code{fun} are \code{n} points between the maximum
-#  and minimum. The maximum and minimum are taken from  the
 #' \code{\link{dsrange}}'s x limits, but can be overwritten with the \code{xlim} parameter.
 #' \code{fun} can either be any function of a single parameter, or an expression with exactly \code{x} as the free variable.
 #'
@@ -118,11 +117,10 @@ dscurve <- function(fun, yfun = NULL,
     xfunc <- ensureFunction(substitute(fun), TRUE)
     yfunc <- ensureFunction(substitute(yfun), TRUE)
     if(simPeriod){
-      simcurveParam(xfun = xfunc, yfun = yfunc,
-                   colors = colors, testX=testX, testY=testY, lwd = lwd,
-                   n = n, iters = iters, discretize = discretize,
-                   tstart = tstart, tend = tend, display,
-                   ...)
+      simcurve(getX = xfunc, getY = yfunc,
+               colors = colors, testX=testX, testY=testY, lwd = lwd,
+               n = n, iters = iters, discretize = discretize,
+               lims=c(tstart,tend), display, ...)
     }
     else{
       dscurveParam(xfun = xfunc, yfun = yfunc,
@@ -133,12 +131,11 @@ dscurve <- function(fun, yfun = NULL,
     }
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
-    xlim=make.lims(xlim)
     if(simPeriod){
-      simcurveGraph(fun = func, colors = colors,  testX=testX, testY=testY,
-                   lwd = lwd, n = n, iters = iters, discretize = discretize,
-                   xlim = xlim, display, ...)
-    }
+      simcurve(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
+               lwd = lwd, n = n, iters = iters, discretize = discretize,
+               lims = xlim, display=display, ...)
+}
     else{
       dscurveGraph(fun = func, colors = colors,
                    lwd = lwd, n = n, iters = iters, discretize = discretize,
@@ -264,11 +261,13 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
     }
   )
 }
-simcurve= function(colors, testX, testY, lwd, n, iters,
+simcurve= function(getX, getY, colors, testX, testY, lwd, n, iters,
                    discretize = FALSE,
-                   xlim = NULL, display, ...){
+                   lims = NULL, display, ...){
   dsproto(
   `_class` = "curve", `_inherit` = feature,
+  getX=getX,
+  getY=getY,
   col = colors,
   testX=testX, testY=testY,
   lwd = lwd,
@@ -279,9 +278,19 @@ simcurve= function(colors, testX, testY, lwd, n, iters,
   yValues = NULL,
   toPlot = NULL,
   discretize = discretize,
+  lims=lims,
   display = display,
   ... = ...,
   #functions to interact with the model
+  makeSourceSeq= function(self, model, numPoints){
+    if(is.null(self$lims))
+      self$lims=model$range$alim
+    else
+      self$lims=make.lims(self$lims)
+    from=min(self$lims)
+    to=max(self$lims)
+    seq(from,to, length.out = numPoints)
+  },
   on.bind = function(self, model) {
     dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
     self$bound = TRUE
@@ -427,55 +436,24 @@ simcurve= function(colors, testX, testY, lwd, n, iters,
   )
 }
 
-simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend=1,
+simcurveParam= function(getX, getY, colors, testX, testY, lwd, n, lims,
                         iters, discretize = FALSE, display, ...){
-  parent=simcurve(colors=colors, testX=testX, testY=testY, lwd=lwd, n=n,
-                  iters=iters, discretize = discretize , display=display, ...=...)
+  parent=simcurve(getX=getX, getY=getY, colors=colors, testX=testX, testY=testY, lwd=lwd, n=n,
+                  iters=iters, discretize = discretize , lims=lims, display=display, ...=...)
   dsproto(
-    `_class` = "curve", `_inherit` = parent,
-    xfun = xfun, yfun = yfun,
-    tstart=tstart,
-    tend=tend,
-    #functions that differ
-    getX = function(self, source){
-      self$xfun(source)
-    },
-    getY = function(self, source){
-      self$yfun(source)
-    },
-    makeSourceSeq= function(self, model, numPoints){
-      self$sources <-seq(self$tstart, self$tend, length.out = numPoints)
-    }
+    `_class` = "curve", `_inherit` = parent
   )
 }
 
 
-simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
+simcurveGraph= function(getX, getY, colors, testX, testY, lwd, n, iters,
                         discretize = FALSE,
-                        xlim = NULL, display, ...){
-  parent=simcurve(colors=colors, testX=testX, testY=testY, lwd=lwd, n=n,
-                  iters=iters, discretize = discretize , display=display, ...=...)
+                        lims = NULL, display, ...){
+  parent=simcurve(getX=getX, getY=getY, colors=colors, testX=testX, testY=testY, lwd=lwd, n=n,
+                  iters=iters, discretize = discretize, lims=lims, display=display, ...=...)
 
   dsproto(
-    `_class` = "curve", `_inherit` = parent,
-    fun = fun,
-    xlim = xlim,
-    #functions that differ
-    getX = function(self, source){
-      source
-    },
-    getY = function(self, source){
-      self$fun(source)
-    },
-    makeSourceSeq= function(self, model, numPoints){
-      from=min(model$range$alim)#build a sequence inside the range. maybe seqeuences outside the range should be allowed?
-      to=max(model$range$alim)
-      if(!is.null(xlim)){
-        from=max(from,min(xlim))
-        to=min(to,max(xlim))
-      }
-      seq(from,to, length.out = numPoints)
-    }
+    `_class` = "curve", `_inherit` = parent
   )
 }
 
