@@ -120,7 +120,7 @@ dscurve <- function(fun, yfun = NULL,
     if(simPeriod){
       simcurveParam(xfun = xfunc, yfun = yfunc,
                    colors = colors, testX=testX, testY=testY, lwd = lwd,
-                   n = n, iters = iters, crop, discretize = discretize,
+                   n = n, iters = iters, discretize = discretize,
                    tstart = tstart, tend = tend, display,
                    ...)
     }
@@ -136,7 +136,7 @@ dscurve <- function(fun, yfun = NULL,
     if(simPeriod){
       simcurveGraph(fun = func, colors = colors,  testX=testX, testY=testY,
                    lwd = lwd, n = n, iters = iters, discretize = discretize,
-                   crop, xlim = xlim, display, ...)
+                   xlim = xlim, display, ...)
     }
     else{
       dscurveGraph(fun = func, colors = colors,
@@ -265,14 +265,174 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
 }
 
 simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend=1,
-                        iters, crop = TRUE, discretize = FALSE, display, ...){
+                        iters, discretize = FALSE, display, ...){
+  dsproto(
+    `_class` = "curve", `_inherit` = feature,
+    xfun = xfun, yfun=yfun,
+    col = colors,
+    testX=testX, testY=testY,
+    lwd = lwd,
+    iters = iters,
+    n = n,
+    tstart=tstart,
+    tend=tend,
+    xValues = NULL,
+    yValues = NULL,
+    toPlot = NULL,
+    discretize = discretize,
+    display = display,
+    ... = ...,
+    on.bind = function(self, model) {
+      dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
+      self$bound = TRUE
+      if(is.null(self$n))
+        numPoints <- model$range$renderCount
+      else
+        numPoints <- self$n
+      self$tValues <-seq(self$tstart, self$tend, length.out = numPoints)
+      self$xValues <-self$xfun(self$tValues)
+      self$yValues <-self$yfun(self$tValues)
 
+      args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
+      self$aname=model$range$aname
+      self$bname=model$range$bname
+      args[[self$aname]]=self$xValues
+      args[[self$bname]]=self$yValues
+      periods=do.call(what=mapply,args=args)
+
+      transitions = rle(periods)
+      p = cumsum(transitions$lengths)
+      n = length(p)
+      starts = c(1,(p+1)[-n])
+      ends = p
+      self$phaseFrame = data.frame(astart = self$xValues[starts],
+                                   bstart = self$yValues[starts],
+                                   period = transitions$values,
+                                   astop  = self$xValues[ends],
+                                   bstop  = self$yValues[ends])
+
+      segments = vector("list", length=length(ends))
+      for(i in 1:length(ends)) {
+        phase = starts[i]:ends[i]
+        segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
+      }
+      self$toPlot=segments
+
+      darken <- function(color, factor=1.4){
+        col <- col2rgb(color)
+        col <- col/factor
+        col <- rgb(t(col), maxColorValue=255)
+        col
+      }
+      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
+      numCol=length(colMap)
+      #slightly darker version of simmapperiod's colors
+      if(is.null(self$col) || length(self$col)<numCol){
+        if (numCol <= 6)
+          self$col <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
+        else if (numCol <= 28)
+          self$col <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
+        else
+          self$col <- rainbow(numCol) #warning? More colors needed
+      }
+      self$colMap=colMap
+    },
+    render = function(self, model) {
+      if(display){
+        if(self$discretize){
+          for(i in 1:(self$iters+1)){
+            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
+                   col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = self$...)
+          }
+        }
+        else{
+          for(i in 1:(length(self$toPlot))){
+            lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
+                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = self$...)
+          }
+        }
+      }
+    },
+    phaseDist=function(prev,post){
+      #print(c("prev",prev,"post",post))
+      x1=prev$astop
+      y1=prev$bstop
+      x2=post$astart
+      y2=post$bstart
+      p1=c(x1,y1)
+      p2=c(x2,y2)
+      sqdist(p1,p2)
+    },
+    narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
+      recurNarrow= function(prev,post,tolerance){
+        if(self$phaseDist(prev,post) < tolerance){ #xydist
+          return(rbind(prev,post))
+        }
+        x1=prev$astop
+        x2=post$astart
+        p1=prev$period
+        p2=post$period
+        x=(x1+x2)/2
+        y=self$fun(x)
+        args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
+        args[[model$range$aname]]=x
+        args[[model$range$bname]]=y
+        p=do.call(model$find.period,args)
+        if(p!=p1){
+          if(p!=p2){ #new phase in between
+            mid=data.frame(astart=x,bstart=y ,period=p,astop=x, bstop=y)
+            prev=recurNarrow(prev,mid,tolerance)   #compute both sides
+            post=recurNarrow(mid,post,tolerance)
+            lenPrev=nrow(prev)
+            midaStart=prev[lenPrev,]$astart   #merge the result from both sides
+            midbStart=prev[lenPrev,]$bstart
+            post[1,]$astart=midaStart
+            post[1,]$bstart=midbStart
+            return(rbind(prev[1:(lenPrev-1),],post))
+          }
+          else{
+            #midpoint goes into post
+            post$astart=x
+            post$bstart=y
+          }
+        }
+        else{
+          #midpoint goes into prev
+          prev$astop=x
+          prev$bstop=y
+        }
+        return(recurNarrow(prev,post,tolerance))
+
+      }
+      pha=recurNarrow(self$phaseFrame[1,],self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
+      self$phaseFrame=pha
+      pha
+    },
+    addDistanceToPhase=function(inPhase){
+      findDist=function(index,phases){
+        sqrt((phases[index,]$astop-phases[index,]$astart)^2 + (phases[index,]$bstop-phases[index,]$bstart)^2)
+      }
+      dist=mapply(findDist,1:nrow(inPhase),MoreArgs=list(inPhase))
+      withDist=cbind(inPhase,dist)
+      findRatio=function(index,phases){
+        (phases[index,]$dist)/(phases[index+1,]$dist)
+      }
+      ratio=append(NA,mapply(findRatio,1:(nrow(inPhase)-1),MoreArgs=list(withDist)))
+      cbind(withDist,ratio)
+    },
+    phases=function(self, distances=FALSE){
+      if(distances){
+        self$phaseFrame=self$addDistanceToPhase(self$phaseFrame)
+      }
+      self$phaseFrame
+    }
+  )
 
 }
 
 
 simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
-                        crop = FALSE, discretize = FALSE,
+                        discretize = FALSE,
                         xlim = NULL, display, ...){
   dsproto(
     `_class` = "curve", `_inherit` = feature,
@@ -287,7 +447,6 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
     toPlot = NULL,
     xlim = xlim,
     discretize = discretize,
-    crop = crop,
     display = display,
     ... = ...,
     on.bind = function(self, model) {
