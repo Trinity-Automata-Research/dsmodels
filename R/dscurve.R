@@ -103,7 +103,7 @@
 #' @export
 dscurve <- function(fun, yfun = NULL,
                     col = "black", image = NULL,
-                    lwd = 3, n=NULL, iters = 0,
+                    lwd = 3, n=NULL, iters = 0, simPeriod=FALSE,
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {
@@ -116,16 +116,32 @@ dscurve <- function(fun, yfun = NULL,
   if(!safe.apply(is.null,yfun)){
     xfunc <- ensureFunction(substitute(fun), TRUE)
     yfunc <- ensureFunction(substitute(yfun), TRUE)
-    dscurveParam(xfun = xfunc, yfun = yfunc,
-                 colors = colors, lwd = lwd,
-                 n = n, iters = iters, crop, discretize = discretize,
-                 tstart = tstart, tend = tend, display,
-                 ...)
+    if(simPeriod){
+      simcurveParam(xfun = xfunc, yfun = yfunc,
+                   colors = colors, lwd = lwd,
+                   n = n, iters = iters, crop, discretize = discretize,
+                   tstart = tstart, tend = tend, display,
+                   ...)
+    }
+    else{
+      dscurveParam(xfun = xfunc, yfun = yfunc,
+                   colors = colors, lwd = lwd,
+                   n = n, iters = iters, crop, discretize = discretize,
+                   tstart = tstart, tend = tend, display,
+                   ...)
+    }
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
-    dscurveGraph(fun = func, colors = colors,
-                 lwd = lwd, n = n, iters = iters, discretize = discretize,
-                 crop, xlim = xlim, display, ...)
+    if(simPeriod){
+      simcurveGraph(fun = func, colors = colors,
+                   lwd = lwd, n = n, iters = iters, discretize = discretize,
+                   crop, xlim = xlim, display, ...)
+    }
+    else{
+      dscurveGraph(fun = func, colors = colors,
+                   lwd = lwd, n = n, iters = iters, discretize = discretize,
+                   crop, xlim = xlim, display, ...)
+    }
 
   }
 }
@@ -246,6 +262,25 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
     }
   )
 }
+
+simcurveParam= function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
+                        iters, crop = TRUE, discretize = FALSE, display, ...){
+
+
+}
+
+
+simcurveGraph= function(fun, colors, lwd, n, iters,
+                        crop = FALSE, discretize = FALSE,
+                        xlim = NULL, display, ...){
+
+
+}
+
+
+
+
+
 
 #' Reports whether x is a dscurves object.
 #' @param x An object to test.
