@@ -104,6 +104,7 @@
 dscurve <- function(fun, yfun = NULL,
                     col = "black", image = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE,
+                    testX=.1, testY=.1,
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {
@@ -118,7 +119,7 @@ dscurve <- function(fun, yfun = NULL,
     yfunc <- ensureFunction(substitute(yfun), TRUE)
     if(simPeriod){
       simcurveParam(xfun = xfunc, yfun = yfunc,
-                   colors = colors, lwd = lwd,
+                   colors = colors, testX=testX, testY=testY, lwd = lwd,
                    n = n, iters = iters, crop, discretize = discretize,
                    tstart = tstart, tend = tend, display,
                    ...)
@@ -133,7 +134,7 @@ dscurve <- function(fun, yfun = NULL,
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
     if(simPeriod){
-      simcurveGraph(fun = func, colors = colors,
+      simcurveGraph(fun = func, colors = colors,  testX=testX, testY=testY,
                    lwd = lwd, n = n, iters = iters, discretize = discretize,
                    crop, xlim = xlim, display, ...)
     }
@@ -263,17 +264,71 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
   )
 }
 
-simcurveParam= function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
+simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend=1,
                         iters, crop = TRUE, discretize = FALSE, display, ...){
 
 
 }
 
 
-simcurveGraph= function(fun, colors, lwd, n, iters,
+simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
                         crop = FALSE, discretize = FALSE,
                         xlim = NULL, display, ...){
+  dsproto(
+    `_class` = "curve", `_inherit` = feature,
+    fun = fun,
+    col = colors,
+    testX=testX, testY=testY,
+    lwd = lwd,
+    iters = iters,
+    n = n,
+    xValues = NULL,
+    yValues = NULL,
+    toPlot = NULL,
+    xlim = xlim,
+    discretize = discretize,
+    crop = crop,
+    display = display,
+    ... = ...,
+    on.bind = function(self, model) {
+      dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
+      self$bound = TRUE
+      if(is.null(self$n))
+        numPoints <- model$range$renderCount
+      else
+        numPoints <- self$n
+      from=min(model$range$alim)
+      to=max(model$range$alim)
+      if(!is.null(xlim)){
+        from=max(from,min(xlim))
+        to=min(to,max(xlim))
+      }
+      self$xValues <-seq(from,to, length.out = numPoints)
+      self$yValues <- mapply(self$fun,self$xValues)
 
+      args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
+      args[[model$range$aname]]=self$xValues
+      args[[model$range$bname]]=self$yValues
+      periods=do.call(what=mapply,args=args)
+
+
+      self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
+    },
+    render = function(self, model) {
+      if(display){
+        if(self$discretize){
+          for(i in 1:(self$iters+1))
+            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
+                   col = self$col[[i]], ... = self$...)
+        }
+        else{
+          for(i in 1:(self$iters+1))
+            lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
+                  col = self$col[[i]], ... = self$...)
+        }
+      }
+    }
+  )
 
 }
 
