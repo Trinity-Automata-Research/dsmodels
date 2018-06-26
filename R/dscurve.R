@@ -311,8 +311,42 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
       args[[model$range$bname]]=self$yValues
       periods=do.call(what=mapply,args=args)
 
+      transitions = rle(periods)
+      p = cumsum(transitions$lengths)
+      n = length(p)
+      starts = c(1,(p+1)[-n])
+      ends = p
+      self$phases = data.frame(astart = self$xValues[starts],
+                          bstart = self$yValues[starts],
+                          period = transitions$values,
+                          astop  = self$xValues[ends],
+                          bstop  = self$yValues[ends])
 
-      self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
+      segments = vector("list", length=length(ends))
+      for(i in 1:length(ends)) {
+        phase = starts[i]:ends[i]
+        segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
+      }
+      self$toPlot=segments
+
+      darken <- function(color, factor=1.4){
+        col <- col2rgb(color)
+        col <- col/factor
+        col <- rgb(t(col), maxColorValue=255)
+        col
+      }
+      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],segments),c(1,0))))
+      numCol=length(colMap)
+      #slightly darker version of simmapperiod's colors
+      if(is.null(self$cols) || length(self$cols)<numCol){
+        if (numCol <= 6)
+          self$cols <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
+        else if (numCol <= 28)
+          self$cols <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
+        else
+          self$cols <- rainbow(numCol) #warning? More colors needed
+      }
+
     },
     render = function(self, model) {
       if(display){
