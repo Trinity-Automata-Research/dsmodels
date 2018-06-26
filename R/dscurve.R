@@ -335,31 +335,32 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         col <- rgb(t(col), maxColorValue=255)
         col
       }
-      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],segments),c(1,0))))
+      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
       numCol=length(colMap)
       #slightly darker version of simmapperiod's colors
-      if(is.null(self$cols) || length(self$cols)<numCol){
+      if(is.null(self$col) || length(self$col)<numCol){
         if (numCol <= 6)
-          self$cols <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
+          self$col <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
         else if (numCol <= 28)
-          self$cols <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
+          self$col <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
         else
-          self$cols <- rainbow(numCol) #warning? More colors needed
+          self$col <- rainbow(numCol) #warning? More colors needed
       }
-
+      self$colMap=colMap
     },
     render = function(self, model) {
       if(display){
         if(self$discretize){
           for(i in 1:(self$iters+1))
-            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
-                   col = self$col[[i]], ... = self$...)
+            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
+                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = curve$...)
         }
         else{
-          for(i in 1:(self$iters+1))
+          for(i in 1:(length(self$toPlot))){
             lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                  col = self$col[[i]], ... = self$...)
-        }
+                  col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = curve$...)
+          }
+
       }
     }
   )
