@@ -117,7 +117,7 @@ dscurve <- function(fun, yfun = NULL,
     xfunc <- ensureFunction(substitute(fun), TRUE)
     yfunc <- ensureFunction(substitute(yfun), TRUE)
     if(simPeriod){
-      simcurve(getX = xfunc, getY = yfunc,
+      dscurveSim(getX = xfunc, getY = yfunc,
                colors = colors, testX=testX, testY=testY, lwd = lwd,
                n = n, iters = iters, discretize = discretize,
                lims=c(tstart,tend), display, ...)
@@ -132,7 +132,7 @@ dscurve <- function(fun, yfun = NULL,
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
     if(simPeriod){
-      simcurve(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
+      dscurveSim(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
                lwd = lwd, n = n, iters = iters, discretize = discretize,
                lims = xlim, display=display, ...)
 }
@@ -261,7 +261,7 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
     }
   )
 }
-simcurve= function(getX, getY, colors, testX, testY, lwd, n, iters,
+dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
                    discretize = FALSE,
                    lims = NULL, display, ...){
   dsproto(
