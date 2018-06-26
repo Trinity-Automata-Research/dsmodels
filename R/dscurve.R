@@ -318,7 +318,7 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
       n = length(p)
       starts = c(1,(p+1)[-n])
       ends = p
-      self$phases = data.frame(astart = self$xValues[starts],
+      self$phaseFrame = data.frame(astart = self$xValues[starts],
                           bstart = self$yValues[starts],
                           period = transitions$values,
                           astop  = self$xValues[ends],
@@ -417,9 +417,27 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
         return(recurNarrow(prev,post,tolerance))
 
       }
-      pha=recurNarrow(self$phases[1,],self$phases[nrow(self$phases),],tolerance=tolerance)
-      self$phases=pha
+      pha=recurNarrow(self$phaseFrame[1,],self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
+      self$phaseFrame=pha
       pha
+    },
+    addDistanceToPhase=function(inPhase){
+      findDist=function(index,phases){
+        sqrt((phases[index,]$astop-phases[index,]$astart)^2 + (phases[index,]$bstop-phases[index,]$bstart)^2)
+      }
+      dist=mapply(findDist,1:nrow(inPhase),MoreArgs=list(inPhase))
+      withDist=cbind(inPhase,dist)
+      findRatio=function(index,phases){
+        (phases[index,]$dist)/(phases[index+1,]$dist)
+      }
+      ratio=append(NA,mapply(findRatio,1:(nrow(inPhase)-1),MoreArgs=list(withDist)))
+      cbind(withDist,ratio)
+    },
+    phases=function(self, distances=FALSE){
+      if(distances){
+        self$phaseFrame=self$addDistanceToPhase(self$phaseFrame)
+      }
+      self$phaseFrame
     }
   )
 }
