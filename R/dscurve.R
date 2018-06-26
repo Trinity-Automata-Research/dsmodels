@@ -370,10 +370,12 @@ simcurveParam= function(xfun, yfun, colors, testX, testY, lwd, n, tstart=0, tend
         }
         x1=prev$astop
         x2=post$astart
+        y1=prev$bstop
+        y2=post$bstart
         p1=prev$period
         p2=post$period
         x=(x1+x2)/2
-        y=self$fun(x)
+        y=(y1+y2)/2 #FIXME: parametric's phaes should store tvalues and calculate the x and y at the average of t, not the average of x and y.
         args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
         args[[model$range$aname]]=x
         args[[model$range$bname]]=y
