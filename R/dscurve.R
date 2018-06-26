@@ -351,20 +351,64 @@ simcurveGraph= function(fun, colors, testX, testY, lwd, n, iters,
     render = function(self, model) {
       if(display){
         if(self$discretize){
-          for(i in 1:(self$iters+1))
+          for(i in 1:(self$iters+1)){
             points(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                   col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = curve$...)
+          }
         }
         else{
           for(i in 1:(length(self$toPlot))){
             lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                   col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = curve$...)
           }
+        }
+      }
+    },
+    narrow= function(self,tolerance=sqrt(sqrt(.Machine$double.eps))){
+      recurNarrow= function(prev,post,tolerance){
+        #print(c("prev",prev,"post",post))
+        if(phaseDist(prev,post) < tolerance){ #xydist
+          return(rbind(prev,post))
+        }
+        x1=prev$astop
+        x2=post$astart
+        p1=prev$period
+        p2=post$period
+        x=(x1+x2)/2
+        y=curve$fun(x)
+        args=list(x=testX,y=testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
+        args[[prange$aname]]=x
+        args[[prange$bname]]=y
+        p=do.call(model$find.period,args)
+        if(p!=p1){
+          if(p!=p2){ #new phase in between
+            mid=data.frame(astart=x,bstart=y ,period=p,astop=x, bstop=y)
+            prev=recurNarrow(prev,mid,tolerance)   #compute both sides
+            post=recurNarrow(mid,post,tolerance)
+            lenPrev=nrow(prev)
+            midaStart=prev[lenPrev,]$astart   #merge the result from both sides
+            midbStart=prev[lenPrev,]$bstart
+            post[1,]$astart=midaStart
+            post[1,]$bstart=midbStart
+            return(rbind(prev[1:(lenPrev-1),],post))
+          }
+          else{
+            #midpoint goes into post
+            post$astart=x
+            post$bstart=y
+          }
+        }
+        else{
+          #midpoint goes into prev
+          prev$astop=x
+          prev$bstop=y
+        }
+        return(recurNarrow(prev,post,tolerance))
 
       }
+      recurNarrow(phases[1,],phases[nrow(phases),],tolerance=tolerance)
     }
   )
-
 }
 
 
