@@ -119,7 +119,7 @@ dscurve <- function(fun, yfun = NULL,
     if(simPeriod){
       dscurveSim(getX = xfunc, getY = yfunc,
                colors = colors, testX=testX, testY=testY, lwd = lwd,
-               n = n, iters = iters, discretize = discretize,
+               n = n, iters = iters, simPeriod=simPeriod, discretize = discretize,
                lims=c(tstart,tend), display, ...)
     }
     else{
@@ -133,7 +133,7 @@ dscurve <- function(fun, yfun = NULL,
     func <- ensureFunction(substitute(fun), FALSE)
     if(simPeriod){
       dscurveSim(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
-               lwd = lwd, n = n, iters = iters, discretize = discretize,
+               lwd = lwd, n = n, iters = iters,  simPeriod=simPeriod, discretize = discretize,
                lims = xlim, display=display, ...)
 }
     else{
@@ -249,7 +249,7 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
     }
   )
 }
-dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
+dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod,
                    discretize = FALSE,
                    lims = NULL, display, ...){
   dsproto(
@@ -260,6 +260,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
   testX=testX, testY=testY,
   lwd = lwd,
   iters = iters,
+  simPeriod=simPeriod,
   n = n,
   sources = NULL,
   xValues = NULL,
@@ -270,73 +271,76 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
   display = display,
   ... = ...,
   #functions to interact with the model
-  makeSourceSeq= function(self, model, numPoints){ #if we have a prange pull from alim. if not pull from xlim. previous assert should make sure we have the right one.
+  makeSourceSeq= function(self, model){ #if we have a prange pull from alim. if not pull from xlim. previous assert should make sure we have the right one.
+    if(is.null(self$n))
+      numPoints <- model$range$renderCount
+    else
+      numPoints <- self$n
     if(is.null(self$lims))
       self$lims=model$range$alim
     else
-      self$lims=make.lims(self$lims)
+      self$lims=make.lims(self$lims) #when done should be move to before dsproto is called and only run if using xlim and not tstart and tend
     from=min(self$lims)
     to=max(self$lims)
     seq(from,to, length.out = numPoints)
   },
   on.bind = function(self, model) { #do common stuff, check if sim. if so, assert range is prange, do this \/, if not do other curve stuff.
-    dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
     self$bound = TRUE
-    if(is.null(self$n))
-      numPoints <- model$range$renderCount
-    else
-      numPoints <- self$n
-    self$sources <-self$makeSourceSeq(model, numPoints)
+    self$sources <-self$makeSourceSeq(model)
     self$xValues <-self$getX(self$sources)
     self$yValues <-self$getY(self$sources)
 
-    args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
-    self$aname=model$range$aname
-    self$bname=model$range$bname
-    args[[self$aname]]=self$xValues
-    args[[self$bname]]=self$yValues
-    periods=do.call(what=mapply,args=args)
+    if(simPeriod){
+      dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
 
-    transitions = rle(periods)
-    p = cumsum(transitions$lengths)
-    n = length(p)
-    starts = c(1,(p+1)[-n])
-    ends = p
-    self$phaseFrame = data.frame(start  = self$sources[starts],
-                                 period = transitions$values,
-                                 stop   = self$sources[ends])
+      args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
+      self$aname=model$range$aname
+      self$bname=model$range$bname
+      args[[self$aname]]=self$xValues
+      args[[self$bname]]=self$yValues
+      periods=do.call(what=mapply,args=args)
 
-    segments = vector("list", length=length(ends))
-    for(i in 1:length(ends)) {
-      phase = starts[i]:ends[i]
-      segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
-    }
-    self$toPlot=segments #with new rendering toplot dosent need to know periods.
+      transitions = rle(periods)
+      p = cumsum(transitions$lengths)
+      n = length(p)
+      starts = c(1,(p+1)[-n])
+      ends = p
+      self$phaseFrame = data.frame(start  = self$sources[starts],
+                                   period = transitions$values,
+                                   stop   = self$sources[ends])
 
-    darken <- function(color, factor=1.4){
-      col <- col2rgb(color)
-      col <- col/factor
-      col <- rgb(t(col), maxColorValue=255)
-      col
-    }
-    colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
-    numCol=length(colMap)
-    #slightly darker version of simmapperiod's colors
-    if(is.null(self$col) || length(self$col)<numCol){
-      if (numCol <= 6)
-        self$col <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
-      else if (numCol <= 28)
-        self$col <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
-      else
-        self$col <- rainbow(numCol) #warning? More colors needed
-    }
-    self$model=model
+      segments = vector("list", length=length(ends))
+      for(i in 1:length(ends)) {
+        phase = starts[i]:ends[i]
+        segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
+      }
+      self$toPlot=segments #with new rendering toplot dosent need to know periods.
 
-    newCol=vector("character",length(transitions$values))
-    for(i in 1:length(transitions$values)){
-      newCol[i]=self$col[which(colMap==transitions$values[[i]])]
+      darken <- function(color, factor=1.4){
+        col <- col2rgb(color)
+        col <- col/factor
+        col <- rgb(t(col), maxColorValue=255)
+        col
+      }
+      colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
+      numCol=length(colMap)
+      #slightly darker version of simmapperiod's colors
+      if(is.null(self$col) || length(self$col)<numCol){
+        if (numCol <= 6)
+          self$col <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
+        else if (numCol <= 28)
+          self$col <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
+        else
+          self$col <- rainbow(numCol) #warning? More colors needed
+      }
+      self$model=model
+
+      newCol=vector("character",length(transitions$values))
+      for(i in 1:length(transitions$values)){
+        newCol[i]=self$col[which(colMap==transitions$values[[i]])]
+      }
+      self$col=newCol
     }
-    self$col=newCol
   },
   render = function(self, model) {
     if(display){
