@@ -16,12 +16,12 @@
 #' @param discretize The discretization for the parameters. Defaults to the discretization of the range.
 #' @param cols The colors of the periods. If insufficient not provided, reasonable defaults are used.
 #' @param key it \code{TRUE}, displays a key showing what period each color signifies. Defaults to \code{TRUE}
-#' @param initIters The number of iterations of the function applied before looking for a period. Defaults to 1000.
+#' @param iters The number of iterations of the function applied before looking for a period. Defaults to 1000.
 #' @param maxPeriod The largest period looked for. Any periods larger are considered divergent. defaults to 128.
 #' @param numTries The number of times a period is looked for. Defaults to 1.
 #' @param epsilon The distance at which two points are considered to be the same attractor. Defaults to \code{sqrt(sqrt(.Machine$double.eps))}
-#' @param rangeMult How many times past xlim or ylim a point must go before it is considered divergent.
-#'  If 0, a point must reach Inf to be considered divergent. Defaults to 0.
+#' @param crop Logical. If \code{TRUE}, points that go past xlim or ylim are considered divergent. If \code{FALSE},
+#'  a point must reach Inf to be considered divergent. Defaults to \code{FALSE}.
 #' @import graphics
 #' @import grDevices
 #' @seealso \code{\link{paramrange}}
@@ -38,7 +38,7 @@
 #' model + paramrange(3,3,discretize = .02, paramNames = c(s,r))
 #' #generate an image based on periodicity tested at the point (.5,.5). Takes a bit of time.
 #' #maxperiodicity=8 makes every periodicity above 8 count as divergent or 0.
-#' model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, initIters = 1000, numTries = 1)
+#' model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 1000, numTries = 1)
 #' #varying only one variable can be done by using a dummy variable.
 #' #create a model with the function
 #' model = dsmodel(f)
@@ -54,9 +54,9 @@
 
 
 
-sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, initIters=1000, maxPeriod=128, numTries=1,
-                epsilon=sqrt(sqrt(.Machine$double.eps)), rangeMult=0){
+sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
+                key=TRUE, iters=500, maxPeriod=128, numTries=2, powerOf2=TRUE,
+                epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
     aname <- NULL
@@ -79,8 +79,8 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
     aname=aname,
     bname=bname,
     key=key,
-    initIters=initIters, maxPeriod=maxPeriod, numTries=numTries,
-    epsilon=epsilon, rangeMult=rangeMult,
+    iters=iters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
+    epsilon=epsilon, crop=crop,
     grid=NULL,
     colMatrix=NULL,
     cols=cols,
@@ -109,11 +109,11 @@ sim.map.period = function(testX, testY, alim=NULL, blim=NULL, xlim=NULL, ylim=NU
     calculate.bifmap = function(self,model){
       #has to be mapply because find.period cant take in lists.
       ##z=mapply(model$find.period,self$x,self$y,self$grid$X0,self$grid$Y0,
-      #        initIters=initIters, maxPeriod=maxPeriod,
-      #         numTries=numTries,epsilon=epsilon, rangeMult=rangeMult)
+      #        iters=iters, maxPeriod=maxPeriod,
+      #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 
-      args=list(FUN=model$find.period, x=self$x, y=self$y, initIters=initIters, maxPeriod=maxPeriod,
-           numTries=numTries,epsilon=epsilon, rangeMult=rangeMult)
+      args=list(FUN=model$find.period, x=self$x, y=self$y, iters=iters, maxPeriod=maxPeriod,
+           numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
       args[[self$aname]]=self$grid$X0
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)

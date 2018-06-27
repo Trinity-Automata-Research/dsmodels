@@ -103,7 +103,6 @@ dsrange <- function(x,y,discretize = 0,
     centers = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
       self$grid(discretize=discretize, xlim=xlim, ylim=ylim, center=TRUE)
     }
-
   )
 }
 
