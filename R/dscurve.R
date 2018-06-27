@@ -276,8 +276,12 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod
       numPoints <- model$range$renderCount
     else
       numPoints <- self$n
-    if(is.null(self$lims))
-      self$lims=model$range$alim
+    if(is.null(self$lims)){
+      if(is.paramrange(model$range))
+        self$lims=model$range$alim
+      else
+        self$lims=model$range$xlim
+    }
     else
       self$lims=make.lims(self$lims) #when done should be move to before dsproto is called and only run if using xlim and not tstart and tend
     from=min(self$lims)
