@@ -55,7 +55,7 @@
 
 
 sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+                key=TRUE, iters=500, maxPeriod=128, numTries=2, powerOf2=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
