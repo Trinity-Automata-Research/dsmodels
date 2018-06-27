@@ -323,7 +323,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
       phase = starts[i]:ends[i]
       segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
     }
-    self$toPlot=segments
+    self$toPlot=segments #with new rendering toplot dosent need to know periods.
 
     darken <- function(color, factor=1.4){
       col <- col2rgb(color)
@@ -343,21 +343,24 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
         self$col <- rainbow(numCol) #warning? More colors needed
     }
     self$model=model
-    self$colMap=colMap
+
+    newCol=vector("character",length(transitions$values))
+    for(i in 1:length(transitions$values)){
+      newCol[i]=self$col[which(colMap==transitions$values[[i]])]
+    }
+    self$col=newCol
   },
   render = function(self, model) {
     if(display){
       if(self$discretize){
-        for(i in 1:(self$iters+1)){
-          points(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                 col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = self$...)
-        }
+        for(i in 1:length(self$toPlot))
+          points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
+                 col = self$col[[i]], ... = self$...)
       }
       else{
-        for(i in 1:(length(self$toPlot))){
+        for(i in 1:length(self$toPlot))
           lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                col = self$col[[which(self$colMap==self$toPlot[[i]]$period[[1]])]], ... = self$...)
-        }
+                col = self$col[[i]], ... = self$...)
       }
     }
   },
