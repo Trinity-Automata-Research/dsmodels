@@ -116,31 +116,31 @@ dscurve <- function(fun, yfun = NULL,
   if(!safe.apply(is.null,yfun)){
     xfunc <- ensureFunction(substitute(fun), TRUE)
     yfunc <- ensureFunction(substitute(yfun), TRUE)
-    if(simPeriod){
+    #if(simPeriod){
       dscurveSim(getX = xfunc, getY = yfunc,
                colors = colors, testX=testX, testY=testY, lwd = lwd,
                n = n, iters = iters, simPeriod=simPeriod, discretize = discretize,
-               lims=c(tstart,tend), display, ...)
-    }
-    else{
-      dscurveParam(xfun = xfunc, yfun = yfunc,
-                   colors = colors, lwd = lwd,
-                   n = n, iters = iters, crop, discretize = discretize,
-                   tstart = tstart, tend = tend, display,
-                   ...)
-    }
+               crop=crop, lims=c(tstart,tend), display, ...)
+    #}
+    #else{
+    #  dscurveParam(xfun = xfunc, yfun = yfunc,
+    #               colors = colors, lwd = lwd,
+    #               n = n, iters = iters, crop, discretize = discretize,
+    #               tstart = tstart, tend = tend, display,
+    #               ...)
+    #}
   } else {
     func <- ensureFunction(substitute(fun), FALSE)
-    if(simPeriod){
+    #if(simPeriod){
       dscurveSim(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
                lwd = lwd, n = n, iters = iters,  simPeriod=simPeriod, discretize = discretize,
-               lims = xlim, display=display, ...)
-}
-    else{
-      dscurveGraph(fun = func, colors = colors,
-                   lwd = lwd, n = n, iters = iters, discretize = discretize,
-                   crop, xlim = xlim, display, ...)
-    }
+               crop=crop, lims = xlim, display=display, ...)
+#}
+    #else{
+    #  dscurveGraph(fun = func, colors = colors,
+    #               lwd = lwd, n = n, iters = iters, discretize = discretize,
+    #               crop, xlim = xlim, display, ...)
+    #}
 
   }
 }
@@ -250,7 +250,7 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
   )
 }
 dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod,
-                   discretize = FALSE,
+                   discretize = FALSE, crop,
                    lims = NULL, display, ...){
   dsproto(
   `_class` = "curve", `_inherit` = feature,
@@ -267,11 +267,12 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod
   yValues = NULL,
   toPlot = NULL,
   discretize = discretize,
+  crop=crop,
   lims=lims,
   display = display,
   ... = ...,
   #functions to interact with the model
-  makeSourceSeq= function(self, model){ #if we have a prange pull from alim. if not pull from xlim. previous assert should make sure we have the right one.
+  makeSourceSeq= function(self, model){ #if we have a prange pull from alim. if not pull from xlim. future assert makes sure we have the right one.
     if(is.null(self$n))
       numPoints <- model$range$renderCount
     else
@@ -319,6 +320,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod
         segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
       }
       self$toPlot=segments #with new rendering toplot dosent need to know periods.
+      #keep periods for now because it might be useful when adding new points in narrow.
 
       darken <- function(color, factor=1.4){
         col <- col2rgb(color)
@@ -344,6 +346,9 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod
         newCol[i]=self$col[which(colMap==transitions$values[[i]])]
       }
       self$col=newCol
+    }
+    else{
+      self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
     }
   },
   render = function(self, model) {
