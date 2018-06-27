@@ -13,7 +13,7 @@ mod + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries =
 #not parametric
 c=dscurve(x/2,simPeriod = TRUE)
 mod+c
-print(c$narrow(.00000000000000000001))
+print(c$narrow(.000001))
 print(c$phases(distances=TRUE))
 
 

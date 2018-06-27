@@ -230,7 +230,6 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
         to=min(to,max(xlim))
       }
       self$xValues <-seq(from,to, length.out = numPoints)
-      #self$xValues <- self$prune(self$xlim,self$xValues)
       self$yValues <- mapply(self$fun,self$xValues)
       self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
     },
@@ -247,17 +246,6 @@ dscurveGraph <- function(fun, colors, lwd, n, iters,
                   col = self$col[[i]], ... = self$...)
         }
       }
-    },
-    prune = function(self, lim, values) {
-      if(!is.null(lim)){
-        if(min(values)<min(lim)){
-          values = values[values>=min(lim)]
-        }
-        if(max(values)>max(lim)){
-          values = values[values<=max(lim)]
-        }
-      }
-      values
     }
   )
 }
@@ -282,7 +270,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
   display = display,
   ... = ...,
   #functions to interact with the model
-  makeSourceSeq= function(self, model, numPoints){
+  makeSourceSeq= function(self, model, numPoints){ #if we have a prange pull from alim. if not pull from xlim. previous assert should make sure we have the right one.
     if(is.null(self$lims))
       self$lims=model$range$alim
     else
@@ -291,7 +279,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
     to=max(self$lims)
     seq(from,to, length.out = numPoints)
   },
-  on.bind = function(self, model) {
+  on.bind = function(self, model) { #do common stuff, check if sim. if so, assert range is prange, do this \/, if not do other curve stuff.
     dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
     self$bound = TRUE
     if(is.null(self$n))
