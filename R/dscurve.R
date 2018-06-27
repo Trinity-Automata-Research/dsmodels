@@ -426,7 +426,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
     ratio=append(NA,mapply(findRatio,1:(nrow(inPhase)-1),MoreArgs=list(withDist)))
     cbind(withDist,ratio)
   },
-  phases=function(self, distances=FALSE, sources=TRUE, params=FALSE){  #add or take out columns of phaseFrame accordingly.
+  phases=function(self, distances=FALSE, sources=TRUE, params=FALSE){  #add or take out columns of phaseFrame according to parameters.
     ret=self$phaseFrame
     if(params){
       startA=paste("start",self$aname)
