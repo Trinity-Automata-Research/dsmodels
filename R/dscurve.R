@@ -47,6 +47,8 @@
 #' @param iters Determines the number of iterations of the function when making a color gradient.
 #' Use \code{col = color1, image = color2, iters = n} to create a gradient of colors between
 #' color1 and color2. See details for more information.
+#' @param simPeriod Logical, determines if the curve will be colored according to its periodicity.
+#'  Requires model's range to be a paramRange if \code{TRUE}. defauts to \code{FALSE}
 #' @param col The color of the original curve, as a string.
 #' @param image A single color as a string, or a vector of colors as a string.
 #'  See details for more information.
@@ -99,6 +101,31 @@
 #' # A parametic curve defined by expressions of t.
 #'   paramcrv + dscurve(4*t-2,4*t-2,col="blue")
 #'
+#' #using simPeriod
+#' f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
+#' list(x*exp(r-x-a*y),
+#'      y*exp(s-b*x-y))
+#' }
+#'
+#' mod=dsmodel(f)
+#'
+#' mod + paramrange(3,3,discretize = .1, paramNames = c(s,r),renderCount = 20)
+#' mod + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
+#'
+#' #not parametric
+#' c=dscurve(x/2,simPeriod = TRUE)
+#' mod+c
+#' #get the ranges of periodicity
+#' print(c$narrow(.000001)) #refine the ranges
+#' print(c$phases(distances=TRUE)) #add Distances to the ranges
+#'
+#' #parametric
+#' c=dscurve(1*t,3*t,simPeriod = TRUE)
+#' mod+c
+#' #get the ranges of periodicity
+#' print(c$narrow())
+#' print(c$phases(params=TRUE,source=FALSE)) #replace the tValues(sources) with the parameter values
+#'
 #' @export
 dscurve <- function(fun, yfun = NULL,
                     col = "black", image = NULL,
@@ -111,145 +138,24 @@ dscurve <- function(fun, yfun = NULL,
   colors <- colorVector(col, image, iters)
   iters <- length(colors)-1
 
-
-
-  if(!safe.apply(is.null,yfun)){
+  if(!safe.apply(is.null,yfun)){ #curve is parametric
     xfunc <- ensureFunction(substitute(fun), TRUE)
     yfunc <- ensureFunction(substitute(yfun), TRUE)
-    #if(simPeriod){
-      dscurveSim(getX = xfunc, getY = yfunc,
+      dscurveMaker(getX = xfunc, getY = yfunc,
                colors = colors, testX=testX, testY=testY, lwd = lwd,
                n = n, iters = iters, simPeriod=simPeriod, discretize = discretize,
                crop=crop, lims=c(tstart,tend), display, ...)
-    #}
-    #else{
-    #  dscurveParam(xfun = xfunc, yfun = yfunc,
-    #               colors = colors, lwd = lwd,
-    #               n = n, iters = iters, crop, discretize = discretize,
-    #               tstart = tstart, tend = tend, display,
-    #               ...)
-    #}
-  } else {
+
+  } else {                       #curve is not parametric
     func <- ensureFunction(substitute(fun), FALSE)
-    #if(simPeriod){
-      dscurveSim(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
+      dscurveMaker(getX=identity , getY = func, colors = colors,  testX=testX, testY=testY,
                lwd = lwd, n = n, iters = iters,  simPeriod=simPeriod, discretize = discretize,
-               crop=crop, lims = xlim, display=display, ...)
-#}
-    #else{
-    #  dscurveGraph(fun = func, colors = colors,
-    #               lwd = lwd, n = n, iters = iters, discretize = discretize,
-    #               crop, xlim = xlim, display, ...)
-    #}
+               crop=crop, lims = make.lims(xlim), display=display, ...)
 
   }
 }
 
-dscurveParam<- function(xfun, yfun, colors, lwd, n, tstart=0, tend=1,
-                        iters, crop = TRUE, discretize = FALSE, display, ...){
-  if(is.null(n))
-    renderInputs = NULL
-  else
-    renderInputs = seq(tstart, tend, length.out=n)
-  dsproto(
-    `_class` = "curve", `_inherit` = feature,
-    xfun = xfun,
-    yfun = yfun,
-    col = colors,
-    iters = iters,
-    tstart = tstart,
-    tend=tend,
-    toPlot = NULL,
-    lwd = lwd,
-    renderInputs = renderInputs,
-    crop = crop,
-    discretize = discretize,
-    display = display,
-        ... = ...,
-    on.bind = function(self, model) {
-      if(is.null(model$range)) stop("dscurve: Add range first")
-      if(is.null(self$renderInputs))
-        tValues = seq(self$tstart,self$tend,length.out=model$range$renderCount)
-      else
-        tValues = self$renderInputs
-      self$toPlot <- model$apply(self$xfun(tValues), self$yfun(tValues),
-                                 iters = self$iters, crop = self$crop)
-    },
-    render = function(self, model) {
-      if(display){
-        if(self$discretize){
-          for(i in 1:(self$iters+1))
-            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
-                   col = self$col[[i]], ... = self$...)
-        }
-        else{
-          for(i in 1:(self$iters+1))
-            lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                  col = self$col[[i]], ... = self$...)
-        }
-      }
-    }
-  )
-}
-
-
-dscurveGraph <- function(fun, colors, lwd, n, iters,
-                            crop = FALSE, discretize = FALSE,
-                            xlim = NULL, display, ...){
-  dsproto(
-    `_class` = "curve", `_inherit` = feature,
-    fun = fun,
-    col = colors,
-    lwd = lwd,
-    iters = iters,
-    n = n,
-    xValues = NULL,
-    yValues = NULL,
-    toPlot = NULL,
-    xlim = xlim,
-    discretize = discretize,
-    crop = crop,
-    display = display,
-    ... = ...,
-    on.bind = function(self, model) {
-      self$bound = TRUE
-      if(is.null(self$n))
-        numPoints <- model$range$renderCount
-      else
-        numPoints <- self$n
-      if(is.paramrange(model$range)){
-        from=min(model$range$alim)
-        to=max(model$range$alim)
-      }
-      else{
-        from=min(model$range$xlim)
-        to=max(model$range$xlim)
-      }
-      if(!is.null(xlim)){
-        from=max(from,min(xlim))
-        to=min(to,max(xlim))
-      }
-      self$xValues <-seq(from,to, length.out = numPoints)
-      self$yValues <- mapply(self$fun,self$xValues)
-      self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
-    },
-    render = function(self, model) {
-      if(display){
-        if(self$discretize){
-          for(i in 1:(self$iters+1))
-            points(self$toPlot[[i]]$x, self$toPlot[[i]]$y,
-                  col = self$col[[i]], ... = self$...)
-        }
-        else{
-          for(i in 1:(self$iters+1))
-            lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
-                  col = self$col[[i]], ... = self$...)
-        }
-      }
-    }
-  )
-}
-dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod,
+dscurveMaker= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod,
                    discretize = FALSE, crop,
                    lims = NULL, display, ...){
   dsproto(
@@ -283,13 +189,11 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod
       else
         self$lims=model$range$xlim
     }
-    else
-      self$lims=make.lims(self$lims) #when done should be move to before dsproto is called and only run if using xlim and not tstart and tend
     from=min(self$lims)
     to=max(self$lims)
     seq(from,to, length.out = numPoints)
   },
-  on.bind = function(self, model) { #do common stuff, check if sim. if so, assert range is prange, do this \/, if not do other curve stuff.
+  on.bind = function(self, model) { #do common stuff, check if sim. if so, assert range is prange, do sim stuff, if not do regular curve stuff.
     self$bound = TRUE
     self$sources <-self$makeSourceSeq(model)
     self$xValues <-mapply(self$getX,self$sources)
