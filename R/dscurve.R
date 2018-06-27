@@ -292,8 +292,8 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,  simPeriod
   on.bind = function(self, model) { #do common stuff, check if sim. if so, assert range is prange, do this \/, if not do other curve stuff.
     self$bound = TRUE
     self$sources <-self$makeSourceSeq(model)
-    self$xValues <-self$getX(self$sources)
-    self$yValues <-self$getY(self$sources)
+    self$xValues <-mapply(self$getX,self$sources)
+    self$yValues <-mapply(self$getY,self$sources)
 
     if(simPeriod){
       dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
