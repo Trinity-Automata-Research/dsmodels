@@ -342,6 +342,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
       else
         self$col <- rainbow(numCol) #warning? More colors needed
     }
+    self$model=model
     self$colMap=colMap
   },
   render = function(self, model) {
@@ -380,9 +381,9 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
     x=self$getX(midPoint)
     y=self$getY(midPoint)
     args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
-    args[[model$range$aname]]=x
-    args[[model$range$bname]]=y
-    p=do.call(model$find.period,args)
+    args[[self$aname]]=x
+    args[[self$bname]]=y
+    p=do.call(self$model$find.period,args)
     if(p!=p1){
       if(p!=p2){ #new phase in between
         mid=data.frame(start=midPoint ,period=p,stop=midPoint)
@@ -405,7 +406,7 @@ dscurveSim= function(getX, getY, colors, testX, testY, lwd, n, iters,
     return(self$recurNarrow(prev,post,tolerance))
 
   },
-  narrow= function(self, model, tolerance=sqrt(sqrt(.Machine$double.eps))){
+  narrow= function(self, tolerance=sqrt(sqrt(.Machine$double.eps))){
     pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
     self$phaseFrame=pha
     pha

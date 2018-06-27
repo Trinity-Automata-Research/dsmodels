@@ -5,15 +5,15 @@ f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
        y*exp(s-b*x-y))
 }
 
-model=dsmodel(f)
+mod=dsmodel(f)
 
-model + paramrange(3,3,discretize = .1, paramNames = c(s,r),renderCount = 20)
-model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
+mod + paramrange(3,3,discretize = .1, paramNames = c(s,r),renderCount = 20)
+mod + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
 
 #not parametric
 c=dscurve(x/2,simPeriod = TRUE)
-model+c
-print(c$narrow(model,.00000000000000000001))
+mod+c
+print(c$narrow(.00000000000000000001))
 print(c$phases(distances=TRUE))
 
 
@@ -21,8 +21,8 @@ print(c$phases(distances=TRUE))
 #parametric
 
 c=dscurve(1*t,3*t,simPeriod = TRUE)
-model+c
-print(c$narrow(model))
+mod+c
+print(c$narrow())
 print(c$phases(distances=TRUE,params=TRUE,source=TRUE))
 
 
