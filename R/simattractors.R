@@ -119,16 +119,10 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
   while(moved && iters < maxIters) {
     images <- model$apply(prev$x, prev$y, iters=stride, accumulate=FALSE, crop=FALSE) #crop=TRUE?
     if (length(prev$x) != length(images$x)){
-      print("Oops!")
-      print(length(prev$x))
-      print(length(images$x))
     }
     dists = (images$x - prev$x)^2 + (images$y - prev$y)^2
     m <- max(dists[is.finite(dists)])
     if(is.nan(m)){
-      print(prev)
-      print(images)
-      print(dists)
       stop("dssimulation: Model not well defined: NaN")
     }
     if (m < tolerance) {
