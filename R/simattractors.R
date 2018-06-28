@@ -76,7 +76,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       found <- 1
       points <- mapply(c,images$x, images$y, SIMPLIFY=FALSE)
       attractorCoords <- list(x=c(images$x[1]), y=c(images$y[1]))
-      discard=FALSE
+      discardFlag=FALSE
       for(p in points) {
         dists  <- (attractorCoords$x - p[1])^2 + (attractorCoords$y-p[2])^2
         if(min(dists) > self$epsilon) {
@@ -88,11 +88,11 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
             attractorCoords$y[found] <- p[2]
           }
           else {
-            discard=TRUE
+            discardFlag=TRUE
           }
         }
       }
-      if(discard)
+      if(discardFlag)
           warning("simattractors: non-fixed point(s) discarded due to maximum iteration.")
       if(length(self$cols) < found) {
         if (found <= 6)
@@ -119,6 +119,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
   if(initIters>0){
     prev <- model$apply(prev$x, prev$y, iters=initIters, accumulate=FALSE, crop=FALSE)
   }
+  unstableFlag=FALSE
   while(moved && iters < maxIters) {
     images <- model$apply(prev$x, prev$y, iters=stride, accumulate=FALSE, crop=FALSE) #crop=TRUE?
     if (length(prev$x) != length(images$x)){
@@ -131,7 +132,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
     if (m < tolerance) {
       moved <- FALSE
       if(!all(is.finite(dists))){
-        warning("dssimulation: Model is potentially unstable.")
+        unstableFlag=TRUE
       }
     }
     else {
@@ -145,7 +146,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
     noStrideImages = model$apply(images$x, images$y, iters=1, accumulate=FALSE, crop=FALSE)
     dists = (noStrideImages$x - images$x)^2 + (noStrideImages$y - images$y)^2
     if(!all(is.finite(dists))){
-      warning("dssimulation: Model is potentially unstable.")
+      unstableFlag=TRUE
     }
     m <- max(dists[is.finite(dists)])
     if (m > tolerance) {
@@ -155,6 +156,8 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
       #ISSUE number 102
     }
   }
+  if(unstableFlag)
+    warning("dssimulation: Model is potentially unstable. Points move very large distances.")
   x <- images$x
   y <- images$y
   valids <- is.finite(x) & is.finite(y)
