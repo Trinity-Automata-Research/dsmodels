@@ -76,6 +76,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       found <- 1
       points <- mapply(c,images$x, images$y, SIMPLIFY=FALSE)
       attractorCoords <- list(x=c(images$x[1]), y=c(images$y[1]))
+      discard=FALSE
       for(p in points) {
         dists  <- (attractorCoords$x - p[1])^2 + (attractorCoords$y-p[2])^2
         if(min(dists) > self$epsilon) {
@@ -87,10 +88,12 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
             attractorCoords$y[found] <- p[2]
           }
           else {
-            warning("simattractors: non-fixed point discarded due to maximum iteration.")
+            discard=TRUE
           }
         }
       }
+      if(discard)
+          warning("simattractors: non-fixed point(s) discarded due to maximum iteration.")
       if(length(self$cols) < found) {
         if (found <= 6)
           self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
