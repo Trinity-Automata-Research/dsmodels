@@ -92,6 +92,9 @@ dsmodel <- function(fun, title="", display = TRUE) {
     apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
+      if(crop){
+        dsassert(self$has.xyrange(),"Applying the model's fucntion with crop set to true requires the model's range to be defined.")
+      }
       if(is.null(self$properNames))
       {
         tmp = self$fun(x[1], y[1],...)
@@ -340,7 +343,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  #  }
 		  #}
 		  if(crop){
-		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires xlim and ylim to be set.")
+		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
 		  }
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
