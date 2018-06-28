@@ -156,9 +156,15 @@ dsmodel <- function(fun, title="", display = TRUE) {
         tmp
       }
     },
-    cropframe = function(self, vals) {
-      xin <- vals[[1]]
-      yin <- vals[[2]]
+    cropframe = function(self, vals) { #dosent check if range is defined first. should only
+      if(self$properNames){            #be called if has.xyrange is asserted first
+        xin <- vals$x
+        yin <- vals$y
+      }
+      else{
+        xin <- vals[[1]]
+        yin <- vals[[2]]
+      }
       tmp1 <- self$range$xlim
       tmp2 <- self$range$ylim
       filterfunx <- function(x) (x <= max(tmp1) && x >= min(tmp1))
