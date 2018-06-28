@@ -79,10 +79,10 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       discardFlag=FALSE
       for(p in points) {
         dists  <- (attractorCoords$x - p[1])^2 + (attractorCoords$y-p[2])^2
-        if(min(dists) > self$epsilon) {
+        if(min(dists) > self$epsilon) { #if p isnt close to a previous attractor.
           pointImage = model$apply(p[1],p[2], iters=self$stride, accumulate=FALSE, crop=FALSE)
           imageDist = (pointImage$x - p[1])^2 + (pointImage$y - p[2])^2
-          if(imageDist < self$tolerance) {
+          if(imageDist < self$tolerance) { #if p dosent move after stride iterations, it is a fixed attractor
             found <- found + 1
             attractorCoords$x[found] <- p[1]
             attractorCoords$y[found] <- p[2]
@@ -93,7 +93,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
         }
       }
       if(discardFlag)
-          warning("simattractors: non-fixed point(s) discarded due to maximum iteration.")
+          warning("simattractors: non-fixed point(s) discarded because maximum iteration was reached or because they diverged to infinity.")
       if(length(self$cols) < found) {
         if (found <= 6)
           self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
