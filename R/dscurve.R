@@ -50,7 +50,8 @@
 #' Use \code{col = color1, image = color2, iters = n} to create a gradient of colors between
 #' color1 and color2. See details for more information.
 #' @param simPeriod Logical, determines if the curve will be colored according to its periodicity.
-#'  Requires model's range to be a paramRange if \code{TRUE}. defauts to \code{FALSE}
+#'  Requires model's range to be a paramRange if \code{TRUE}. Defaults to \code{FALSE}. See also \code{\link{sim.map.period}}
+#' @param find.period.args Additional arguments to find.period. Only used if simPeriod is set to \code{TRUE}.
 #' @param col The color of the original curve, as a string.
 #' @param image A single color as a string, or a vector of colors as a string.
 #'  See details for more information.
@@ -133,7 +134,7 @@
 #' @export
 dscurve <- function(fun, yfun = NULL,
                     col = "black", image = NULL,
-                    lwd = 3, n=NULL, iters = 0, simPeriod=FALSE,
+                    lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
                     testX=.1, testY=.1,
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
@@ -166,6 +167,7 @@ dscurve <- function(fun, yfun = NULL,
     lwd = lwd,
     iters = iters,
     simPeriod=simPeriod,
+    find.period.args=find.period.args,
     n = n,
     sources = NULL,
     xValues = NULL,
@@ -202,7 +204,7 @@ dscurve <- function(fun, yfun = NULL,
       if(simPeriod){# only simPeriod curves
         dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
 
-        args=list(FUN=model$find.period,x=self$testX,y=self$testY, numTries=10, maxPeriod=512) #,the rest of args
+        args=append(self$find.period.args,list(FUN=model$find.period,x=self$testX,y=self$testY))
         self$aname=model$range$aname
         self$bname=model$range$bname
         args[[self$aname]]=self$xValues
@@ -291,7 +293,7 @@ dscurve <- function(fun, yfun = NULL,
       p2=post$period
       x=self$getX(midPoint)
       y=self$getY(midPoint)
-      args=list(x=self$testX,y=self$testY, numTries=10, maxPeriod=512, epsilon=.0000001) #,the rest of args
+      args=append(self$find.period.args,list(x=self$testX,y=self$testY))
       args[[self$aname]]=x
       args[[self$bname]]=y
       p=do.call(self$model$find.period,args)
