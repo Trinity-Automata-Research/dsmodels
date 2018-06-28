@@ -320,6 +320,7 @@ dscurve <- function(fun, yfun = NULL,
 
     },
     narrow= function(self, tolerance=sqrt(sqrt(.Machine$double.eps))){
+      dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
       self$phaseFrame=pha
       pha
@@ -341,6 +342,7 @@ dscurve <- function(fun, yfun = NULL,
       cbind(withDist,ratio)
     },
     phases=function(self, distances=FALSE, sources=TRUE, params=FALSE){  #add or take out columns of phaseFrame according to parameters.
+      dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       ret=self$phaseFrame
       if(params){
         startA=paste("start",self$aname)
