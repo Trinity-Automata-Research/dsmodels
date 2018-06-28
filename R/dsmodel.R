@@ -306,6 +306,9 @@ dsmodel <- function(fun, title="", display = TRUE) {
       res
 		},
 		has.diverged = function(self, x, y, crop=FALSE){
+		  if(length(x)<1 || length(y)<1){    #check for numeric(0)
+		    return(TRUE)                     #this only works if x and y are not lists. to check has.diverged on multiple
+		  }                                  #points, you would need to either use mapply or change has.diverged.
 		  if(!crop)
 		    !finite.points(c(x,y))
 		  else
