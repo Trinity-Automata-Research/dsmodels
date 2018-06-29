@@ -150,8 +150,6 @@ dscurve <- function(fun, yfun = NULL,
     lims=c(tstart,tend)
   } else {                       #curve is not parametric
     isParametric=FALSE
-    getX <- identity
-    getY <- ensureFunction(fun, FALSE)
     if(is.null(xlim)){
       lims=NULL
     }
@@ -162,7 +160,7 @@ dscurve <- function(fun, yfun = NULL,
 
   dsproto(
     `_class` = "curve", `_inherit` = feature,
-    xfun = fun,
+    fun = fun,
     yfun = yfun,
     getX=NULL,
     getY=NULL,
@@ -205,20 +203,22 @@ dscurve <- function(fun, yfun = NULL,
       self$bound = TRUE
       #determining how to pick x and y values
       if(self$isParametric){
-        self$getX <- ensureFunction(fun, TRUE)
-        self$getY <- ensureFunction(yfun, TRUE)
+        self$getX <- ensureFunction(self$fun, TRUE)
+        self$getY <- ensureFunction(self$yfun, TRUE)
         self$sourceName="t"
       }
       else{ #not parametric curve
         getX <- identity
-        getY <- ensureFunction(fun, FALSE)
-        if(is.paramrange(model$range)){ #parameterized model
-          subNames=all.names(fun)
+        getY <- ensureFunction(self$fun, FALSE)
+        if(is.paramrange(model$range) && safe.apply(is.function, eval(self$fun))){ #parameterized model whose function potentially needs modifying
+          subNames=all.names(self$fun)
           self$sourceName=model$range$aname
           ain=self$sourceName %in% subNames
           xin="x" %in% subNames
           if(!xin){                      #later, we should find a way to see if x or a are defined.
-            names(formals(getY))=self$sourceName
+            #names(formals(getY))=self$sourceName  #if the user gives functon(fooBar){fooBar},
+                                               #fooBar in the parameter is replaced here
+                                               #maybe check if it is already a function before  we change.
           }
           else if(ain){
             names(formals(getY))=self$sourceName
