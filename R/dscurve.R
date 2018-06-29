@@ -217,8 +217,6 @@ dscurve <- function(fun, yfun = NULL,
         n = length(p)
         starts = c(1,(p+1)[-n])
         ends = p
-
-
         self$phaseFrame = data.frame(start  = self$sources[starts],
                                      period = transitions$values,
                                      stop   = self$sources[ends])
@@ -246,11 +244,7 @@ dscurve <- function(fun, yfun = NULL,
     recalculate = function(self, model) {
       if(self$simPeriod && self$narrowed)
       { #recalculate from phases (what I was calling plotOfPhases)
-
-
-
-
-
+        self$makeColMap()
         self$toPlot = vector("list", length=nrow(self$phaseFrame))
         for(i in 1:nrow(self$phaseFrame)){
           row=self$phaseFrame[i,]
@@ -258,10 +252,10 @@ dscurve <- function(fun, yfun = NULL,
           stop=row$stop
           mid=self$sources[self$sources >= start & self$sources <= stop]
           sourceSeg=c(start,mid,stop)
-          xs=mapply(self$getX,self$sourceSeg)
-          ys=mapply(self$getY,self$sourceSeg)
-          self$toPlot[i]=data.frame(x=xs,y=ys)
-          self$col[i]=self$colMap[as.character(row$period)]
+          xs=mapply(self$getX,sourceSeg)
+          ys=mapply(self$getY,sourceSeg)
+          self$toPlot[[i]]=data.frame(x=xs,y=ys)
+          self$col[[i]]=self$colMap[[as.character(row$period)]]
         }
 
       } else {
@@ -380,12 +374,17 @@ dscurve <- function(fun, yfun = NULL,
       return(self$recurNarrow(prev,post,tolerance))
 
     },
-    narrow= function(self, tolerance=sqrt(sqrt(.Machine$double.eps))){
+    narrow= function(self, tolerance=sqrt(sqrt(.Machine$double.eps)), redisplay=TRUE){
       dsassert(self$bound, "To use this function the curve must be bound to a model")
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       self$narrowed = TRUE
       pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
       self$phaseFrame=pha
+      if(redisplay){
+        self$recalculate(self$model)
+        #self$model$redisplay() #if something should be on top of this, redisplay will keep it that way
+        self$render(self$model) #I think is should alway be on top anyways though
+      }
       pha
     },
     addDistanceToPhase=function(self,inPhase){
