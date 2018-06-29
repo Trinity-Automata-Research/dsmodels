@@ -169,6 +169,7 @@ dscurve <- function(fun, yfun = NULL,
     simPeriod=simPeriod,
     find.period.args=find.period.args,
     n = n,
+    narrowed = FALSE,
     sources = NULL,
     xValues = NULL,
     yValues = NULL,
@@ -200,17 +201,17 @@ dscurve <- function(fun, yfun = NULL,
       self$sources <-self$makeSourceSeq(model)
       self$xValues <-mapply(self$getX,self$sources)
       self$yValues <-mapply(self$getY,self$sources)
-
+      self$model=model
       if(simPeriod){# only simPeriod curves
         dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
-
+        #find the periods
         args=append(self$find.period.args,list(FUN=model$find.period,x=self$testX,y=self$testY))
         self$aname=model$range$aname
         self$bname=model$range$bname
         args[[self$aname]]=self$xValues
         args[[self$bname]]=self$yValues
         periods=do.call(what=mapply,args=args)
-
+        #break into phases (transitions)
         transitions = rle(periods)
         p = cumsum(transitions$lengths)
         n = length(p)
@@ -219,15 +220,28 @@ dscurve <- function(fun, yfun = NULL,
         self$phaseFrame = data.frame(start  = self$sources[starts],
                                      period = transitions$values,
                                      stop   = self$sources[ends])
-
-        segments = vector("list", length=length(ends))
+        self$toPlot = vector("list", length=length(ends))
+        self$col = vector(length=length(ends))
         for(i in 1:length(ends)) {
           phase = starts[i]:ends[i]
-          segments[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase], period=periods[phase])
+          self$toPlot[[i]] = data.frame(x = self$xValues[phase], y = self$yValues[phase])
+          p = transitions$values[[i]]
+          self$col[[i]] = self$colMap[[as.character(p)]]
         }
-        self$toPlot=segments #with new rendering toplot dosent need to know periods.
+        #with new rendering toplot dosent need to know periods.
         #keep periods for now because it might be useful when adding new points in narrow.
-
+      } else { #only not sim Period curves
+        self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
+      }
+    },
+    recalculate <- function(self, model) {
+      if(self$simPeriod && self$narrowed)
+      { #recalculate from phases (what I was calling plotOfPhases)
+      } else {
+        self$on.bind(model)
+      }
+    },
+    makeColMap <- function(self, colors, powersOf2, maxPeriod) {
         darken <- function(color, factor=1.4){
           col <- col2rgb(color)
           col <- col/factor
@@ -248,17 +262,12 @@ dscurve <- function(fun, yfun = NULL,
           else
             self$col <- rainbow(numCol) #warning? More colors needed
         }
-        self$model=model
 
         newCol=vector("character",length(transitions$values))
         for(i in 1:length(transitions$values)){
           newCol[i]=self$col[which(colMap==transitions$values[[i]])]
         }
         self$col=newCol
-      }
-      else{ #only not sim Period curves
-        self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
-      }
     },
     render = function(self, model) {
       if(display){
@@ -320,6 +329,7 @@ dscurve <- function(fun, yfun = NULL,
 
     },
     narrow= function(self, tolerance=sqrt(sqrt(.Machine$double.eps))){
+      self$narrowed = TRUE
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
       self$phaseFrame=pha
