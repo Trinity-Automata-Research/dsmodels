@@ -228,11 +228,7 @@ dscurve <- function(fun, yfun = NULL,
 
         #chose colors
         self$givenColors=self$col #kind of akward way to remember the prefered color scheme
-        powersOf2=self$find.period.args$powersOf2
-        if(is.null(powersOf2)){
-          powersOf2=TRUE
-        }
-        self$makeColMap(self$givenColors,powersOf2,max(transitions$values))
+        self$makeColMap()
         self$toPlot = vector("list", length=length(ends))
         self$col = vector(length=length(ends))
         for(i in 1:length(ends)) {
@@ -250,13 +246,36 @@ dscurve <- function(fun, yfun = NULL,
     recalculate = function(self, model) {
       if(self$simPeriod && self$narrowed)
       { #recalculate from phases (what I was calling plotOfPhases)
+
+
+
+
+
+        self$toPlot = vector("list", length=nrow(self$phaseFrame))
+        for(i in 1:nrow(self$phaseFrame)){
+          row=self$phaseFrame[i,]
+          start=row$start
+          stop=row$stop
+          mid=self$sources[self$sources >= start & self$sources <= stop]
+          sourceSeg=c(start,mid,stop)
+          xs=mapply(self$getX,self$sourceSeg)
+          ys=mapply(self$getY,self$sourceSeg)
+          self$toPlot[i]=data.frame(x=xs,y=ys)
+          self$col[i]=self$colMap[as.character(row$period)]
+        }
+
       } else {
         self$on.bind(model)
       }
     },
-    makeColMap = function(self, colors, powersOf2, maxPeriod) {
-      #only runs if current map is to small
+    makeColMap = function(self) {
+      maxPeriod=max(self$phaseFrame[,"period"])
+      #only runs if current map is to small/ missing maxPeriod
       if(maxPeriod+2>length(self$colMap)){ #or if(is.null(self$colMap[[as.character(maxPeriod)]])){
+        powersOf2=self$find.period.args$powersOf2
+        if(is.null(powersOf2)){
+          powersOf2=TRUE
+        }
         darken <- function(color, factor=1.4){
           col <- col2rgb(color)
           col <- col/factor
@@ -271,7 +290,7 @@ dscurve <- function(fun, yfun = NULL,
         }
 
         #slightly darker version of simmapperiod's colors
-        if(is.null(self$col) || length(self$col)<numCol){
+        if(is.null(self$givenColors) || length(self$givenColors)<numCol){
           if (numCol <= 6)
             self$col <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
           else if (numCol <= 28)
@@ -280,7 +299,10 @@ dscurve <- function(fun, yfun = NULL,
                                  "#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c",
                                  "#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f"))
           else
-            self$col <- rainbow(numCol) #warning? More colors needed
+            self$col <- rainbow(numCol)
+          if(!is.null(self$givenColors)){
+            warning("not enough colors given, using a preset") #warning? More colors needed
+          }
         }
         self$colMap=new.env()
         self$colMap[[as.character(0)]]=self$col[1]
