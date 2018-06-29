@@ -217,17 +217,22 @@ dscurve <- function(fun, yfun = NULL,
         n = length(p)
         starts = c(1,(p+1)[-n])
         ends = p
-        self$givenColors=self$col
-        powersOf2=self$find.period.args$powersOf2
-        if(is.null(powersOf2)){
-          powersOf2=TRUE
-        }
-        self$makeColMap(self$givenColors,powersOf2,max(transitions$values))
 
 
         self$phaseFrame = data.frame(start  = self$sources[starts],
                                      period = transitions$values,
                                      stop   = self$sources[ends])
+        #if(self$narrowFlag){
+        # do the stuff in recalculate
+        #}
+
+        #chose colors
+        self$givenColors=self$col #kind of akward way to remember the prefered color scheme
+        powersOf2=self$find.period.args$powersOf2
+        if(is.null(powersOf2)){
+          powersOf2=TRUE
+        }
+        self$makeColMap(self$givenColors,powersOf2,max(transitions$values))
         self$toPlot = vector("list", length=length(ends))
         self$col = vector(length=length(ends))
         for(i in 1:length(ends)) {
@@ -242,14 +247,14 @@ dscurve <- function(fun, yfun = NULL,
         self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
       }
     },
-    recalculate <- function(self, model) {
+    recalculate = function(self, model) {
       if(self$simPeriod && self$narrowed)
       { #recalculate from phases (what I was calling plotOfPhases)
       } else {
         self$on.bind(model)
       }
     },
-    makeColMap <- function(self, colors, powersOf2, maxPeriod) {
+    makeColMap = function(self, colors, powersOf2, maxPeriod) {
       #only runs if current map is to small
       if(maxPeriod+2>length(self$colMap)){ #or if(is.null(self$colMap[[as.character(maxPeriod)]])){
         darken <- function(color, factor=1.4){
@@ -278,13 +283,15 @@ dscurve <- function(fun, yfun = NULL,
             self$col <- rainbow(numCol) #warning? More colors needed
         }
         self$colMap=new.env()
-        i=0
-        colIndex=1
-        while(i<maxPeriod){
-          self$colMap[as.character(i)]=self$col[colIndex]
+        self$colMap[[as.character(0)]]=self$col[1]
+        self$colMap[[as.character(Inf)]]=self$col[numCol]
+        i=1
+        colIndex=2
+        while(i<=maxPeriod){
+          self$colMap[[as.character(i)]]=self$col[colIndex]
           colIndex=colIndex+1
           if(powersOf2){
-            i=i*i
+            i=i*2
           }
           else{
             i=i+1
