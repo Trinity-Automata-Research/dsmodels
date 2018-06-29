@@ -143,15 +143,17 @@ dscurve <- function(fun, yfun = NULL,
   colors <- colorVector(col, image, iters)
   iters <- length(colors)-1
 
+  fun = substitute(fun)
+  yfun = substitute(yfun)
   if(!safe.apply(is.null,yfun)){ #curve is parametric
-    getX <- ensureFunction(substitute(fun), TRUE)
-    getY <- ensureFunction(substitute(yfun), TRUE)
+    isParametric=TRUE
     lims=c(tstart,tend)
   } else {                       #curve is not parametric
+    isParametric=FALSE
     getX <- identity
-    getY <- ensureFunction(substitute(fun), FALSE)
+    getY <- ensureFunction(fun, FALSE)
     if(is.null(xlim)){
-      lims=xlim
+      lims=NULL
     }
     else{
       lims=make.lims(xlim)
@@ -160,8 +162,11 @@ dscurve <- function(fun, yfun = NULL,
 
   dsproto(
     `_class` = "curve", `_inherit` = feature,
-    getX=getX,
-    getY=getY,
+    xfun = fun,
+    yfun = yfun,
+    getX=NULL,
+    getY=NULL,
+    isParametric=isParametric,
     col = colors,
     testX=testX, testY=testY,
     lwd = lwd,
@@ -198,6 +203,38 @@ dscurve <- function(fun, yfun = NULL,
     on.bind = function(self, model) {
       #common between all curves
       self$bound = TRUE
+      #determining how to pick x and y values
+      if(self$isParametric){
+        self$getX <- ensureFunction(substitute(fun), TRUE)
+        self$getY <- ensureFunction(substitute(yfun), TRUE)
+        self$sourceName="t"
+      }
+      else{ #not parametric curve
+        getX <- identity
+        getY <- ensureFunction(substitute(fun), FALSE)
+        if(is.paramrange(model$range)){ #parameterized model
+          subNames=all.names(fun)
+          self$sourceName=model$range$aname
+          ain=self$sourceName %in% subNames
+          xin="x" %in% subNames
+          if(!xin){                      #later, we should find a way to see if x or a are defined.
+            names(formals(getY))=self$sourceName
+          }
+          else if(ain){
+            names(formals(getY))=self$sourceName
+            warning(paste("curve function contains both 'x' and'", self$sourceName, "'. Assuming you want to vary ",self$sourceName,"."))
+          }
+          else{
+            self$sourceName="x"
+          }
+        }
+        else{ #not parameterized model
+          self$sourceName="x"
+        }
+        self$getX=getX
+        self$getY=getY
+      }
+
       self$sources <-self$makeSourceSeq(model)
       self$xValues <-mapply(self$getX,self$sources)
       self$yValues <-mapply(self$getY,self$sources)
@@ -220,7 +257,7 @@ dscurve <- function(fun, yfun = NULL,
         self$phaseFrame = data.frame(start  = self$sources[starts],
                                      period = transitions$values,
                                      stop   = self$sources[ends])
-        #if(self$narrowFlag){
+        #if(self$narrowFlag){       # if we want to have the option to autimatically narrow
         # do the stuff in recalculate
         #}
 
