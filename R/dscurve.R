@@ -217,6 +217,14 @@ dscurve <- function(fun, yfun = NULL,
         n = length(p)
         starts = c(1,(p+1)[-n])
         ends = p
+        self$givenColors=self$col
+        powersOf2=self$find.period.args$powersOf2
+        if(is.null(powersOf2)){
+          powersOf2=TRUE
+        }
+        self$makeColMap(self$givenColors,powersOf2,max(transitions$values))
+
+
         self$phaseFrame = data.frame(start  = self$sources[starts],
                                      period = transitions$values,
                                      stop   = self$sources[ends])
@@ -242,14 +250,21 @@ dscurve <- function(fun, yfun = NULL,
       }
     },
     makeColMap <- function(self, colors, powersOf2, maxPeriod) {
+      #only runs if current map is to small
+      if(maxPeriod+2>length(self$colMap)){ #or if(is.null(self$colMap[[as.character(maxPeriod)]])){
         darken <- function(color, factor=1.4){
           col <- col2rgb(color)
           col <- col/factor
           col <- rgb(t(col), maxColorValue=255)
           col
         }
-        colMap=sort(unique(append(mapply(function(seg)seg$period[[1]],self$toPlot),c(1,0))))
-        numCol=length(colMap)
+        if(powersOf2){
+          numCol=log(maxPeriod,2)+2
+        }
+        else{
+          numCol=maxPeriod+2
+        }
+
         #slightly darker version of simmapperiod's colors
         if(is.null(self$col) || length(self$col)<numCol){
           if (numCol <= 6)
@@ -262,12 +277,20 @@ dscurve <- function(fun, yfun = NULL,
           else
             self$col <- rainbow(numCol) #warning? More colors needed
         }
-
-        newCol=vector("character",length(transitions$values))
-        for(i in 1:length(transitions$values)){
-          newCol[i]=self$col[which(colMap==transitions$values[[i]])]
+        self$colMap=new.env()
+        i=0
+        colIndex=1
+        while(i<maxPeriod){
+          self$colMap[as.character(i)]=self$col[colIndex]
+          colIndex=colIndex+1
+          if(powersOf2){
+            i=i*i
+          }
+          else{
+            i=i+1
+          }
         }
-        self$col=newCol
+      }
     },
     render = function(self, model) {
       if(display){
@@ -329,8 +352,9 @@ dscurve <- function(fun, yfun = NULL,
 
     },
     narrow= function(self, tolerance=sqrt(sqrt(.Machine$double.eps))){
-      self$narrowed = TRUE
+      dsassert(self$bound, "To use this function the curve must be bound to a model")
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
+      self$narrowed = TRUE
       pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
       self$phaseFrame=pha
       pha
@@ -352,6 +376,7 @@ dscurve <- function(fun, yfun = NULL,
       cbind(withDist,ratio)
     },
     phases=function(self, distances=FALSE, sources=TRUE, params=FALSE){  #add or take out columns of phaseFrame according to parameters.
+      dsassert(self$bound, "To use this function the curve must be bound to a model")
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       ret=self$phaseFrame
       if(params){
