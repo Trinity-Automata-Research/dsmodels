@@ -205,13 +205,13 @@ dscurve <- function(fun, yfun = NULL,
       self$bound = TRUE
       #determining how to pick x and y values
       if(self$isParametric){
-        self$getX <- ensureFunction(substitute(fun), TRUE)
-        self$getY <- ensureFunction(substitute(yfun), TRUE)
+        self$getX <- ensureFunction(fun, TRUE)
+        self$getY <- ensureFunction(yfun, TRUE)
         self$sourceName="t"
       }
       else{ #not parametric curve
         getX <- identity
-        getY <- ensureFunction(substitute(fun), FALSE)
+        getY <- ensureFunction(fun, FALSE)
         if(is.paramrange(model$range)){ #parameterized model
           subNames=all.names(fun)
           self$sourceName=model$range$aname
