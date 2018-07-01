@@ -14,18 +14,20 @@ c=dscurve(x*a,simPeriod = TRUE, find.period.args=list(numTries=5),col="black")
 mod+c
 c$narrow()
 
-c1=dscurve(s)
+c1=dscurve(s,col ="red")
 mod+c1
 
-#crashes, cant find s, but should
+#crashes, cant find x, but should.
+#if testing this case, you should clean the enviornment first.s
 #c2=dscurve(x*s,col="blue")
 #mod+c2
 x=.8
-#crashes, cant find s, but should
-#c3=dscurve(x*s,col="red")
-#mod+c3
+#warning about varying s
+c3=dscurve(x*s,col="magenta")
+mod+c3
 s=.6
-c4=dscurve(x*s,col="green")
+#warning about varying s, dosent use the .6 value of s
+c4=dscurve(x*s*2,col="green")
 mod+c4
 
 fooBar=.2
@@ -35,7 +37,6 @@ mod+c5
 c6=dscurve(1,col="purple")
 mod+c6
 
-#this uses the global enviornment A instead of the variable a
 c7=dscurve(function(a){1.5*a},col="yellow")
 mod+c7
 
@@ -43,4 +44,8 @@ mod+c7
 #in this case that results in and error.
 c7=dscurve(function(barFoo){.3*barFoo},col="blue")
 mod+c7
+
+#parametric
+c8=dscurve(t,t*t,tend=1.6)
+mod+c8
 

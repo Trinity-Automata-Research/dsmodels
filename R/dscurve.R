@@ -210,15 +210,13 @@ dscurve <- function(fun, yfun = NULL,
       else{ #not parametric curve
         getX <- identity
         getY <- ensureFunction(self$fun, FALSE)
-        if(is.paramrange(model$range) && safe.apply(is.function, eval(self$fun))){ #parameterized model whose function potentially needs modifying
+        if(is.paramrange(model$range) && !safe.apply(is.function, eval(self$fun))){ #parameterized model whose function potentially needs modifying
           subNames=all.names(self$fun)
           self$sourceName=model$range$aname
           ain=self$sourceName %in% subNames
           xin="x" %in% subNames
           if(!xin){                      #later, we should find a way to see if x or a are defined.
-            #names(formals(getY))=self$sourceName  #if the user gives functon(fooBar){fooBar},
-                                               #fooBar in the parameter is replaced here
-                                               #maybe check if it is already a function before  we change.
+            names(formals(getY))=self$sourceName
           }
           else if(ain){
             names(formals(getY))=self$sourceName
@@ -272,8 +270,6 @@ dscurve <- function(fun, yfun = NULL,
           p = transitions$values[[i]]
           self$col[[i]] = self$colMap[[as.character(p)]]
         }
-        #with new rendering toplot dosent need to know periods.
-        #keep periods for now because it might be useful when adding new points in narrow.
       } else { #only not sim Period curves
         self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
       }
