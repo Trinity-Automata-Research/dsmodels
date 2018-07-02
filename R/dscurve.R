@@ -10,6 +10,7 @@
 #'
 #' If the parameter \code{yfun} is not provided, then \code{dscurve} contains
 #' the curve of points (x,fun(x)). The inputs to \code{fun} are \code{n} points between the maximum
+#' and minimum. The maximum and minimum are taken from  the
 #' \code{\link{dsrange}}'s x limits, but can be overwritten with the \code{xlim} parameter.
 #' \code{fun} can either be any function of a single parameter, or an expression with
 #' exactly \code{x} as the free variable.
