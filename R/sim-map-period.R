@@ -8,8 +8,8 @@
 #' @include dsproto.R
 #' @param testX the x value of the point at which periodicity is tested.
 #' @param testY the y value of the point at which periodicity is tested.
-#' @param xlim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
-#' @param ylim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
+#' @param alim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
+#' @param blim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
 #' @param xlim The range of x values to calculate periods over. Defaults to the limits of the range.
 #' @param ylim The range of y values to calculate periods over. Defaults to the limits of the range.
 #' @param paramNames Specifies the names of parameters to be varied. Defaults to the paramNames of the range.
