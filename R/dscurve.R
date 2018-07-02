@@ -121,7 +121,7 @@
 #' c=dscurve(x/2,simPeriod = TRUE)
 #' mod+c
 #' #get the ranges of periodicity
-#' print(c$narrow(toelrance=.001)) #refine the ranges
+#' print(c$narrow(tolerance=.001)) #refine the ranges
 #' print(c$phases(distances=TRUE)) #add Distances to the ranges
 #'
 #' #parametric
