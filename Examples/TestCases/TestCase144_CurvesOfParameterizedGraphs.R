@@ -1,5 +1,7 @@
 library(dsmodels)
+
 a=2
+
 f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(x*exp(r-x-a*y),
        y*exp(s-b*x-y))
@@ -48,4 +50,8 @@ mod+c7
 #parametric
 c8=dscurve(t,t*t,tend=1.6)
 mod+c8
+
+#crashes, cant find fizzBuzz
+#c9=dscurve(fizzBuzz*buzzFizz)
+#mod+c9
 

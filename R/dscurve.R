@@ -139,9 +139,11 @@ dscurve <- function(fun, yfun = NULL,
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {
-
-  colors <- colorVector(col, image, iters)
-  iters <- length(colors)-1
+  colors=NULL
+  if(!simPeriod){
+    colors <- colorVector(col, image, iters)
+    iters <- length(colors)-1
+  }
 
   fun = substitute(fun)
   yfun = substitute(yfun)
@@ -166,6 +168,7 @@ dscurve <- function(fun, yfun = NULL,
     getY=NULL,
     isParametric=isParametric,
     col = colors,
+    givenColors = col,
     testX=testX, testY=testY,
     lwd = lwd,
     iters = iters,
@@ -183,7 +186,44 @@ dscurve <- function(fun, yfun = NULL,
     display = display,
     ... = ...,
     #functions to interact with the model
-    makeSourceSeq= function(self, model){
+    evaluateFunctions = function(self,model){ #determining how to pick x and y values
+      if(self$isParametric){
+        self$getX <- ensureFunction(self$fun, TRUE)
+        self$getY <- ensureFunction(self$yfun, TRUE)
+        self$sourceName="t"
+      }
+      else{ #not parametric curve
+        getX <- identity
+        getY <- ensureFunction(self$fun, FALSE)
+        if(is.paramrange(model$range)){#parameterized model
+          if(!safe.apply(is.function, eval(self$fun))){ #user did not pass a full function, so getY potentially needs modifying
+            subNames=all.names(self$fun)
+            self$sourceName=model$range$aname
+            ain=self$sourceName %in% subNames
+            xin="x" %in% subNames
+            if(!xin){
+              names(formals(getY))=self$sourceName
+            }
+            else if(ain){
+              names(formals(getY))=self$sourceName
+              warning(paste("curve function contains both 'x' and'", self$sourceName, "'. Assuming you want to vary ",self$sourceName,"."))
+            }
+            else{ #curve function dosent contain 'x' or aname.
+              self$sourceName="x"
+            }
+          }
+          else{ #user passed in a full function
+            self$sourceName=names(formals(getY))[[1]]
+          }
+        }
+        else{ #not parameterized model
+          self$sourceName="x"
+        }
+        self$getX=getX
+        self$getY=getY
+      }
+    },
+    makeSourceSeq = function(self, model){
       if(is.null(self$n)) #get numPoints
         numPoints <- model$range$renderCount
       else
@@ -201,42 +241,11 @@ dscurve <- function(fun, yfun = NULL,
     on.bind = function(self, model) {
       #common between all curves
       self$bound = TRUE
-      #determining how to pick x and y values
-      if(self$isParametric){
-        self$getX <- ensureFunction(self$fun, TRUE)
-        self$getY <- ensureFunction(self$yfun, TRUE)
-        self$sourceName="t"
-      }
-      else{ #not parametric curve
-        getX <- identity
-        getY <- ensureFunction(self$fun, FALSE)
-        if(is.paramrange(model$range) && !safe.apply(is.function, eval(self$fun))){ #parameterized model whose function potentially needs modifying
-          subNames=all.names(self$fun)
-          self$sourceName=model$range$aname
-          ain=self$sourceName %in% subNames
-          xin="x" %in% subNames
-          if(!xin){                      #later, we should find a way to see if x or a are defined.
-            names(formals(getY))=self$sourceName
-          }
-          else if(ain){
-            names(formals(getY))=self$sourceName
-            warning(paste("curve function contains both 'x' and'", self$sourceName, "'. Assuming you want to vary ",self$sourceName,"."))
-          }
-          else{
-            self$sourceName="x"
-          }
-        }
-        else{ #not parameterized model
-          self$sourceName="x"
-        }
-        self$getX=getX
-        self$getY=getY
-      }
-
+      self$model=model
       self$sources <-self$makeSourceSeq(model)
+      self$evaluateFunctions(model)
       self$xValues <-mapply(self$getX,self$sources)
       self$yValues <-mapply(self$getY,self$sources)
-      self$model=model
       if(simPeriod){# only simPeriod curves
         dsassert(is.paramrange(model$range),"Model must have a paramRange to use simPeriod=TRUE.")
         #find the periods
@@ -260,7 +269,6 @@ dscurve <- function(fun, yfun = NULL,
         #}
 
         #chose colors
-        self$givenColors=self$col #kind of akward way to remember the prefered color scheme
         self$makeColMap()
         self$toPlot = vector("list", length=length(ends))
         self$col = vector(length=length(ends))
@@ -303,19 +311,12 @@ dscurve <- function(fun, yfun = NULL,
         if(is.null(powersOf2)){
           powersOf2=TRUE
         }
-        darken <- function(color, factor=1.4){
-          col <- col2rgb(color)
-          col <- col/factor
-          col <- rgb(t(col), maxColorValue=255)
-          col
-        }
         if(powersOf2){
           numCol=log(maxPeriod,2)+2
         }
         else{
           numCol=maxPeriod+2
         }
-
         #slightly darker version of simmapperiod's colors
         if(is.null(self$givenColors) || length(self$givenColors)<numCol){
           if (numCol <= 6)
@@ -468,7 +469,7 @@ dscurve <- function(fun, yfun = NULL,
         add=data.frame(self$getX(start),self$getY(start),self$getX(stop),self$getY(stop))
         names(add)=c(startA,startB,stopA,stopB)
         ret=cbind(ret,add)
-        ret=ret[c("start",startA,startB,"period","stop",stopA,stopB)]
+        ret=ret[c("period","start",startA,startB,"stop",stopA,stopB)]
       }
       if(distances){
         ret=self$addDistanceToPhase(ret)
@@ -506,4 +507,11 @@ ensureFunction <- function(expr, par){
         make_function(alist(x=), expr, parent.frame())
     }
   }
+}
+
+darken <- function(color, factor=1.4){
+  col <- col2rgb(color)
+  col <- col/factor
+  col <- rgb(t(col), maxColorValue=255)
+  col
 }
