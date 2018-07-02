@@ -419,14 +419,24 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$bound, "To use this function the curve must be bound to a model")
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       self$narrowed = TRUE
-      pha=self$recurNarrow(prev = self$phaseFrame[1,],post = self$phaseFrame[nrow(self$phaseFrame),],tolerance=tolerance)
-      self$phaseFrame=pha
+      pf=self$phaseFrame
+      numRow=nrow(pf)
+      if(numRow>1){ #if there is anything to be narrowed
+        newPf=self$recurNarrow(pf[1,],pf[2,],tolerance)
+        if(numRow>2){ #if there is more to be narrowed
+          for(i in 2:(numRow-1)){
+            post=self$recurNarrow(pf[i,],pf[i+1,],tolerance)
+            newPf=self$phaseMerge(newPf,post)
+          }
+        }
+        self$phaseFrame=newPf
+      }
       if(redisplay){
         self$recalculate(self$model)
         #self$model$redisplay() #if something should be on top of this, redisplay will keep it that way
         self$render(self$model) #I think is should alway be on top anyways though
       }
-      pha
+      self$phaseFrame
     },
     addDistanceToPhase=function(self,inPhase){
       findDist=function(index,phases){
