@@ -372,6 +372,17 @@ dscurve <- function(fun, yfun = NULL,
       p2=c(x2,y2)
       sqdist(p1,p2)
     },
+    phaseMerge= function(prev,post){
+      lenPrev=nrow(prev)
+      midStart=prev[lenPrev,]$start   #merge the result from both sides
+      post[1,]$start=midStart
+      if(lenPrev==1){
+        return(post)
+      }
+      else{
+      return(rbind(prev[1:(lenPrev-1),],post))
+      }
+    },
     recurNarrow= function(self, prev,post,tolerance){
       if(self$phaseDist(prev,post) < tolerance){ #xydist
         return(rbind(prev,post))
@@ -390,10 +401,7 @@ dscurve <- function(fun, yfun = NULL,
           mid=data.frame(start=midPoint ,period=p,stop=midPoint)
           prev=self$recurNarrow(prev,mid,tolerance)   #compute both sides
           post=self$recurNarrow(mid,post,tolerance)
-          lenPrev=nrow(prev)
-          midStart=prev[lenPrev,]$start   #merge the result from both sides
-          post[1,]$start=midStart
-          return(rbind(prev[1:(lenPrev-1),],post))
+          return(self$phaseMerge(prev,post))            #merge the result from both sides
         }
         else{
           #midpoint goes into post
