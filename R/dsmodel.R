@@ -335,25 +335,36 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y=NULL, ..., iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+		find.period= function(self, a, b, x, y=NULL, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
-		  #i dont think this works with ...
-		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
-		  #  if(is.dspoint(x)){
-		  #    y=x$y
-		  #    x=x$x
-		  #  }
-		  #  else if(is.vector(x) && length(x)==2){
-		  #    y=x[[2]]
-		  #    x=x[[1]]
-		  #  }
-		  #  else {
-	  	#    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
-		  #  }
-		  #}
+		  dsassert(is.paramrange(self$range), "An object you added to the model requires model's range to be a paramRange")
 		  if(crop){
 		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
 		  }
+		  if(!(!is.null(y) && length(x)==1 && length(y)==1)){
+		    if(is.dspoint(x)){
+		      y=x$y
+		      x=x$x
+		    }
+		    else if(is.vector(x) && length(x)==2){
+		      y=x[[2]]
+		      x=x[[1]]
+		    }
+		    else {
+	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
+		    }
+		  }
+		  aname=self$range$aname
+		  bname=self$range$bname
+		  args=list(FUN=find.period.internal)
+		  args[[aname]]=a
+		  args[[bname]]=b
+		  args$moreArgs=list(x=x, y=y, iters=iters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
+		            epsilon=epsilon, crop=crop)
+      do.call(what=mapply,args=args)
+		},
+		find.period.internal = function(self, x, y=NULL, ..., iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+		                                epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
