@@ -8,8 +8,8 @@
 #' @include dsproto.R
 #' @param testX the x value of the point at which periodicity is tested.
 #' @param testY the y value of the point at which periodicity is tested.
-#' @param xlim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
-#' @param ylim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
+#' @param alim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
+#' @param blim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
 #' @param xlim The range of x values to calculate periods over. Defaults to the limits of the range.
 #' @param ylim The range of y values to calculate periods over. Defaults to the limits of the range.
 #' @param paramNames Specifies the names of parameters to be varied. Defaults to the paramNames of the range.
@@ -55,7 +55,7 @@
 
 
 sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+                key=TRUE, iters=500, maxPeriod=128, numTries=2, powerOf2=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {

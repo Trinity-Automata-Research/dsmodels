@@ -428,13 +428,15 @@ colorVector <- function(col, image, iters) {
     vect
   }
   else{ # NOT GRADIENT
-    if(image != "" || is.null(image))
+    if(image != "")
       col <- append(col, image)
     lengthOfCol <- length(col)
-    len <- min(lengthOfCol, iters)
-    if( iters <= 1 ) len <- lengthOfCol
+    if( iters > 1 )
+      len <- min(lengthOfCol, iters)
+    else
+      len <- lengthOfCol
     vect <- vector(mode = "list", len)
-    for(i in 1:len){
+     for(i in 1:len){
       if(col[[i]]=="")
         col[[i]] = "NA"
       vect[[i]] <- col[[i]]
