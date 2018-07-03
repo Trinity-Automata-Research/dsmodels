@@ -71,7 +71,7 @@
 #'   for both functions. Default 0.
 #' @param tend Only used for parametric curves. The maximum input
 #'	for the functions. Default 1.
-#' @param xlim Only used for the graph of a function. Determines the range of x values for which the function
+#' @param xlim Only used for the graph of a function. Determines the range of x values (or a values, if parameterized) for which the function
 #' is plotted. Defaults to the x limits of the model's dsrange.
 #' @param crop If \code{crop==TRUE}, the original curve and all iterations are cropped to the range.
 #' @param discretize Set \code{discretize=TRUE} to display the calculated points, instead of
@@ -141,13 +141,15 @@
 #'
 #' @export
 dscurve <- function(fun, yfun = NULL,
-                    col = "black", image = NULL,
+                    col = NULL, image = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
                     testX=.1, testY=.1, #better names? simX, simY?
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {
   if(!simPeriod) {
+    if(is.null(col))
+      col="black"
     colors <- colorVector(col, image, iters)
     iters <- length(colors)-1
   } else {
