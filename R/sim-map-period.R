@@ -93,7 +93,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
         if(is.null(self$aname)) {
           dsassert(is.null(self$bname), "bname set in sim.map.period, but not aname.", critical=TRUE)
           dsassert(!is.null(model$range$aname) && !is.null(model$range$bname), "Parameter names not provided, and could not be inferred from function definition.")
-          self$aname <- model$range$aname
+          self$aname <- model$range$aname   #this is now done in find.perid but we need them elsewhere.
           self$bname <- model$range$bname
         } else {
           dsassert(!is.null(self$bname), "aname set in sim.map.period, but not bname.", critical=TRUE)
@@ -112,11 +112,8 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       #        iters=iters, maxPeriod=maxPeriod,
       #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 
-      args=list(FUN=model$find.period, x=self$x, y=self$y, iters=iters, maxPeriod=maxPeriod,
-           numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
-      args[[self$aname]]=self$grid$X0
-      args[[self$bname]]=self$grid$Y0
-      z=do.call(mapply,args)
+      z=model$find.period(a=self$grid$X0, b=self$grid$Y0, x=self$x, y=self$y, iters=self$iters, maxPeriod=self$maxPeriod,
+           numTries=self$numTries, powerOf2=self$powerOf2, epsilon=self$epsilon, crop=self$crop, aname=self$aname, bname=self$bname)
 
       map=sort(unique(append(z,c(1,0,Inf))))
       normalize=function(x){

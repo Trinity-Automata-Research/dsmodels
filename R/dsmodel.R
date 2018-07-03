@@ -337,7 +337,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  (length(res) == 1) && !(is.element(0,res))
 		},
 		find.period= function(self, a, b, x, y=NULL, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
-                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
+                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, aname=NULL, bname=NULL){
 		  dsassert(is.paramrange(self$range),
 		           "to use find.period model's range must be a paramRange. Most likely,
 		           you are getting this error message becuse an object you added to the model
@@ -358,8 +358,10 @@ dsmodel <- function(fun, title="", display = TRUE) {
 	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
 		    }
 		  }
-		  aname=self$range$aname
-		  bname=self$range$bname
+		  if(is.null(aname))
+  		  aname=self$range$aname
+		  if(is.null(bname))
+		    bname=self$range$bname
 		  args=list(FUN=self$find.period.internal,x=x, y=y, iters=iters, maxPeriod=maxPeriod,
 		            numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 		  args[[aname]]=a
