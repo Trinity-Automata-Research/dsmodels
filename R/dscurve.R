@@ -283,7 +283,7 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "Simulation can only be used on dscurves constructed with simPeriod=TRUE")
       dsassert(is.paramrange(self$model$range),"Model must have a paramRange to use simPeriod=TRUE")
       #find the periods
-      args=append(self$find.period.args,list(FUN=model$find.period,x=self$testX,y=self$testY))
+      args=append(self$find.period.args,list(FUN=self$model$find.period,x=self$testX,y=self$testY))
       self$aname=self$model$range$aname
       self$bname=self$model$range$bname
       args[[self$aname]]=self$xValues
@@ -312,7 +312,7 @@ dscurve <- function(fun, yfun = NULL,
         p = transitions$values[[i]]
         self$col[[i]] = self$colMap[[as.character(p)]]
       }
-    }
+    },
     makeColMap = function(self) {
       maxPeriod=max(self$phaseFrame[,"period"])
       #only runs if current map is to small/ missing maxPeriod
@@ -405,17 +405,14 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       self$narrowed = TRUE
       pf=self$phaseFrame
-      numRow=nrow(pf)
-      if(numRow>1){ #if there is anything to be narrowed
-        newPf=self$recurNarrow(pf[1,],pf[2,],tolerance)
-        if(numRow>2){ #if there is more to be narrowed
-          for(i in 2:(numRow-1)){
-            post=self$recurNarrow(pf[i,],pf[i+1,],tolerance)
-            newPf=self$phaseMerge(newPf,post)
-          }
-        }
-        self$phaseFrame=newPf
-      }
+      firstStart=pf[1,]$start
+      lastStop=pf[nrow(pf),]$stop
+      gaps = mapply(c, head(pf$stop, -1), head(pf$period, -1), pf$start[-1], pf$period[-1], SIMPLIFY = FALSE)
+      new=unlist(lapply(gaps, self$recurNarrow, tolerance), recursive = FALSE)
+      starts=c(firstStart,mapply(function(gap)gap[3],new))
+      stops=c(mapply(function(gap)gap[1],new),lastStop)
+      periods=c(new[[1]][2],mapply(function(gap)gap[4],new))
+      self$phaseFrame=data.frame(start=starts, stop=stops, period=periods)
       if(redisplay){
         self$recalculate(self$model)
         #self$model$redisplay() #if something should be on top of this, redisplay will keep it that way
@@ -423,45 +420,29 @@ dscurve <- function(fun, yfun = NULL,
       }
       self$phaseFrame
     },
-    phaseMerge= function(prev,post){
-      lenPrev=nrow(prev)
-      midStart=prev[lenPrev,]$start   #merge the result from both sides
-      post[1,]$start=midStart
-      if(lenPrev==1)
-        return(post)
-      else
-        return(rbind(prev[1:(lenPrev-1),],post))
-    },
-    recurNarrow= function(self,prev,post,tolerance){
-      if(self$distOfSources(prev$stop,post$start) < tolerance){ #xydist
-        return(rbind(prev,post))
-      }
-      midPoint=(prev$stop+post$start)/2
-      p1=prev$period
-      p2=post$period
+    recurNarrow=function(self, gap, tolerance){#function from vector to list of vectors
+      start=gap[1]                             #calculates the gaps in between periods
+      startP=gap[2]                            #to within tolerance
+      stop=gap[3]
+      stopP=gap[4]
+      if(self$distOfSources(start,stop) < tolerance) #xydist
+        return(list(gap))
+      midPoint=(start+stop)/2
       x=self$getX(midPoint)
       y=self$getY(midPoint)
       args=append(self$find.period.args,list(x=self$testX,y=self$testY))
       args[[self$aname]]=x
       args[[self$bname]]=y
       p=do.call(self$model$find.period,args)
-      if(p!=p1){
-        if(p!=p2){ #new phase in between
-          mid=data.frame(start=midPoint ,period=p,stop=midPoint)
-          prev=self$recurNarrow(prev,mid,tolerance)   #compute both sides
-          post=self$recurNarrow(mid,post,tolerance)
-          return(self$phaseMerge(prev,post))            #merge the result from both sides
-        }
-        else{
-          #midpoint goes into post
-          post$start=midPoint
-        }
-      }
+      if(p==startP)
+        return(self$recurNarrow(c(midPoint,startP,stop,stopP), tolerance))
+      else if(p==stopP)
+        return(self$recurNarrow(c(start,startP,midPoint,stopP), tolerance))
       else{
-        #midpoint goes into prev
-        prev$stop=midPoint
+        g1=self$recurNarrow(c(start,startP,midPoint,p), tolerance)
+        g2=self$recurNarrow(c(midPoint,p,stop,stopP), tolerance)
+        return(append(g1,g2))
       }
-      return(self$recurNarrow(prev,post,tolerance))
     }
   )
 }
