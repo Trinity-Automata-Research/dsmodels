@@ -8,7 +8,7 @@ f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
 mod=dsmodel(f)
 
 mod + paramrange(3,3,discretize = .1, paramNames = c(s,r),renderCount = 20)
-mod + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
+#mod + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
 
 #not parametric
 c=dscurve(x/2,simPeriod = TRUE, find.period.args=list(numTries=5),col="black")

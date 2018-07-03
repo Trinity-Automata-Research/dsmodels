@@ -294,9 +294,9 @@ dscurve <- function(fun, yfun = NULL,
       #find the periods
       #args=append(self$find.period.args,list(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY))
       #periods=do.call(what=self$model$find.period,args=args)
-      periods=self$model$find.period(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY,
-                                     iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
-                                     epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE)
+      periods=self$model$find.period(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY)
+                                     #iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE, #we could add each of these as a parameter to dscurve
+                                     #epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE)  #then do self$maxPeriod, self$numTries.... also in recurNarrow.
       #break into phases (transitions)
       transitions = rle(periods)
       p = cumsum(transitions$lengths)
@@ -446,10 +446,7 @@ dscurve <- function(fun, yfun = NULL,
       midPoint=(start+stop)/2
       a=self$getX(midPoint)
       b=self$getY(midPoint)
-      args=append(self$find.period.args,list(x=self$testX,y=self$testY))
-      args[[self$aname]]=a
-      args[[self$bname]]=b
-      p=do.call(self$model$find.period,args)
+      p=self$model$find.period(a=a,b=b,x=self$testX,y=self$testY) #the rest of the args?
       if(p==startP)   #gap gets smaller
         return(self$recurNarrow(midPoint,startP,stop,stopP,tolerance))
       else if(p==stopP)
