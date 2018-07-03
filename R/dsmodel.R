@@ -354,7 +354,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    i=1
 		    while(i<=maxPeriod && !period){
 		      test=candidates[1:i]
-		      image=candidates[i+1:2*i]
+		      image=candidates[(i+1):(2*i)]
 		      dists=mapply(sqdist,test,image)
 		      if(all(dists < epsilon))
 		        period=TRUE
@@ -428,13 +428,15 @@ colorVector <- function(col, image, iters) {
     vect
   }
   else{ # NOT GRADIENT
-    if(image != "" || is.null(image))
+    if(image != "")
       col <- append(col, image)
     lengthOfCol <- length(col)
-    len <- min(lengthOfCol, iters)
-    if( iters <= 1 ) len <- lengthOfCol
+    if( iters > 1 )
+      len <- min(lengthOfCol, iters)
+    else
+      len <- lengthOfCol
     vect <- vector(mode = "list", len)
-    for(i in 1:len){
+     for(i in 1:len){
       if(col[[i]]=="")
         col[[i]] = "NA"
       vect[[i]] <- col[[i]]
@@ -508,11 +510,12 @@ safe.apply <- function(fun,inp){
 
 #' Returns the squared distance from a to b
 #'
-#' This function takes two list of points returns a list conaining
-#' the squared distance between each pair of points.
+#' This function takes two points and  returns
+#' the squared distance between the points.
 #' @keywords internal
-#' @param a a list of points to test
-#' @param b a list of points to test
+#' @param a a list of points to test in the form c(xValue,Yvalue)
+#' @param b a list of points to test in the form c(xValue,Yvalue)
+#' @export
 sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }

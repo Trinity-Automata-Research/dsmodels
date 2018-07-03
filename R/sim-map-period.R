@@ -8,8 +8,8 @@
 #' @include dsproto.R
 #' @param testX the x value of the point at which periodicity is tested.
 #' @param testY the y value of the point at which periodicity is tested.
-#' @param xlim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
-#' @param ylim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
+#' @param alim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
+#' @param blim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
 #' @param xlim The range of x values to calculate periods over. Defaults to the limits of the range.
 #' @param ylim The range of y values to calculate periods over. Defaults to the limits of the range.
 #' @param paramNames Specifies the names of parameters to be varied. Defaults to the paramNames of the range.
@@ -118,7 +118,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)
 
-      map=sort(unique(c(z,1,0)))
+      map=sort(unique(append(z,c(1,0))))
       normalize=function(x){
         spot=which(map==x)
         if(length(spot)!=1)
@@ -146,7 +146,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
         model$redisplay()
       }
       else{
-        dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound", critical = TRUE)
+        dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound.", critical = TRUE)
         range=1:self$numCol
         image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
         if(self$key){
