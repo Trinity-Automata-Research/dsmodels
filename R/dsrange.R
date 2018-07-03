@@ -9,10 +9,10 @@
 #' To specify a range from \code{min} to \code{max}, use either \code{c(min,max)} or
 #' \code{min:max}.
 #' @include dsproto.R
-#' @param x Specifies the minimum and maximum for the x axis.
+#' @param xlim Specifies the minimum and maximum for the x axis.
 #'  If only one value is specified, it is used as the maximum, and the minimum will default to 0.
 #'  If a collection of values are provided, the minimum and maximum are used as the range.
-#' @param y Specifies the minimum and maximum for the y axis.
+#' @param ylim Specifies the minimum and maximum for the y axis.
 #'  If only one value is specified, it is used as the maximum, and the minimum will default to 0.
 #'  If a collection of values are provided, the minimum and maximum are used as the range.
 #' @param discretize If a value is provided, the field is discretized into an array of points. The value
@@ -40,10 +40,10 @@
 #' model <- dsmodel(fun, title = "A range with no features!")
 #' #Since no features are added, only the area and title are displayed.
 #' model + dsrange(3, 3, discretize = .09)
-dsrange <- function(x,y,discretize = 0,
+dsrange <- function(xlim,ylim,discretize = 0,
                     renderCount=101, axes = TRUE, frame.plot = TRUE, ...){ # Range
-  xlim <- make.lims(x)
-  ylim <- make.lims(y)
+  xlim <- make.lims(xlim)
+  ylim <- make.lims(ylim)
   dsproto(
     `_class` = "range",
     `_inherit` = facade,
