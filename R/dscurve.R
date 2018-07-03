@@ -292,8 +292,6 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "Simulation can only be used on dscurves constructed with simPeriod=TRUE")
       dsassert(is.paramrange(self$model$range),"Model must have a paramRange to use simPeriod=TRUE")
       #find the periods
-      #args=append(self$find.period.args,list(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY))
-      #periods=do.call(what=self$model$find.period,args=args)
       periods=self$model$find.period(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY)
                                      #iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE, #we could add each of these as a parameter to dscurve
                                      #epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE)  #then do self$maxPeriod, self$numTries.... also in recurNarrow.
