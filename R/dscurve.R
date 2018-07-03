@@ -292,12 +292,11 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "Simulation can only be used on dscurves constructed with simPeriod=TRUE")
       dsassert(is.paramrange(self$model$range),"Model must have a paramRange to use simPeriod=TRUE")
       #find the periods
-      args=append(self$find.period.args,list(FUN=self$model$find.period,x=self$testX,y=self$testY))
-      self$aname=self$model$range$aname
-      self$bname=self$model$range$bname
-      args[[self$aname]]=self$xValues
-      args[[self$bname]]=self$yValues
-      periods=do.call(what=mapply,args=args)
+      #args=append(self$find.period.args,list(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY))
+      #periods=do.call(what=self$model$find.period,args=args)
+      periods=self$model$find.period(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY,
+                                     iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+                                     epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE)
       #break into phases (transitions)
       transitions = rle(periods)
       p = cumsum(transitions$lengths)

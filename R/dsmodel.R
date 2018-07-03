@@ -366,8 +366,8 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  args[[bname]]=b
       do.call(what=mapply,args=args)
 		},
-		find.period.internal = function(self, x, y=NULL, ..., iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
-		                                epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
+		find.period.internal = function(self, x, y, iters, maxPeriod, numTries, powerOf2,
+		                                epsilon, crop, ...){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
