@@ -2,7 +2,7 @@
 #'
 #' This function takes a description of a curve and creates an object displaying the curve, and optionally
 #' it's behavior throughout iterations of the system. Functions can be provided as expressions of \code{x},
-#'for graphing curves, or \code{t}, for parametric curves.
+#' for graphing curves, or \code{t}, for parametric curves.
 #' The curve is defined either by the graph of a single function or a pair of parametric
 #' equations. By default, rendered with the \code{lines} function.
 #'
@@ -23,6 +23,13 @@
 #' points ranging from \code{tmin} to \code{tmax}.
 #' \code{fun} and \code{yfun} can either be any function of a single parameter,
 #' or an expression with exactly \code{t} as the free variable.
+#'
+#' @section SimPeriod:
+#'
+#' If the parameter \code{simPeriod} is set to \code{TRUE}, \code{dscurve} will color its curve
+#' according to the periodicity. This requires the model's range to be a paramRange. Iters will be
+#' ignored.
+#'
 
 #'
 #' @section Images of curves:
@@ -220,7 +227,7 @@ dscurve <- function(fun, yfun = NULL,
     },
     recalculate = function(self, model) {
       if(self$simPeriod && self$narrowed)
-      { #recalculate from phases (what I was calling plotOfPhases)
+      { #recalculate toPlot and col from narrowed phases
         self$makeColMap()
         self$toPlot = vector("list", length=nrow(self$phaseFrame))
         for(i in 1:nrow(self$phaseFrame)){
@@ -299,10 +306,12 @@ dscurve <- function(fun, yfun = NULL,
                                    period = transitions$values,
                                    stop   = self$sources[ends])
       #if(self$narrowFlag){       # if we want to have the option to autimatically narrow
-      # do the stuff in recalculate
+      # do the stuff that is done in recalculate:
+      #call narrow
+      #update segments with new phaseFrame
       #}
 
-      #chose colors
+      #chose colors and line segments to plot
       self$makeColMap()
       self$toPlot = vector("list", length=length(ends))
       self$col = vector(length=length(ends))
@@ -339,6 +348,7 @@ dscurve <- function(fun, yfun = NULL,
             self$col <- rainbow(numCol)
           }
         }
+        #for each period, assign a color
         self$colMap=new.env()
         self$colMap[[as.character(0)]]=self$col[1]
         self$colMap[[as.character(Inf)]]=self$col[numCol]
@@ -362,7 +372,7 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$bound, "To use this method the curve must be bound to a model")
       dsassert(self$simPeriod, "To use this method the curve be constructed with simPeriod=TRUE")
       ret=self$phaseFrame
-      if(params){
+      if(params){ #add the value of the parameters to the data frame
         startA=paste("start",self$aname)
         stopA=paste("stop",self$aname)
         startB=paste("start",self$bname)
@@ -373,10 +383,10 @@ dscurve <- function(fun, yfun = NULL,
         names(add)=c(startA,startB,stopA,stopB)
         ret=cbind(ret,add)[c("period","start",startA,startB,"stop",stopA,stopB)]
       }
-      if(distances){
+      if(distances){ #add the distances of each phase to thte data frame
         ret=self$addDistanceToPhase(ret)
       }
-      if(!sources){
+      if(!sources){ #remove the source values from the dataFrame
         ret[,c("start","stop")]=NULL
       }
       ret
@@ -405,43 +415,47 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "To use this function the curve must have simPeriod set to true")
       self$narrowed = TRUE
       pf=self$phaseFrame
+      end = nrow(pf)
       firstStart=pf[1,]$start
-      lastStop=pf[nrow(pf),]$stop
-      gaps = mapply(c, head(pf$stop, -1), head(pf$period, -1), pf$start[-1], pf$period[-1], SIMPLIFY = FALSE)
-      new=unlist(lapply(gaps, self$recurNarrow, tolerance), recursive = FALSE)
-      starts=c(firstStart,mapply(function(gap)gap[3],new))
-      stops=c(mapply(function(gap)gap[1],new),lastStop)
-      periods=c(new[[1]][2],mapply(function(gap)gap[4],new))
-      self$phaseFrame=data.frame(start=starts, stop=stops, period=periods)
-      if(redisplay){
+      lastStop=pf[end,]$stop
+      #convert phases into gaps and recursively narrow
+      gaps=Reduce(rbind,
+              mapply(self$recurNarrow,
+                        pf$stop[-end], pf$period[-end],
+                        pf$start[-1], pf$period[-1],
+                        MoreArgs = list(tolerance=tolerance), SIMPLIFY = FALSE))
+      #convert back into phases
+      self$phaseFrame = data.frame(
+          start=c(firstStart,gaps$start),
+          stop=c(gaps$stop, lastStop),
+          period = c(gaps$startP[1], gaps$stopP))
+      if(redisplay){ #update the l=plot
         self$recalculate(self$model)
         #self$model$redisplay() #if something should be on top of this, redisplay will keep it that way
-        self$render(self$model) #I think is should alway be on top anyways though
+        self$render(self$model) #I think the curve should alway be on top anyways though
       }
       self$phaseFrame
     },
-    recurNarrow=function(self, gap, tolerance){#function from vector to list of vectors
-      start=gap[1]                             #calculates the gaps in between periods
-      startP=gap[2]                            #to within tolerance
-      stop=gap[3]
-      stopP=gap[4]
-      if(self$distOfSources(start,stop) < tolerance) #xydist
-        return(list(gap))
+    recurNarrow=function(self, start, startP, stop, stopP, tolerance){
+      #narrows the gaps in between periods to within tolerance, returns list of vectors (in case new periods found)
+      if(self$distOfSources(start,stop) < tolerance) #calculate xydist. if gap is small enough, we are done.
+        return(data.frame(start=start, startP=startP, stop=stop, stopP=stopP))
+      #calculate the periodicity of the midpoint
       midPoint=(start+stop)/2
-      x=self$getX(midPoint)
-      y=self$getY(midPoint)
+      a=self$getX(midPoint)
+      b=self$getY(midPoint)
       args=append(self$find.period.args,list(x=self$testX,y=self$testY))
-      args[[self$aname]]=x
-      args[[self$bname]]=y
+      args[[self$aname]]=a
+      args[[self$bname]]=b
       p=do.call(self$model$find.period,args)
-      if(p==startP)
-        return(self$recurNarrow(c(midPoint,startP,stop,stopP), tolerance))
+      if(p==startP)   #gap gets smaller
+        return(self$recurNarrow(midPoint,startP,stop,stopP,tolerance))
       else if(p==stopP)
-        return(self$recurNarrow(c(start,startP,midPoint,stopP), tolerance))
-      else{
-        g1=self$recurNarrow(c(start,startP,midPoint,p), tolerance)
-        g2=self$recurNarrow(c(midPoint,p,stop,stopP), tolerance)
-        return(append(g1,g2))
+        return(self$recurNarrow(start,startP,midPoint,stopP,tolerance))
+      else{           #gap splits into two gaps
+        g1=self$recurNarrow(start,startP,midPoint,p,tolerance)
+        g2=self$recurNarrow(midPoint,p,stop,stopP,tolerance)
+        return(rbind(g1,g2))
       }
     }
   )
@@ -454,7 +468,8 @@ dscurve <- function(fun, yfun = NULL,
 #' @export
 is.curve <- function(x) inherits(x,"curve")
 
-
+#takes an expression or function and a boolean for if the expression is parametric
+#returns a function in the format that dscurve expects
 ensureFunction <- function(expr, par){
   if(safe.apply(is.function, eval(expr))){
     eval(expr)
@@ -473,6 +488,12 @@ ensureFunction <- function(expr, par){
   }
 }
 
+#' Darkens a color by a factor.
+#' @param color A color to darken.
+#' @param factor The factor to darken color by. defaults to 1.4
+# @rdname dscurve
+#' @keywords internal
+#' @export
 darken <- function(color, factor=1.4){
   col <- col2rgb(color)
   col <- col/factor
