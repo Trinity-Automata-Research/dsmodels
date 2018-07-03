@@ -378,8 +378,8 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      y=last[[2]]
 		    }
 		  }
-		  warning(paste("Assuming divergance: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
-		  return(FALSE)
+		  warning(paste("Assuming Chaotic: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
+		  return(Inf)
 		}
 
   )
