@@ -39,7 +39,8 @@
 #' system has been deemed stable. Note that boundary points on the range will not be tested.
 #'
 #' @family Foundation
-#' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
+#' @param fun Function with two inputs and two outputs which defines the dynamical system.
+#' The output should be a list, preferably with field names x and y.
 #' @param title A string title for the graph. Text can be input in the form of pseudo-LaTeX code within quotes.
 #'  See \code{\link[latex2exp]{TeX}} for more details.
 #' @param display If set to \code{FALSE}, the model will be drawn only when the user calls \code{`MODELNAME`$display()}. Otherwise,
@@ -337,7 +338,10 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		},
 		find.period= function(self, a, b, x, y=NULL, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
-		  dsassert(is.paramrange(self$range), "An object you added to the model requires model's range to be a paramRange")
+		  dsassert(is.paramrange(self$range),
+		           "to use find.period model's range must be a paramRange. Most likely,
+		           you are getting this error message becuse an object you added to the model
+		           uses find.period.")
 		  if(crop){
 		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
 		  }
@@ -356,11 +360,10 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  }
 		  aname=self$range$aname
 		  bname=self$range$bname
-		  args=list(FUN=find.period.internal)
+		  args=list(FUN=self$find.period.internal,x=x, y=y, iters=iters, maxPeriod=maxPeriod,
+		            numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 		  args[[aname]]=a
 		  args[[bname]]=b
-		  args$moreArgs=list(x=x, y=y, iters=iters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
-		            epsilon=epsilon, crop=crop)
       do.call(what=mapply,args=args)
 		},
 		find.period.internal = function(self, x, y=NULL, ..., iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
