@@ -60,6 +60,10 @@
 #' @param simPeriod Logical, determines if the curve will be colored according to its periodicity.
 #'  Requires model's range to be a paramRange if \code{TRUE}. Defaults to \code{FALSE}. See also \code{\link{sim.map.period}}
 #' @param find.period.args Additional arguments to find.period. Only used if simPeriod is set to \code{TRUE}.
+#' @param testX Value of x to test periodicity at. Only used if \code{simPeriod} is set to \code{TRUE}.
+#'  Defaults to a small value.
+#' @param testY Value of y to test periodicity at. Only used if \code{simPeriod} is set to \code{TRUE}.
+#'  Defaults to a small value.
 #' @param col The color of the original curve, as a string.
 #' @param image A single color as a string, or a vector of colors as a string.
 #'  See details for more information.
@@ -143,7 +147,7 @@
 dscurve <- function(fun, yfun = NULL,
                     col = NULL, image = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
-                    testX=.1, testY=.1, #better names? simX, simY?
+                    testX=NULL, testY=NULL, #better names? simX, simY?
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {

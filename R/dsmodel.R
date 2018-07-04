@@ -336,7 +336,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, a, b, x, y=NULL, iters=1000, maxPeriod=128, initIters=0, numTries=1, powerOf2=TRUE,
+		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=0, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, aname=NULL, bname=NULL){
 		  dsassert(is.paramrange(self$range),
 		           "to use find.period model's range must be a paramRange. Most likely,
@@ -345,13 +345,15 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  if(crop)
 		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
 		  if(is.null(x)) {
-		    if(model$has.xyrange()) { #take a point from near the front of the range
+		    if(self$has.xyrange()) { #take a point from near the front of the range
+		      xlim=self$range$xlim
+		      ylim=self$range$ylim
 		      x=(xlim[2]-xlim[1])/100+xlim[1]
 		      y=(ylim[2]-ylim[1])/100+ylim[1]
 		    }
-		    else if(!is.null(model$range$discretize)) { #take a point close to (0,0), use discretize for scale
-		      x=model$range$discretize/2
-		      y=model$range$discretize/2
+		    else if(!is.null(model$range$discretize) && model$range$discretize != 0) { #take a point close to (0,0), use discretize for scale
+		      x=self$range$discretize/2
+		      y=self$range$discretize/2
 		    }
 		    else { #take a point close to (0,0)
 		      x=.05
