@@ -18,6 +18,7 @@
 #' @param key it \code{TRUE}, displays a key showing what period each color signifies. Defaults to \code{TRUE}
 #' @param iters The number of iterations of the function applied before looking for a period. Defaults to 1000.
 #' @param maxPeriod The largest period looked for. Any periods larger are considered divergent. defaults to 128.
+#' @param initIters The number of iterations of the function to go before looking for periods. Defaulsts to \code{0}
 #' @param numTries The number of times a period is looked for. Defaults to 1.
 #' @param epsilon The distance at which two points are considered to be the same attractor. Defaults to \code{sqrt(sqrt(.Machine$double.eps))}
 #' @param crop Logical. If \code{TRUE}, points that go past xlim or ylim are considered divergent. If \code{FALSE},
@@ -55,7 +56,7 @@
 
 
 sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, iters=500, maxPeriod=128, numTries=2, powerOf2=TRUE,
+                key=TRUE, iters=500, maxPeriod=128, initIters=0, numTries=2, powerOf2=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -79,8 +80,9 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     aname=aname,
     bname=bname,
     key=key,
-    iters=iters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
-    epsilon=epsilon, crop=crop,
+    iters=iters, maxPeriod=maxPeriod,
+    initIters=initIters, numTries=numTries,
+    powerOf2=powerOf2, epsilon=epsilon, crop=crop,
     grid=NULL,
     colMatrix=NULL,
     cols=cols,
@@ -112,8 +114,11 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       #        iters=iters, maxPeriod=maxPeriod,
       #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 
-      z=model$find.period(a=self$grid$X0, b=self$grid$Y0, x=self$x, y=self$y, iters=self$iters, maxPeriod=self$maxPeriod,
-           numTries=self$numTries, powerOf2=self$powerOf2, epsilon=self$epsilon, crop=self$crop, aname=self$aname, bname=self$bname)
+      z=model$find.period(a=self$grid$X0, b=self$grid$Y0, x=self$x, y=self$y,
+                          iters=self$iters, maxPeriod=self$maxPeriod,
+                          initIters=self$initIters, numTries=self$numTries,
+                          powerOf2=self$powerOf2, epsilon=self$epsilon,
+                          crop=self$crop, aname=self$aname, bname=self$bname)
 
       map=sort(unique(append(z,c(1,0,Inf))))
       normalize=function(x){

@@ -371,9 +371,9 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2,
 		                                epsilon, crop, ...){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
-		  startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
+		  startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
 		  x=startPoint$x
-		  y=startPoint$x
+		  y=startPoint$y
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
 		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
@@ -410,7 +410,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      y=last[[2]]
 		    }
 		  }
-		  warning(paste("Assuming Chaotic: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
+		  warning(paste("Assuming Chaotic: no period found after",(iters+maxPeriod)*numTries+initIters,"iterations. Consider increasing iters."))
 		  return(Inf)
 		}
 
