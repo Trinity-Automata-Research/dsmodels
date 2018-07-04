@@ -76,6 +76,8 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     y=testY,
     alim=alim,
     blim=blim,
+    xlim=xlim,
+    ylim=ylim,
     discretize=discretize,
     aname=aname,
     bname=bname,
@@ -89,7 +91,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     bound=FALSE,
     on.bind = function(self, model){
       if(is.null(model$range)){
-        model+paramrange(alim=alim,blim=blim,discretize=discretize,xlim=xlim,ylim=ylim)
+        model+paramrange(alim=self$alim,blim=self$blim,discretize=self$discretize,xlim=self$xlim,ylim=self$ylim)
       }
       else{
         if(is.null(self$aname)) {
@@ -100,7 +102,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
         } else {
           dsassert(!is.null(self$bname), "aname set in sim.map.period, but not bname.", critical=TRUE)
         }
-        self$grid=model$range$paramcenters(discretize,alim=self$alim,blim=self$blim)
+        self$grid=model$range$paramcenters(self$discretize,alim=self$alim,blim=self$blim)
         self$bound=TRUE
         self$calculate.bifmap(model)
         if(all(!is.xlabel(model$facade))){
@@ -120,12 +122,9 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
                           powerOf2=self$powerOf2, epsilon=self$epsilon,
                           crop=self$crop, aname=self$aname, bname=self$bname)
 
-      map=sort(unique(append(z,c(1,0,Inf))))
+      map=sort(unique(append(z,c(1,0,Inf)))) #should be repaced with an enviornment like dscurve
       normalize=function(x){
-        spot=which(map==x)
-        if(length(spot)!=1)
-          stop("aaa again")
-        spot
+        which(map==x)
       }
       z=mapply(normalize,z)
       numCol=length(map)

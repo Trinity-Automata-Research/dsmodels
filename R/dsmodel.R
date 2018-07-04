@@ -187,13 +187,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
       }
     },
     has.xyrange= function(self){
-      !is.null(self$range) && self$has.xlim() && self$has.ylim()
-    },
-    has.xlim = function(self){
-      !all(self$range$xlim==c(0,0))
-    },
-    has.ylim = function(self){
-      !all(self$range$ylim==c(0,0))
+      !(is.null(self$range) || is.null(self$range$xlim) || is.null(self$range$ylim))
     },
     #visualization methods
     bind = function(self, obj = NULL) {

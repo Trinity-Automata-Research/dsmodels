@@ -164,12 +164,7 @@ dscurve <- function(fun, yfun = NULL,
   yfun = substitute(yfun)
   if(safe.apply(is.null,yfun)) { #curve is not parametric
     isParametric=FALSE
-    if(is.null(xlim)){
-      lims=NULL
-    }
-    else{
-      lims=make.lims(xlim)
-    }
+    lims=make.lims(xlim)
   } else { #curve is parametric
     isParametric=TRUE
     lims=c(tstart,tend)
