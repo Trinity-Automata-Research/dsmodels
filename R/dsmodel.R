@@ -336,7 +336,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, a, b, x, y=NULL, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+		find.period= function(self, a, b, x, y=NULL, iters=1000, maxPeriod=128, initIters=0, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, aname=NULL, bname=NULL){
 		  dsassert(is.paramrange(self$range),
 		           "to use find.period model's range must be a paramRange. Most likely,
@@ -363,14 +363,17 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  if(is.null(bname))
 		    bname=self$range$bname
 		  args=list(FUN=self$find.period.internal,x=x, y=y, iters=iters, maxPeriod=maxPeriod,
-		            numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
+		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
 		  args[[aname]]=a
 		  args[[bname]]=b
       do.call(what=mapply,args=args)
 		},
-		find.period.internal = function(self, x, y, iters, maxPeriod, numTries, powerOf2,
+		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2,
 		                                epsilon, crop, ...){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
+		  startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
+		  x=startPoint$x
+		  y=startPoint$x
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
 		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
