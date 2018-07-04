@@ -342,10 +342,23 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		           "to use find.period model's range must be a paramRange. Most likely,
 		           you are getting this error message becuse an object you added to the model
 		           uses find.period.")
-		  if(crop){
+		  if(crop)
 		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
+		  if(is.null(x)) {
+		    if(model$has.xyrange()) { #take a point from near the front of the range
+		      x=(xlim[2]-xlim[1])/100+xlim[1]
+		      y=(ylim[2]-ylim[1])/100+ylim[1]
+		    }
+		    else if(!is.null(model$range$discretize)) { #take a point close to (0,0), use discretize for scale
+		      x=model$range$discretize/2
+		      y=model$range$discretize/2
+		    }
+		    else { #take a point close to (0,0)
+		      x=.05
+		      y=.05
+		    }
 		  }
-		  if(!(!is.null(y) && length(x)==1 && length(y)==1)){
+		  else if(!(!is.null(y) && length(x)==1 && length(y)==1)){ # y isn't a scalar, try to pull x and y values from x.
 		    if(is.dspoint(x)){
 		      y=x$y
 		      x=x$x

@@ -23,7 +23,7 @@ m+sim.map.period(1,1,crop=TRUE)
 #add range first, defaults in sim (should give warnigs about assuming divergence, only show blue)
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 m+paramrange(alim=2,blim=2,xlim=2,ylim=2,discretize = 1)
-m+sim.map.period(1,1,alim=1,blim=1,xlim=Inf,ylim=Inf,discretize = .5)
+m+sim.map.period(alim=1,blim=1,xlim=Inf,ylim=Inf,discretize = .5)
 
 #dont add range, no defaults in sim (should crash)
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
@@ -33,10 +33,10 @@ m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
 #with init iters =0, this calls everything past 1 chaotic instead of divergent.
 #with init iters =1000, this calls it divergent
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
-m+sim.map.period(1,1,alim=2,blim=2,discretize = 1, initIters=1000) #initIters=0)
+m+sim.map.period(alim=2,blim=2,discretize = 1, initIters=1000) #initIters=0)
 
 #dont add range, param defaults and x,y defaults in sim (should give no warnigs about assuming divergence, red and blue)
 #also no key for this one
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
-m+sim.map.period(1,1,alim=2,blim=2, xlim=2,ylim=2,discretize = 1, crop = 3, key=FALSE)
+m+sim.map.period(alim=2,blim=2, xlim=2,ylim=2,discretize = 1, crop = 3, key=FALSE)
 
