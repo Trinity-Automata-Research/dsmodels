@@ -48,3 +48,9 @@ m+sim.map.period(testX=1,testY=1,crop=TRUE, iters=1, maxPeriod = 8, numTries = 1
 #this should be fixed when a,b<1 and divergent otherwise
 m+sim.map.period(xlim=2,ylim=2,testX=1,testY=1,crop=TRUE, iters=1, maxPeriod = 8, numTries = 10)
 
+m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
+m+paramrange(alim=2,blim=2,xlim=NULL,ylim=NULL, discretize = .5)
+#this should crash, needs xlim/ylim
+#m+sim.map.period(testX=1,testY=1,crop=TRUE)
+#this should not crash
+m+sim.map.period(testX=1,testY=1,xlim=1,ylim=1,crop=TRUE)

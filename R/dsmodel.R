@@ -336,16 +336,24 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		},
 		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=0, numTries=1, powerOf2=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, xlim=NULL, ylim=NULL, aname=NULL, bname=NULL){
-		  dsassert(is.paramrange(self$range),
-		           "to use find.period model's range must be a paramRange. Most likely,
-		           you are getting this error message becuse an object you added to the model
-		           uses find.period.")
-		  if(crop)
-		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
+		  dsassert(is.paramrange(self$range), paste(      #paste is the only way to make multi line strings that dont contain newlines.
+		           "to use find.period model's range must be a paramRange. Most likely, ",
+		           "you are getting this error message becuse an object you added to the model ",
+		           "uses find.period."))
+		  if(crop){
+		    hasLims=self$has.xyrange() ||(!is.null(xlim) && !is.null(ylim))
+		    dsassert(hasLims, paste("Finding period with crop set to true either ",
+                 "requires the model's x and y lims to be defined, or ",
+                 "requires x and y lims to be set in the relevant object."))
+		  }
 		  if(is.null(x)) {
-		    if(self$has.xyrange()) { #take a point from near the front of the range
-		      xlim=self$range$xlim
-		      ylim=self$range$ylim
+		    if(self$has.xyrange()) { #take a point from near the front of the model's range
+		      rangexlim=self$range$xlim
+		      rangeylim=self$range$ylim
+		      x=(rangexlim[2]-rangexlim[1])/100+rangexlim[1]
+		      y=(rangeylim[2]-rangeylim[1])/100+rangeylim[1]
+		    }
+		    else if(!is.null(xlim) && !is.null(ylim)){ #take a point from near the front of the passed in range
 		      x=(xlim[2]-xlim[1])/100+xlim[1]
 		      y=(ylim[2]-ylim[1])/100+ylim[1]
 		    }
