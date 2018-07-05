@@ -92,6 +92,9 @@ dsmodel <- function(fun, title="", display = TRUE) {
     apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
+      if(crop){
+        dsassert(self$has.xyrange(),"Applying the model's fucntion with crop set to true requires the model's range to be defined.")
+      }
       if(is.null(self$properNames))
       {
         tmp = self$fun(x[1], y[1],...)
@@ -153,9 +156,15 @@ dsmodel <- function(fun, title="", display = TRUE) {
         tmp
       }
     },
-    cropframe = function(self, vals) {
-      xin <- vals[[1]]
-      yin <- vals[[2]]
+    cropframe = function(self, vals) { #dosent check if range is defined first. should only
+      if(self$properNames){            #be called if has.xyrange is asserted first
+        xin <- vals$x
+        yin <- vals$y
+      }
+      else{
+        xin <- vals[[1]]
+        yin <- vals[[2]]
+      }
       tmp1 <- self$range$xlim
       tmp2 <- self$range$ylim
       filterfunx <- function(x) (x <= max(tmp1) && x >= min(tmp1))
@@ -297,6 +306,9 @@ dsmodel <- function(fun, title="", display = TRUE) {
       res
 		},
 		has.diverged = function(self, x, y, crop=FALSE){
+		  if(length(x)<1 || length(y)<1){    #check for numeric(0)
+		    return(TRUE)                     #this only works if x and y are not lists. to check has.diverged on multiple
+		  }                                  #points, you would need to either use mapply or change has.diverged.
 		  if(!crop)
 		    !finite.points(c(x,y))
 		  else
@@ -340,16 +352,17 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  #  }
 		  #}
 		  if(crop){
-		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires xlim and ylim to be set.")
+		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
 		  }
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
-		    if(self$has.diverged(startPoint$x,startPoint$y,crop=crop)){
+		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
+		    lastCan=candidates[[2*maxPeriod]]
+		    if(self$has.diverged(lastCan$x,lastCan$y,crop=crop)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
 		    period=FALSE
 		    i=1
 		    while(i<=maxPeriod && !period){
