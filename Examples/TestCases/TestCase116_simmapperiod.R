@@ -15,6 +15,7 @@
 
 #add range first, no defaults in sim (should give no warnigs about assuming divergence, red and blue)
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
+#m+paramrange(alim=2,blim=2,xlim=2,ylim=2,discretize = 1)
 m+paramrange(alim=2,blim=2,xlim=3,ylim=3,discretize = .5)
 m+sim.map.period(1,1,crop=TRUE)
 

@@ -391,8 +391,8 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      y=last[[2]]
 		    }
 		  }
-		  warning(paste("Assuming divergance: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
-		  return(FALSE)
+		  warning(paste("Assuming Chaotic: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
+		  return(Inf)
 		}
 
   )
@@ -441,13 +441,15 @@ colorVector <- function(col, image, iters) {
     vect
   }
   else{ # NOT GRADIENT
-    if(image != "" || is.null(image))
+    if(image != "")
       col <- append(col, image)
     lengthOfCol <- length(col)
-    len <- min(lengthOfCol, iters)
-    if( iters <= 1 ) len <- lengthOfCol
+    if( iters > 1 )
+      len <- min(lengthOfCol, iters)
+    else
+      len <- lengthOfCol
     vect <- vector(mode = "list", len)
-    for(i in 1:len){
+     for(i in 1:len){
       if(col[[i]]=="")
         col[[i]] = "NA"
       vect[[i]] <- col[[i]]

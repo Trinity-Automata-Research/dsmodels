@@ -8,8 +8,8 @@
 #' @include dsproto.R
 #' @param testX the x value of the point at which periodicity is tested.
 #' @param testY the y value of the point at which periodicity is tested.
-#' @param xlim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
-#' @param ylim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
+#' @param alim The range of the first parameter to calculate periods over. Defaults to the limits of the range.
+#' @param blim The range of the second parameter to calculate periods over. Defaults to the limits of the range.
 #' @param xlim The range of x values to calculate periods over. Defaults to the limits of the range.
 #' @param ylim The range of y values to calculate periods over. Defaults to the limits of the range.
 #' @param paramNames Specifies the names of parameters to be varied. Defaults to the paramNames of the range.
@@ -55,7 +55,7 @@
 
 
 sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
+                key=TRUE, iters=500, maxPeriod=128, numTries=2, powerOf2=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -118,7 +118,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       args[[self$bname]]=self$grid$Y0
       z=do.call(mapply,args)
 
-      map=sort(unique(append(z,c(1,0))))
+      map=sort(unique(append(z,c(1,0,Inf))))
       normalize=function(x){
         spot=which(map==x)
         if(length(spot)!=1)
@@ -153,6 +153,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
           names=self$map
           names[1]="Divergent"
           names[2]="Fixed"
+          names[length(names)]="Chaotic"
           legend("topright", inset=c(-0.25,0), legend=names,
                  fill=self$cols, title="Periods", xpd=TRUE)
         }
