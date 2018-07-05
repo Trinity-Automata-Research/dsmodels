@@ -388,7 +388,10 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		            crop=crop, xlim=xlim, ylim=ylim))
 		  args[[aname]]=a
 		  args[[bname]]=b
-      do.call(what=mapply,args=args)
+      ret=do.call(what=mapply,args=args)
+      if(any(is.infinite(ret)))
+        warning(paste("Assuming some points are chaotic: no period found after",(iters+maxPeriod)*numTries+initIters,"iterations. Consider increasing iters."))
+      ret
 		},
 		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2,
 		                                epsilon, crop, xlim, ylim, ...){
@@ -432,7 +435,6 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      y=last[[2]]
 		    }
 		  }
-		  warning(paste("Assuming Chaotic: no period found after",(iters+maxPeriod)*numTries+initIters,"iterations. Consider increasing iters."))
 		  return(Inf)
 		}
 
