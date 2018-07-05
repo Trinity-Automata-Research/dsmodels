@@ -113,7 +113,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       }
     },
     calculate.bifmap = function(self,model){
-      z=model$find.period(a=self$grid$X0, b=self$grid$Y0, x=self$x, y=self$y,
+      z=model$find.period(a=self$grid$A0, b=self$grid$B0, x=self$x, y=self$y,
                           iters=self$iters, maxPeriod=self$maxPeriod,
                           initIters=self$initIters, numTries=self$numTries,
                           powerOf2=self$powerOf2, epsilon=self$epsilon,
@@ -135,7 +135,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       }
       self$map=map
       self$numCol=numCol
-      self$colMatrix=matrix(z,length(self$grid$x))
+      self$colMatrix=matrix(z,length(self$grid$a))
     },
     render = function(self, model){
       if((is.null(self$firstRender) || self$firstRender==TRUE) && self$key){
@@ -146,7 +146,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       else{
         dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound.", critical = TRUE)
         range=1:self$numCol
-        image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
+        image(self$grid$a,self$grid$b, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
         if(self$key){
           names=self$map
           names[1]="Divergent"

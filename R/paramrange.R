@@ -106,8 +106,7 @@ paramrange = function(alim,blim,xlim=NULL,ylim=NULL, paramNames=NULL,discretize=
       if(is.null(blim))
         blim=self$blim
       ret=self$grid(self$getParamDiscretize(discretize),alim,blim,center)
-      #rename stuff in grid? part of issue #139
-      #names(ret)=list("as","bs","A0","B0")
+      names(ret)=list("as","bs","A0","B0")
       ret
     },
     paramcorners = function(self, discretize=NULL, alim=self$alim, blim=self$blim){
