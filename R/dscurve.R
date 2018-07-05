@@ -325,7 +325,8 @@ dscurve <- function(fun, yfun = NULL,
       }
     },
     makeColMap = function(self) {
-      maxPeriod=max(self$phaseFrame[,"period"])
+      periods=self$phaseFrame[,"period"]
+      maxPeriod=max(periods[is.finite(periods)])
       #only runs if current map is to small/ missing maxPeriod
       if(maxPeriod+2>length(self$colMap)){ #or if(is.null(self$colMap[[as.character(maxPeriod)]])){
         powersOf2=self$find.period.args$powersOf2
