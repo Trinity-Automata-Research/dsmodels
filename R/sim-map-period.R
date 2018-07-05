@@ -69,6 +69,8 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     aname <- paramNames[1]
     bname <- paramNames[2]
   }
+  xlim=make.lims(xlim)
+  ylim=make.lims(ylim)
   dsproto(
     `_class` = "image", `_inherit` = background, #what should this inherit?
     requiresRange=FALSE,
@@ -111,16 +113,11 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       }
     },
     calculate.bifmap = function(self,model){
-      #has to be mapply because find.period cant take in lists.
-      ##z=mapply(model$find.period,self$x,self$y,self$grid$X0,self$grid$Y0,
-      #        iters=iters, maxPeriod=maxPeriod,
-      #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
-
       z=model$find.period(a=self$grid$X0, b=self$grid$Y0, x=self$x, y=self$y,
                           iters=self$iters, maxPeriod=self$maxPeriod,
                           initIters=self$initIters, numTries=self$numTries,
                           powerOf2=self$powerOf2, epsilon=self$epsilon,
-                          crop=self$crop, aname=self$aname, bname=self$bname)
+                          crop=self$crop, xlim=self$xlim, ylim=self$ylim, aname=self$aname, bname=self$bname)
 
       map=sort(unique(append(z,c(1,0,Inf)))) #should be repaced with an enviornment like dscurve
       normalize=function(x){

@@ -38,5 +38,13 @@ m+sim.map.period(alim=2,blim=2,discretize = 1) #initIters=1000)
 #dont add range, param defaults and x,y defaults in sim (should give no warnigs about assuming divergence, red and blue)
 #also no key for this one
 m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
-m+sim.map.period(alim=2,blim=2, xlim=2,ylim=2,discretize = 1, crop = 3, key=FALSE)
+m+sim.map.period(alim=2,blim=2, xlim=2,ylim=2,discretize = 1, crop = TRUE, key=FALSE)
+
+#test case for #158 sim.map.period's xlims should override range's
+m=dsmodel( function(x,y,a,b){list(a*x,b*y)})
+m+paramrange(alim=2,blim=2,xlim=0,ylim=0, discretize = .5)
+#this should all be divergent
+m+sim.map.period(testX=1,testY=1,crop=TRUE, iters=1, maxPeriod = 8, numTries = 10)
+#this should be fixed when a,b<1 and divergent otherwise
+m+sim.map.period(xlim=2,ylim=2,testX=1,testY=1,crop=TRUE, iters=1, maxPeriod = 8, numTries = 10)
 

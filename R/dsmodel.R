@@ -300,14 +300,18 @@ dsmodel <- function(fun, title="", display = TRUE) {
         warning("dsmodel$basins: simbasins did not find an attractor for every point.")
       res
 		},
-		has.diverged = function(self, x, y, crop=FALSE){
+		has.diverged = function(self, x, y, crop=FALSE, xlim=NULL, ylim=NULL){
+		  if(is.null(xlim))
+		    xlim=self$range$xlim
+		  if(is.null(ylim))
+		    ylim=self$range$ylim
 		  if(length(x)<1 || length(y)<1){    #check for numeric(0)
 		    return(TRUE)                     #this only works if x and y are not lists. to check has.diverged on multiple
 		  }                                  #points, you would need to either use mapply or change has.diverged.
 		  if(!crop)
 		    !finite.points(c(x,y))
 		  else
-		    !all(x <= self$range$xlim[[2]] & x >= self$range$xlim[[1]] & y <= self$range$ylim[[2]] & y >= self$range$ylim[[1]])
+		    !all(x <= xlim[[2]] & x >= xlim[[1]] & y <= ylim[[2]] & y >= ylim[[1]])
 		},
 		sim.is.stable = function(self) {
 		  attractors <- Filter(
@@ -331,7 +335,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  (length(res) == 1) && !(is.element(0,res))
 		},
 		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=0, numTries=1, powerOf2=TRUE,
-                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, aname=NULL, bname=NULL){
+                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, xlim=NULL, ylim=NULL, aname=NULL, bname=NULL){
 		  dsassert(is.paramrange(self$range),
 		           "to use find.period model's range must be a paramRange. Most likely,
 		           you are getting this error message becuse an object you added to the model
@@ -345,7 +349,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      x=(xlim[2]-xlim[1])/100+xlim[1]
 		      y=(ylim[2]-ylim[1])/100+ylim[1]
 		    }
-		    else if(!is.null(model$range$discretize) && model$range$discretize != 0) { #take a point close to (0,0), use discretize for scale
+		    else if(!is.null(self$range$discretize) && self$range$discretize != 0) { #take a point close to (0,0), use discretize for scale
 		      x=self$range$discretize/2
 		      y=self$range$discretize/2
 		    }
@@ -371,14 +375,15 @@ dsmodel <- function(fun, title="", display = TRUE) {
   		  aname=self$range$aname
 		  if(is.null(bname))
 		    bname=self$range$bname
-		  args=list(FUN=self$find.period.internal,x=x, y=y, iters=iters, maxPeriod=maxPeriod,
-		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
+		  args=list(FUN=self$find.period.internal, MoreArgs=list(x=x, y=y, iters=iters, maxPeriod=maxPeriod,
+		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, epsilon=epsilon,
+		            crop=crop, xlim=xlim, ylim=ylim))
 		  args[[aname]]=a
 		  args[[bname]]=b
       do.call(what=mapply,args=args)
 		},
 		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2,
-		                                epsilon, crop, ...){
+		                                epsilon, crop, xlim, ylim, ...){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
 		  x=startPoint$x
@@ -387,7 +392,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
 		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
 		    lastCan=candidates[[2*maxPeriod]]
-		    if(self$has.diverged(lastCan$x,lastCan$y,crop=crop)){
+		    if(self$has.diverged(lastCan$x,lastCan$y,crop=crop, xlim=xlim, ylim=ylim)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
