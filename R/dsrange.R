@@ -112,7 +112,9 @@ dsrange <- function(xlim,ylim,discretize = 0,
 #' @keywords internal
 #' @export
 make.lims <- function(x){
-  if(length(x) == 1)
+  if(is.null(x))
+    lim <- NULL
+  else if(length(x) == 1)
     lim <- c(0,x)
   else
     lim <- c(min(x),max(x))

@@ -39,7 +39,8 @@
 #' system has been deemed stable. Note that boundary points on the range will not be tested.
 #'
 #' @family Foundation
-#' @param fun Function with two inputs and two outputs which defines the dynamical system. The output should be a list, preferably with field names x and y.
+#' @param fun Function with two inputs and two outputs which defines the dynamical system.
+#' The output should be a list, preferably with field names x and y.
 #' @param title A string title for the graph. Text can be input in the form of pseudo-LaTeX code within quotes.
 #'  See \code{\link[latex2exp]{TeX}} for more details.
 #' @param display If set to \code{FALSE}, the model will be drawn only when the user calls \code{`MODELNAME`$display()}. Otherwise,
@@ -186,13 +187,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
       }
     },
     has.xyrange= function(self){
-      !is.null(self$range) && self$has.xlim() && self$has.ylim()
-    },
-    has.xlim = function(self){
-      !all(self$range$xlim==c(0,0))
-    },
-    has.ylim = function(self){
-      !all(self$range$ylim==c(0,0))
+      !(is.null(self$range) || is.null(self$range$xlim) || is.null(self$range$ylim))
     },
     #visualization methods
     bind = function(self, obj = NULL) {
@@ -305,14 +300,18 @@ dsmodel <- function(fun, title="", display = TRUE) {
         warning("dsmodel$basins: simbasins did not find an attractor for every point.")
       res
 		},
-		has.diverged = function(self, x, y, crop=FALSE){
+		has.diverged = function(self, x, y, crop=FALSE, xlim=NULL, ylim=NULL){
+		  if(is.null(xlim))
+		    xlim=self$range$xlim
+		  if(is.null(ylim))
+		    ylim=self$range$ylim
 		  if(length(x)<1 || length(y)<1){    #check for numeric(0)
 		    return(TRUE)                     #this only works if x and y are not lists. to check has.diverged on multiple
 		  }                                  #points, you would need to either use mapply or change has.diverged.
 		  if(!crop)
 		    !finite.points(c(x,y))
 		  else
-		    !all(x <= self$range$xlim[[2]] & x >= self$range$xlim[[1]] & y <= self$range$ylim[[2]] & y >= self$range$ylim[[1]])
+		    !all(x <= xlim[[2]] & x >= xlim[[1]] & y <= ylim[[2]] & y >= ylim[[1]])
 		},
 		sim.is.stable = function(self) {
 		  attractors <- Filter(
@@ -335,31 +334,76 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, x, y=NULL, ..., iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE,
-                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
-		  #i dont think this works with ...
-		  #if(!(!is.null(y) && length(x)==1 && length(y)==1)){
-		  #  if(is.dspoint(x)){
-		  #    y=x$y
-		  #    x=x$x
-		  #  }
-		  #  else if(is.vector(x) && length(x)==2){
-		  #    y=x[[2]]
-		  #    x=x[[1]]
-		  #  }
-		  #  else {
-	  	#    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
-		  #  }
-		  #}
+		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=0, numTries=1, powerOf2=TRUE,
+                          epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, xlim=NULL, ylim=NULL, aname=NULL, bname=NULL){
+		  dsassert(is.paramrange(self$range), paste(      #paste is the only way to make multi line strings that dont contain newlines.
+		           "to use find.period model's range must be a paramRange. Most likely, ",
+		           "you are getting this error message becuse an object you added to the model ",
+		           "uses find.period."))
 		  if(crop){
-		    dsassert(self$has.xyrange(),"Finding period with crop set to true requires the model's range to be defined.")
+		    hasLims=self$has.xyrange() ||(!is.null(xlim) && !is.null(ylim))
+		    dsassert(hasLims, paste("Finding period with crop set to true either ",
+                 "requires the model's x and y lims to be defined, or ",
+                 "requires x and y lims to be set in the relevant object."))
 		  }
+		  if(is.null(x)) {
+		    if(self$has.xyrange()) { #take a point from near the front of the model's range
+		      rangexlim=self$range$xlim
+		      rangeylim=self$range$ylim
+		      x=(rangexlim[2]-rangexlim[1])/100+rangexlim[1]
+		      y=(rangeylim[2]-rangeylim[1])/100+rangeylim[1]
+		    }
+		    else if(!is.null(xlim) && !is.null(ylim)){ #take a point from near the front of the passed in range
+		      x=(xlim[2]-xlim[1])/100+xlim[1]
+		      y=(ylim[2]-ylim[1])/100+ylim[1]
+		    }
+		    else if(!is.null(self$range$discretize) && self$range$discretize != 0) { #take a point close to (0,0), use discretize for scale
+		      x=self$range$discretize/2
+		      y=self$range$discretize/2
+		    }
+		    else { #take a point close to (0,0)
+		      x=.05
+		      y=.05
+		    }
+		  }
+		  else if(!(!is.null(y) && length(x)==1 && length(y)==1)){ # y isn't a scalar, try to pull x and y values from x.
+		    if(is.dspoint(x)){
+		      y=x$y
+		      x=x$x
+		    }
+		    else if(is.vector(x) && length(x)==2){
+		      y=x[[2]]
+		      x=x[[1]]
+		    }
+		    else {
+	  	    stop("dsmodel: expected input formats for find.period's starting point are two scalars, a vector of length two or a dspoint")
+		    }
+		  }
+		  if(is.null(aname))
+  		  aname=self$range$aname
+		  if(is.null(bname))
+		    bname=self$range$bname
+		  args=list(FUN=self$find.period.internal, MoreArgs=list(x=x, y=y, iters=iters, maxPeriod=maxPeriod,
+		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, epsilon=epsilon,
+		            crop=crop, xlim=xlim, ylim=ylim))
+		  args[[aname]]=a
+		  args[[bname]]=b
+      ret=do.call(what=mapply,args=args)
+      if(any(is.infinite(ret)))
+        warning(paste("Assuming some points are chaotic: no period found after",(iters+maxPeriod)*numTries+initIters,"iterations. Consider increasing iters."))
+      ret
+		},
+		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2,
+		                                epsilon, crop, xlim, ylim, ...){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
+		  startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
+		  x=startPoint$x
+		  y=startPoint$y
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
 		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
 		    lastCan=candidates[[2*maxPeriod]]
-		    if(self$has.diverged(lastCan$x,lastCan$y,crop=crop)){
+		    if(self$has.diverged(lastCan$x,lastCan$y,crop=crop, xlim=xlim, ylim=ylim)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
@@ -391,7 +435,6 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		      y=last[[2]]
 		    }
 		  }
-		  warning(paste("Assuming Chaotic: no period found after",(iters+maxPeriod)*numTries,"iterations. Consider increasing iters."))
 		  return(Inf)
 		}
 

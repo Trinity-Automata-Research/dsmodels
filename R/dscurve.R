@@ -60,6 +60,10 @@
 #' @param simPeriod Logical, determines if the curve will be colored according to its periodicity.
 #'  Requires model's range to be a paramRange if \code{TRUE}. Defaults to \code{FALSE}. See also \code{\link{sim.map.period}}
 #' @param find.period.args Additional arguments to find.period. Only used if simPeriod is set to \code{TRUE}.
+#' @param testX Value of x to test periodicity at. Only used if \code{simPeriod} is set to \code{TRUE}.
+#'  Defaults to a small value.
+#' @param testY Value of y to test periodicity at. Only used if \code{simPeriod} is set to \code{TRUE}.
+#'  Defaults to a small value.
 #' @param col The color of the original curve, as a string.
 #' @param image A single color as a string, or a vector of colors as a string.
 #'  See details for more information.
@@ -143,7 +147,7 @@
 dscurve <- function(fun, yfun = NULL,
                     col = NULL, image = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
-                    testX=.1, testY=.1, #better names? simX, simY?
+                    testX=NULL, testY=NULL, #better names? simX, simY?
                     crop = FALSE,  tstart=0, tend=1,
                     discretize=FALSE, xlim = NULL, display=TRUE,
                     ...) {
@@ -160,12 +164,7 @@ dscurve <- function(fun, yfun = NULL,
   yfun = substitute(yfun)
   if(safe.apply(is.null,yfun)) { #curve is not parametric
     isParametric=FALSE
-    if(is.null(xlim)){
-      lims=NULL
-    }
-    else{
-      lims=make.lims(xlim)
-    }
+    lims=make.lims(xlim)
   } else { #curve is parametric
     isParametric=TRUE
     lims=c(tstart,tend)
@@ -292,12 +291,9 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "Simulation can only be used on dscurves constructed with simPeriod=TRUE")
       dsassert(is.paramrange(self$model$range),"Model must have a paramRange to use simPeriod=TRUE")
       #find the periods
-      args=append(self$find.period.args,list(FUN=self$model$find.period,x=self$testX,y=self$testY))
-      self$aname=self$model$range$aname
-      self$bname=self$model$range$bname
-      args[[self$aname]]=self$xValues
-      args[[self$bname]]=self$yValues
-      periods=do.call(what=mapply,args=args)
+      periods=self$model$find.period(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY)
+                                     #iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE, #we could add each of these as a parameter to dscurve
+                                     #epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE)  #then do self$maxPeriod, self$numTries.... also in recurNarrow.
       #break into phases (transitions)
       transitions = rle(periods)
       p = cumsum(transitions$lengths)
@@ -447,10 +443,7 @@ dscurve <- function(fun, yfun = NULL,
       midPoint=(start+stop)/2
       a=self$getX(midPoint)
       b=self$getY(midPoint)
-      args=append(self$find.period.args,list(x=self$testX,y=self$testY))
-      args[[self$aname]]=a
-      args[[self$bname]]=b
-      p=do.call(self$model$find.period,args)
+      p=self$model$find.period(a=a,b=b,x=self$testX,y=self$testY) #the rest of the args?
       if(p==startP)   #gap gets smaller
         return(self$recurNarrow(midPoint,startP,stop,stopP,tolerance))
       else if(p==stopP)

@@ -18,6 +18,7 @@
 #' @param key it \code{TRUE}, displays a key showing what period each color signifies. Defaults to \code{TRUE}
 #' @param iters The number of iterations of the function applied before looking for a period. Defaults to 1000.
 #' @param maxPeriod The largest period looked for. Any periods larger are considered divergent. defaults to 128.
+#' @param initIters The number of iterations of the function to go before looking for periods. Defaulsts to \code{0}
 #' @param numTries The number of times a period is looked for. Defaults to 1.
 #' @param epsilon The distance at which two points are considered to be the same attractor. Defaults to \code{sqrt(sqrt(.Machine$double.eps))}
 #' @param crop Logical. If \code{TRUE}, points that go past xlim or ylim are considered divergent. If \code{FALSE},
@@ -55,7 +56,7 @@
 
 
 sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, iters=500, maxPeriod=128, numTries=2, powerOf2=TRUE,
+                key=TRUE, iters=500, maxPeriod=128, initIters=0, numTries=2, powerOf2=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -68,6 +69,8 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     aname <- paramNames[1]
     bname <- paramNames[2]
   }
+  xlim=make.lims(xlim)
+  ylim=make.lims(ylim)
   dsproto(
     `_class` = "image", `_inherit` = background, #what should this inherit?
     requiresRange=FALSE,
@@ -75,30 +78,33 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     y=testY,
     alim=alim,
     blim=blim,
+    xlim=xlim,
+    ylim=ylim,
     discretize=discretize,
     aname=aname,
     bname=bname,
     key=key,
-    iters=iters, maxPeriod=maxPeriod, numTries=numTries, powerOf2=powerOf2,
-    epsilon=epsilon, crop=crop,
+    iters=iters, maxPeriod=maxPeriod,
+    initIters=initIters, numTries=numTries,
+    powerOf2=powerOf2, epsilon=epsilon, crop=crop,
     grid=NULL,
     colMatrix=NULL,
     cols=cols,
     bound=FALSE,
     on.bind = function(self, model){
       if(is.null(model$range)){
-        model+paramrange(alim=alim,blim=blim,discretize=discretize,x=xlim,y=ylim)
+        model+paramrange(alim=self$alim,blim=self$blim,discretize=self$discretize,xlim=self$xlim,ylim=self$ylim)
       }
       else{
         if(is.null(self$aname)) {
           dsassert(is.null(self$bname), "bname set in sim.map.period, but not aname.", critical=TRUE)
           dsassert(!is.null(model$range$aname) && !is.null(model$range$bname), "Parameter names not provided, and could not be inferred from function definition.")
-          self$aname <- model$range$aname
+          self$aname <- model$range$aname   #this is now done in find.perid but we need them elsewhere.
           self$bname <- model$range$bname
         } else {
           dsassert(!is.null(self$bname), "aname set in sim.map.period, but not bname.", critical=TRUE)
         }
-        self$grid=model$range$paramcenters(discretize,alim=self$alim,blim=self$blim)
+        self$grid=model$range$paramcenters(self$discretize,alim=self$alim,blim=self$blim)
         self$bound=TRUE
         self$calculate.bifmap(model)
         if(all(!is.xlabel(model$facade))){
@@ -107,23 +113,15 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       }
     },
     calculate.bifmap = function(self,model){
-      #has to be mapply because find.period cant take in lists.
-      ##z=mapply(model$find.period,self$x,self$y,self$grid$X0,self$grid$Y0,
-      #        iters=iters, maxPeriod=maxPeriod,
-      #         numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
+      z=model$find.period(a=self$grid$A0, b=self$grid$B0, x=self$x, y=self$y,
+                          iters=self$iters, maxPeriod=self$maxPeriod,
+                          initIters=self$initIters, numTries=self$numTries,
+                          powerOf2=self$powerOf2, epsilon=self$epsilon,
+                          crop=self$crop, xlim=self$xlim, ylim=self$ylim, aname=self$aname, bname=self$bname)
 
-      args=list(FUN=model$find.period, x=self$x, y=self$y, iters=iters, maxPeriod=maxPeriod,
-           numTries=numTries, powerOf2=powerOf2, epsilon=epsilon, crop=crop)
-      args[[self$aname]]=self$grid$X0
-      args[[self$bname]]=self$grid$Y0
-      z=do.call(mapply,args)
-
-      map=sort(unique(append(z,c(1,0,Inf))))
+      map=sort(unique(append(z,c(1,0,Inf)))) #should be repaced with an enviornment like dscurve
       normalize=function(x){
-        spot=which(map==x)
-        if(length(spot)!=1)
-          stop("aaa again")
-        spot
+        which(map==x)
       }
       z=mapply(normalize,z)
       numCol=length(map)
@@ -137,7 +135,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       }
       self$map=map
       self$numCol=numCol
-      self$colMatrix=matrix(z,length(self$grid$x))
+      self$colMatrix=matrix(z,length(self$grid$a))
     },
     render = function(self, model){
       if((is.null(self$firstRender) || self$firstRender==TRUE) && self$key){
@@ -148,7 +146,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       else{
         dsassert(self$bound,"sim.map.period: attempting to render bifmap before bound.", critical = TRUE)
         range=1:self$numCol
-        image(self$grid$x,self$grid$y, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
+        image(self$grid$a,self$grid$b, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
         if(self$key){
           names=self$map
           names[1]="Divergent"

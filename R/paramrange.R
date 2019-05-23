@@ -48,7 +48,7 @@
 #' #Since no features are added, only the area and title are displayed.
 #' model + paramrange(3, 3, discretize = .09, paramNames=c(a,b))
 
-paramrange = function(alim,blim,xlim=0,ylim=0, paramNames=NULL,discretize=0, renderCount=101, axes = TRUE, frame.plot = TRUE, ...){
+paramrange = function(alim,blim,xlim=NULL,ylim=NULL, paramNames=NULL,discretize=0, renderCount=101, axes = TRUE, frame.plot = TRUE, ...){
   ds=dsrange(xlim,ylim,discretize, renderCount=renderCount, axes = axes, frame.plot = frame.plot, ...=...)
   alim = make.lims(alim)
   blim = make.lims(blim)
@@ -106,8 +106,7 @@ paramrange = function(alim,blim,xlim=0,ylim=0, paramNames=NULL,discretize=0, ren
       if(is.null(blim))
         blim=self$blim
       ret=self$grid(self$getParamDiscretize(discretize),alim,blim,center)
-      #rename stuff in grid? part of issue #139
-      #names(ret)=list("as","bs","A0","B0")
+      names(ret)=list("as","bs","A0","B0")
       ret
     },
     paramcorners = function(self, discretize=NULL, alim=self$alim, blim=self$blim){
