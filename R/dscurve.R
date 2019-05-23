@@ -291,7 +291,7 @@ dscurve <- function(fun, yfun = NULL,
       dsassert(self$simPeriod, "Simulation can only be used on dscurves constructed with simPeriod=TRUE")
       dsassert(is.paramrange(self$model$range),"Model must have a paramRange to use simPeriod=TRUE")
       #find the periods
-      periods=self$model$find.period(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY)
+      periods=do.call(self$model$find.period, c(list(a=self$xValues, b=self$yValues, x=self$testX,y=self$testY), find.period.args))
                                      #iters=1000, maxPeriod=128, numTries=1, powerOf2=TRUE, #we could add each of these as a parameter to dscurve
                                      #epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE)  #then do self$maxPeriod, self$numTries.... also in recurNarrow.
       #break into phases (transitions)
@@ -443,7 +443,7 @@ dscurve <- function(fun, yfun = NULL,
       midPoint=(start+stop)/2
       a=self$getX(midPoint)
       b=self$getY(midPoint)
-      p=self$model$find.period(a=a,b=b,x=self$testX,y=self$testY) #the rest of the args?
+      p=do.call(self$model$find.period,c(list(a=a,b=b,x=self$testX,y=self$testY), find.period.args)) #the rest of the args?
       if(p==startP)   #gap gets smaller
         return(self$recurNarrow(midPoint,startP,stop,stopP,tolerance))
       else if(p==stopP)
