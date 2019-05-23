@@ -2,7 +2,7 @@
 #currently its some insanely nested list. probably can be cleaned up
 #make a 1d bif diagram for 1d mod
 
-
+library(dsmodels)
 
 
 in.range = function(x,y, model, rangeMult=0){
@@ -49,22 +49,23 @@ get.fps = function(self, x, y,
     y=ithPoint$y
   }
   warning(paste("Assuming divergance: no period found after",(initIters+maxPeriod)*numTries,"iterations. Consider increasing initIters."))
-  return(list(list(x=NA,y=NA)))
+  #return(list(list(x=NA,y=NA)))
+  return(candidates)
 }
 
 
 # bif for    x'=s*x*(1-x)
-logistic=FALSE
+logistic=TRUE
 if(logistic){
-fps=mapply(evalPoint,as)
 
-amin=2 #1
-amax=4
-xmin=0
-xmax=1
 
-adisc=.01 #.05
-xdisc=.01 #.05
+amin=-0 #1
+amax=3
+xmin=-2
+xmax=2
+
+adisc=.005 #.05
+xdisc=.005 #.05
 as=seq(amin,amax,by=adisc)
 xs=seq(xmin,xmax,by=xdisc)
 
@@ -76,7 +77,8 @@ g = function(s=.5){
     r=1
     #list(x=x*exp(r-x-a*y),
     #     y=y*exp(s-b*x-y))
-    list(x=s*x*(1-x),y=0)
+    #list(x=s*x*(1-x),y=0)
+    list(x=x^3-x*s, y=0)
 
   }
 }
@@ -85,9 +87,10 @@ g = function(s=.5){
 evalPoint=function(a){
   m<-dsmodel(g(a),display = FALSE)
   period=get.fps(m,.5,.5,numTries = 3,maxPeriod = 1024)
+  period=append(period,get.fps(m,-.5,.5,numTries = 3,maxPeriod = 1024))
   period
 }
-
+fps=mapply(evalPoint,as)
 
 
 z=matrix(NA,length(as),length(xs))
@@ -99,12 +102,13 @@ for(i in 1:length(fps)){
   #z[i,1+1/xdisc*mapply(dist.origin,fps[[i]])]=1
 
   #for 1d models, just the xval of the fixed point.
-  z[i,1+1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
-  z[i,1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
-  z[i,-1+1/xdisc*mapply(function(a)a[[1]],fps[[i]])]=1
+  z[i,(1+1/xdisc*(mapply(function(a)a[[1]],fps[[i]])-xmin))]=1
+  z[i,(1/xdisc*(mapply(function(a)a[[1]],fps[[i]])-xmin))]=1
+  z[i,(-1+1/xdisc*(mapply(function(a)a[[1]],fps[[i]])-xmin))]=1
 }
-
-image(as,xs, z)
+lambda=as
+x=xs
+image(lambda,x, z)
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,7 +118,7 @@ image(as,xs, z)
 #varying r and s together
 
 #library(dsmodels), library(latex2exp), source paramrange, simmap
-competition=TRUE
+competition=FALSE
 if(competition){
 
 gen=function(s){
@@ -172,8 +176,8 @@ for(i in 1:length(fps)){
   #z[i,1/xdisc*mapply(get,fps[[i]])]=1
   #z[i,-1+1/xdisc*mapply(get,fps[[i]])]=1
 }
-r=as
-image(r,distance.origin, z)
+c=as
+image(c,distance.origin, z)
 }
 
 

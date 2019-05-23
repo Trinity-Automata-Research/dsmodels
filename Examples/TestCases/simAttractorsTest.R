@@ -24,5 +24,5 @@ field <- dsrange(0:3,0:3,discretize = .1)
 #By default the arrows will be scaled to the discretization parameter, and blue.
 #They can be set manually with parameters.
 model+field
-model + dsarrows(head.length=0.15)
+model + dsarrows(head.length=0.15, discretize=.2)
 model + simattractors(discretize=0.05) + simbasins(discretize=0.02)
