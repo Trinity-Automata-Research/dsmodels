@@ -12,10 +12,10 @@ mod + paramrange(4,4,discretize = .1, paramNames = c(s,dummy),renderCount = 20)
 mod + sim.map.period(maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
 
 #not parametric
-c=dscurve(2, xlim=c(0,3.582394), simPeriod = TRUE, find.period.args=list(iters=10000, maxPeriod=128, initIters=1000, numTries=5 ),col="black")
+c=dscurve(2, xlim=c(0,3.573555857), simPeriod = TRUE, find.period.args=list(iters=10000, maxPeriod=128, initIters=1000, numTries=15 ),col="black")
 mod+c
-print(c$narrow(tolerance=.00001)) #refine the ranges
-print(c$phases(distances=TRUE))
+print(c$narrow(tolerance=.000001)) #refine the ranges
+print(c$phases(distances=TRUE),digits=10)
 
 ##
 #  testing what the orbits look like near the bifurcation points
