@@ -4,15 +4,19 @@
 #initDiscretize=TRUE breaks it. find.period calls some points divergent and they break up the phases.
 
 #phases overlap? look in narrow
+# the actual bifurcation points of the logistic map
+actual= c(0,3,3.449490,3.544090,3.564407,3.568750,3.56969,3.56989,3.569934,3.569943,3.5699451,3.569945557)
+
 
 aMin=0
 aMax=4
-find.period.args=list(iters=10000, maxPeriod=128, initIters=1000, numTries=15, convergeCheck=2^5, powerOf2=TRUE, epsilon=sqrt(.Machine$double.eps))
+find.period.args=list(iters=10000, maxPeriod=128, initIters=1000, numTries=15, convergeCheck=2^10, powerOf2=TRUE, epsilon=sqrt(.Machine$double.eps))
 aname="s"
 bname="dummy"
 testX=.1
 testY=.1
-numPoints=20
+numPoints=10
+narrowTol=.00000000001
 
 fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(s*x*(1-x),
@@ -21,9 +25,11 @@ fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
 curve=function(s)2 # the curve dummy=2
 
 #run these after the file has been run
-frame= phases(narrow(initDiscretize=TRUE)) #tolerance=.1))
-print(frame, digits=15) 
-
+frame= phases(narrow(initDiscretize=TRUE, tolerance=narrowTol))
+print(frame, digits=15)
+print(actual-frame$start, digits=15) #only look at the first couple of terms, up to the first chaotic term.
+#print(actual[-1]-frame$stop, digits=15)
+print(list(actual=actual, guess=frame$start),digits=10)
 #~~~~~~~~~~~~~~~~~~~~~~~~
 #helper for narrow
 #creates an initial discretized curve, turns it into an approximate phase frame
@@ -31,7 +37,7 @@ initFrame=function(){
   sources <- seq(aMin,aMax, length.out = numPoints)
   xValues <-mapply(self$getX,sources)
   yValues <-mapply(self$getY,sources)
-  
+
   mArgs=c(list(x=testX,y=testY), find.period.args)
   args=list(FUN=find.period, MoreArgs=mArgs)
   args[[aname]]=xValues
@@ -61,11 +67,11 @@ apply = function(x, y, ..., iters=1, accumulate=TRUE) {
   if(is.null(x) || is.null(y)){
     stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
   }
-  
+
   if(accumulate) {
     iterAccum = vector("list",iters+1)
     startvals = list(x=x, y=y)
-    
+
     iterAccum[[1]] <- startvals
     iterSeq = 1:iters
     if(iters==0)
@@ -121,7 +127,7 @@ find.period = function( x, y, iters, maxPeriod, initIters, numTries, powerOf2,
   #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 
   startPoint <- apply(x=x,y=y,...,iters=initIters,accumulate=FALSE)
-  
+
   x=startPoint$x
   y=startPoint$y
 
@@ -186,7 +192,7 @@ recurNarrow=function(start, startP, stop, stopP, tolerance=sqrt(sqrt(.Machine$do
   args=c(list(x=testX,y=testY), find.period.args)
   args[[aname]]=a
   args[[bname]]=b
-  p=do.call(find.period,args) 
+  p=do.call(find.period,args)
   if(p==startP)   #gap gets smaller
     return(recurNarrow(midPoint,startP,stop,stopP,tolerance))
   else if(p==stopP)
@@ -210,17 +216,18 @@ narrow= function(tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE)
     firstStart=pf[1,]$start
     lastStop=pf[end,]$stop
     #convert phases into gaps and recursively narrow
-    gaps=Reduce(rbind,
-                mapply(self$recurNarrow,
-                       pf$stop[-end], pf$period[-end],
-                       pf$start[-1], pf$period[-1],
-                       MoreArgs = list(tolerance=tolerance), SIMPLIFY = FALSE))
+    tmp=mapply(recurNarrow,
+               pf$stop[-end], pf$period[-end],
+               pf$start[-1], pf$period[-1],
+               MoreArgs = list(tolerance=tolerance), SIMPLIFY = FALSE)
+    gaps=Reduce(rbind,tmp)
+
     #convert back to phases
     data.frame(
-      start=c(firstStart,gaps$start),
-      stop=c(gaps$stop, lastStop),
+      start=c(firstStart,gaps$stop),
+      stop=c(gaps$start, lastStop),
       period = c(gaps$startP[1], gaps$stopP))
-    
+
   }
   else{
     a=self$getX(aMin)
@@ -229,7 +236,7 @@ narrow= function(tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE)
     args[[aname]]=a
     args[[bname]]=b
     minp=do.call(find.period,args)
-    
+
     a=self$getX(aMax)
     b=self$getY(aMax)
     args=c(list(x=testX,y=testY), find.period.args)
@@ -243,8 +250,8 @@ narrow= function(tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE)
       stop=c(gaps$stop, aMax),
       period = c(gaps$startP[1], gaps$stopP))
   }
-                    
-  
+
+
 }
 
 #helper for phases

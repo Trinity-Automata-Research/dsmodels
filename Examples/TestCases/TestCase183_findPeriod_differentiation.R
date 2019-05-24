@@ -19,7 +19,7 @@ print(c$phases(distances=TRUE),digits=10)
 
 ##
 #  testing what the orbits look like near the bifurcation points
-#  hopefully we can find a way to differentiate between fixed points and 
+#  hopefully we can find a way to differentiate between fixed points and
 #  cycles whose orbits dont move very far (i.e. {c, c+delta} as a 2-cycle
 #  where delta<epsilon)
 ##
@@ -28,12 +28,12 @@ print(c$phases(distances=TRUE),digits=10)
 sval=2.998
 its=1000
 last=8
-pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ] 
+pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ]
 mapply(1:last,FUN=function(i){pts[[i]]$x})
 #looks very periodic, is actually converging eventually
 
 its=4000
-pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ] 
+pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ]
 mapply(1:last,FUN=function(i){pts[[i]]$x})
 
 
@@ -58,7 +58,20 @@ print(c$phases(distances=TRUE))
 
 }
 
+f=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
+  list(x*(1-x)*s,0)
+}
 
+mod=dsmodel(f)
+
+mod + paramrange(4,4,discretize = .1, paramNames = c(s,dummy),renderCount = 20)
+mod + sim.map.period(maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
+
+#not parametric
+c=dscurve(2,simPeriod = TRUE, find.period.args=list(numTries=5),col="black")
+mod+c
+print(c$narrow(tolerance=.000001, redisplay=FALSE)) #refine the ranges
+print(c$phases(distances=TRUE))
 
 
 
