@@ -144,7 +144,7 @@ find.period = function( x, y, iters, maxPeriod, initIters, numTries, powerOf2,
     }
     dists=mapply(sqdist,candidates,compareCandidates)
     #check if function has converged. if it has check for periodicity, otherwise go to next pass of this loop. exception:
-    if(i==numTries || all(dists>epsilon)){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
+    if(i==numTries || sum(dists) < epsilon){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
       period=FALSE
       j=1
       while(j<=maxPeriod && !period){ #check for fixed or periodicity
