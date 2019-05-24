@@ -383,10 +383,11 @@ dsmodel <- function(fun, title="", display = TRUE) {
   		  aname=self$range$aname
 		  if(is.null(bname))
 		    bname=self$range$bname
+		  convCheck=2^(max(5,1+log2(maxPeriod)))  #converge check is how many iterations to go out to check convergence
+
 		  args=list(FUN=self$find.period.internal, MoreArgs=list(x=x, y=y, iters=iters, maxPeriod=maxPeriod,
 		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, epsilon=epsilon,
-		            crop=crop, xlim=xlim, ylim=ylim))
-		  args[["convergeCheck"]]=2^(max(5,1+log2(maxPeriod))) #how many iterations to go out to check convergence
+		            crop=crop, xlim=xlim, ylim=ylim, convergeCheck=convCheck))
 		  args[[aname]]=a
 		  args[[bname]]=b
       ret=do.call(what=mapply,args=args)
