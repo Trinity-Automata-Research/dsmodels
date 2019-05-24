@@ -425,8 +425,8 @@ dscurve <- function(fun, yfun = NULL,
                         MoreArgs = list(tolerance=tolerance), SIMPLIFY = FALSE))
       #convert back into phases
       self$phaseFrame = data.frame(
-          start=c(firstStart,gaps$start),
-          stop=c(gaps$stop, lastStop),
+          start=c(firstStart,gaps$stop),
+          stop=c(gaps$start, lastStop),
           period = c(gaps$startP[1], gaps$stopP))
       if(redisplay){ #update the l=plot
         self$recalculate(self$model)
