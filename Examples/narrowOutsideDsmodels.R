@@ -9,7 +9,8 @@ actual= c(0,3,3.449490,3.544090,3.564407,3.568750,3.56969,3.56989,3.569934,3.569
 
 
 aMin=0
-aMax=4
+#aMax=4
+aMax=3.569945672 #the start of chaos
 find.period.args=list(iters=10000, maxPeriod=128, initIters=1000, numTries=15, convergeCheck=2^10, powerOf2=TRUE, epsilon=sqrt(.Machine$double.eps))
 aname="s"
 bname="dummy"
@@ -142,8 +143,8 @@ find.period = function( x, y, iters, maxPeriod, initIters, numTries, powerOf2,
       return(FALSE)
     }
     dists=mapply(sqdist,candidates,compareCandidates)
-    #check if function has converged.
-    if(i==numTries || sum(dists)>epsilon){  # should always happen if i=numTries.i.e. if on last try, continue anyways
+    #check if function has converged. if it has check for periodicity, otherwise go to next pass of this loop. exception:
+    if(i==numTries || all(dists>epsilon)){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
       period=FALSE
       j=1
       while(j<=maxPeriod && !period){ #check for fixed or periodicity
