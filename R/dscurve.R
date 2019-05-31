@@ -77,6 +77,7 @@
 #' @param discretize Set \code{discretize=TRUE} to display the calculated points, instead of
 #' connecting them as a curve: the curve is displayed with \code{points}
 #' instead of \code{lines}.
+#' @param stretch The stretch parameter passed to breakDisconts when the curve is bound to a model.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
 #' @import pryr
@@ -145,7 +146,7 @@ dscurve <- function(fun, yfun = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
                     testX=.1, testY=.1, #better names? simX, simY?
                     crop = FALSE,  tstart=0, tend=1,
-                    discretize=FALSE, xlim = NULL, display=TRUE,
+                    discretize=FALSE, xlim = NULL, display=TRUE, stretch = 0,
                     ...) {
   if(!simPeriod) {
     if(is.null(col))
@@ -210,7 +211,7 @@ dscurve <- function(fun, yfun = NULL,
       if(simPeriod) {# only simPeriod curves
         self$buildSimPlots()
       } else { #only not sim Period curves
-        self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
+        self$toPlot <- mapply(breakDisconts, model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop), MoreArgs = list(xlim = model$range$xlim, ylim = model$range$ylim, stretch = stretch), SIMPLIFY = FALSE)
       }
     },
     render = function(self, model) {
@@ -240,7 +241,7 @@ dscurve <- function(fun, yfun = NULL,
           sourceSeg=c(start,mid,stop)
           xs=mapply(self$getX,sourceSeg)
           ys=mapply(self$getY,sourceSeg)
-          self$toPlot[[i]]=data.frame(x=xs,y=ys)
+          self$toPlot[[i]]= breakDisconts(data.frame(x=xs,y=ys), model$range$xlim, model$range$ylim, stretch = stretch)
           self$col[[i]]=self$colMap[[as.character(row$period)]]
         }
 
@@ -502,4 +503,33 @@ darken <- function(color, factor=1.4){
   col <- col/factor
   col <- rgb(t(col), maxColorValue=255)
   col
+}
+
+#' Takes limits for the x and y values of a line, returns a version of the line with any values beyond those limits replaced by NaN.
+#' @param xlim A vector of length 2 where the first element is the minimum x value, and the second element is the maximum x value.
+#' @param ylim A vector of length 2 where the first element is the minimum y value, and the second element is the maximum y value.
+#' @param line A list of length 2 where the first element is a vector containing the x values of the line, and the second element is a vector containing the y values of the line.
+#' @param stretch A real number. Entering -1 will cause the function to replace any points beyond the limits provided with NaN. Entering -2 will cause the function to search for consecutive points beyond the limits provided, and replace one of them with NaN. Entering a positive real number will cause the function to insert NaN between any two consecutive points with a euclidean distance between them that is greater than the entered value. Entering 0 will cause the function to simply return an unaltered line. Defaults to 0.
+# @rdname dscurve
+#' @keywords internal
+#' @export
+breakDisconts <- function(line, xlim, ylim, stretch = 0) {
+  if(stretch == -1) {
+    line$x[line$x < xlim[1] | line$x > xlim[2]] <- NaN
+    line$y[line$y < ylim[1] | line$y > ylim[2]] <- NaN
+  }
+  else if(stretch == -2) {
+    oobx <- line$x < xlim[1] | line$x > xlim[2]
+    ooby <- line$y < ylim[1] | line$y > ylim[2]
+    line$x[oobx & c(FALSE, oobx[-length(oobx)]) & c(oobx[-1], FALSE)] <- NaN
+    line$y[ooby & c(FALSE, ooby[-length(ooby)]) & c(ooby[-1], FALSE)] <- NaN
+  }
+  else if(stretch > 0) {
+    rep <- which(c(FALSE, diff(line$x)^2 + diff(line$y)^2) > stretch^2)
+    if(length(rep) > 1) {
+      line$y <- insert(line$y, rep, NaN)
+      line$x <- insert(line$x, rep, NaN)
+    }
+  }
+  line
 }
