@@ -41,6 +41,7 @@ Collate:
     'features.R'
     'modelConstruction.R'
     'paramrange.R'
+    'shadowtext.R'
     'sim-map-period.R'
     'simattractors.R'
     'simbasins.R'

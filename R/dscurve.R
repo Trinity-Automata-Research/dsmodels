@@ -1,4 +1,3 @@
-library(TeachingDemos)
 #' Parametric curves or a graph of functions
 #'
 #' This function takes a description of a curve and creates an object displaying the curve, and optionally
@@ -237,7 +236,7 @@ dscurve <- function(fun, yfun = NULL,
             lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                   col = self$col[[i]], ... = self$...)
         }
-        if(!is.null(labelLoc) & self$hasLabel) self$displayLabel(model$range)
+        if(self$hasLabel) self$displayLabel(model$range)
       }
     },
     displayLabel = function(self, range) {
