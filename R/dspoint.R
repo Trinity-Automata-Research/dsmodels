@@ -96,7 +96,7 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     x = x,
     y = y,
     label = texLabel,
-    hasLabel = label == "",
+    hasLabel = label != "",
     col = col,
     pch = pch,
     cex = size,
@@ -137,7 +137,7 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
         }
         xloc <- self$x + self$offset[1]
         yloc <- self$y + self$offset[2]
-        text(xloc,yloc, labels = self$label)
+        text(xloc,yloc, labels = self$label, col = self$col)
       }
     }
   )

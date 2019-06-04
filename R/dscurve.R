@@ -1,3 +1,4 @@
+library(TeachingDemos)
 #' Parametric curves or a graph of functions
 #'
 #' This function takes a description of a curve and creates an object displaying the curve, and optionally
@@ -77,6 +78,12 @@
 #' @param discretize Set \code{discretize=TRUE} to display the calculated points, instead of
 #' connecting them as a curve: the curve is displayed with \code{points}
 #' instead of \code{lines}.
+#' @param stretch The stretch parameter passed to breakDisconts when the curve is bound to a model.
+#' @param label A string representing the label to be displayed when the curve is rendered.
+#' @param labelLoc A real number between 0 and 1 denoting at what fraction of the way through the line the label should be displayed. Defaults to 0.5.
+#' @param labelOffset This will offset the label. Enter as c(x, y). Defaults to an automatic scale dependent on the dsrange's y axis size.
+#' @param labelCol A string color denoting what color the label's text will be. Defaults to black.
+#' @param labelBg A string color denoting what color the label's background will be. Defaults to white.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
 #' @import pryr
@@ -145,7 +152,8 @@ dscurve <- function(fun, yfun = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
                     testX=.1, testY=.1, #better names? simX, simY?
                     crop = FALSE,  tstart=0, tend=1,
-                    discretize=FALSE, xlim = NULL, display=TRUE,
+                    discretize=FALSE, xlim = NULL, display=TRUE, stretch = 0, label = "", labelLoc = 0.5, labelOffset = NULL,
+                    labelCol = "Black", labelBg = "white",
                     ...) {
   if(!simPeriod) {
     if(is.null(col))
@@ -178,7 +186,11 @@ dscurve <- function(fun, yfun = NULL,
     getX=NULL,
     getY=NULL,
     isParametric=isParametric,
+    hasLabel = label != "",
+    label = label,
     col = colors,
+    labelBg = labelBg,
+    labelCol = labelCol,
     colMap = NULL,
     givenColors = col,
     testX=testX,
@@ -210,7 +222,7 @@ dscurve <- function(fun, yfun = NULL,
       if(simPeriod) {# only simPeriod curves
         self$buildSimPlots()
       } else { #only not sim Period curves
-        self$toPlot <- model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop)
+        self$toPlot <- mapply(breakDisconts, model$apply(self$xValues, self$yValues, iters=self$iters, crop = self$crop), MoreArgs = list(xlim = model$range$xlim, ylim = model$range$ylim, stretch = stretch), SIMPLIFY = FALSE)
       }
     },
     render = function(self, model) {
@@ -225,6 +237,18 @@ dscurve <- function(fun, yfun = NULL,
             lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                   col = self$col[[i]], ... = self$...)
         }
+        if(!is.null(labelLoc) & self$hasLabel) self$displayLabel(model$range)
+      }
+    },
+    displayLabel = function(self, range) {
+      if(self$hasLabel) {
+        if(is.null(labelOffset)) {
+          scale <- 0.08*(abs(max(range$ylim) - min(range$ylim)))
+          self$labelOffset=c(0,scale)
+        }
+        xloc <- self$xValues[labelLoc * length(self$xValues)] + self$labelOffset[1]
+        yloc <- self$yValues[labelLoc * length(self$yValues)] + self$labelOffset[2]
+        shadowtext(xloc, yloc, labels = self$label, col = self$labelCol, bg = self$labelBg)
       }
     },
     recalculate = function(self, model) {
@@ -240,10 +264,9 @@ dscurve <- function(fun, yfun = NULL,
           sourceSeg=c(start,mid,stop)
           xs=mapply(self$getX,sourceSeg)
           ys=mapply(self$getY,sourceSeg)
-          self$toPlot[[i]]=data.frame(x=xs,y=ys)
+          self$toPlot[[i]]= breakDisconts(data.frame(x=xs,y=ys), model$range$xlim, model$range$ylim, stretch = stretch)
           self$col[[i]]=self$colMap[[as.character(row$period)]]
         }
-
       } else {
         self$on.bind(model)
       }
@@ -502,4 +525,33 @@ darken <- function(color, factor=1.4){
   col <- col/factor
   col <- rgb(t(col), maxColorValue=255)
   col
+}
+
+#' Takes limits for the x and y values of a line, returns a version of the line with any values beyond those limits replaced by NaN.
+#' @param xlim A vector of length 2 where the first element is the minimum x value, and the second element is the maximum x value.
+#' @param ylim A vector of length 2 where the first element is the minimum y value, and the second element is the maximum y value.
+#' @param line A list of length 2 where the first element is a vector containing the x values of the line, and the second element is a vector containing the y values of the line.
+#' @param stretch A real number. Entering -1 will cause the function to replace any points beyond the limits provided with NaN. Entering -2 will cause the function to search for consecutive points beyond the limits provided, and replace one of them with NaN. Entering a positive real number will cause the function to insert NaN between any two consecutive points with a euclidean distance between them that is greater than the entered value. Entering 0 will cause the function to simply return an unaltered line. Defaults to 0.
+# @rdname dscurve
+#' @keywords internal
+#' @export
+breakDisconts <- function(line, xlim, ylim, stretch = 0) {
+  if(stretch == -1) {
+    line$x[line$x < xlim[1] | line$x > xlim[2]] <- NaN
+    line$y[line$y < ylim[1] | line$y > ylim[2]] <- NaN
+  }
+  else if(stretch == -2) {
+    oobx <- line$x < xlim[1] | line$x > xlim[2]
+    ooby <- line$y < ylim[1] | line$y > ylim[2]
+    line$x[oobx & c(FALSE, oobx[-length(oobx)]) & c(oobx[-1], FALSE)] <- NaN
+    line$y[ooby & c(FALSE, ooby[-length(ooby)]) & c(ooby[-1], FALSE)] <- NaN
+  }
+  else if(stretch > 0) {
+    rep <- which(c(FALSE, diff(line$x)^2 + diff(line$y)^2) > stretch^2)
+    if(length(rep) > 1) {
+      line$y <- insert(line$y, rep, NaN)
+      line$x <- insert(line$x, rep, NaN)
+    }
+  }
+  line
 }
