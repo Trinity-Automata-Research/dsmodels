@@ -5,19 +5,22 @@
 
 #phases overlap? look in narrow
 # the actual bifurcation points of the logistic map
-actual= c(0,3,3.449490,3.544090,3.564407,3.568750,3.56969,3.56989,3.569934,3.569943,3.5699451,3.569945557)
+actual= c(0,3,3.44948974278,3.54409035955192285361596598660480454058309984544457367545781253030584294285,3.5644072660954325977735575865289824,3.568750,3.56969,3.56989,3.569934,3.569943,3.5699451,3.569945557)
 
 
 aMin=0
 #aMax=4
 aMax=3.569945672 #the start of chaos
-find.period.args=list(iters=10000, maxPeriod=128, initIters=1000, numTries=15, convergeCheck=2^10, powerOf2=TRUE, epsilon=sqrt(.Machine$double.eps))
+numPeriods=17
+find.period.args=list(iters=10000, maxPeriod=2^numPeriods, initIters=10000,
+                      numTries=15, convergeCheck=2^numPeriods, powerOf2=TRUE,
+                      epsilon=sqrt(.Machine$double.eps)/2)
 aname="s"
 bname="dummy"
 testX=.1
 testY=.1
 numPoints=10
-narrowTol=.00000000001
+narrowTol=.0000000000001
 
 fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(s*x*(1-x),
@@ -28,9 +31,11 @@ curve=function(s)2 # the curve dummy=2
 #run these after the file has been run
 frame= phases(narrow(initDiscretize=TRUE, tolerance=narrowTol))
 print(frame, digits=15)
+print("high guess error")
 print(actual-frame$start, digits=15) #only look at the first couple of terms, up to the first chaotic term.
-#print(actual[-1]-frame$stop, digits=15)
-print(list(actual=actual, guess=frame$start),digits=10)
+print("low guess error")
+print(actual-c(0,frame$stop), digits=15)
+print(list(actual=actual, LowGuess=c(0,frame$stop), highGuess=frame$start),digits=10)
 #~~~~~~~~~~~~~~~~~~~~~~~~
 #helper for narrow
 #creates an initial discretized curve, turns it into an approximate phase frame
