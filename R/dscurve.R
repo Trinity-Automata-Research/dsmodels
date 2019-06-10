@@ -525,7 +525,7 @@ darken <- function(color, factor=1.4){
   col <- rgb(t(col), maxColorValue=255)
   col
 }
-
+  
 #' Takes limits for the x and y values of a line, returns a version of the line with any values beyond those limits replaced by NaN.
 #' @param xlim A vector of length 2 where the first element is the minimum x value, and the second element is the maximum x value.
 #' @param ylim A vector of length 2 where the first element is the minimum y value, and the second element is the maximum y value.
@@ -554,3 +554,4 @@ breakDisconts <- function(line, xlim, ylim, stretch = 0) {
   }
   line
 }
+
