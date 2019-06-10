@@ -29,6 +29,7 @@ fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
 curve=function(s)2 # the curve dummy=2
 
 #run these after the file has been run
+if(FALSE){
 frame= phases(narrow(initDiscretize=TRUE, tolerance=narrowTol))
 print(frame, digits=15)
 print("high guess error")
@@ -36,7 +37,14 @@ print(actual-frame$start, digits=15) #only look at the first couple of terms, up
 print("low guess error")
 print(actual-c(0,frame$stop), digits=15)
 print(list(actual=actual, LowGuess=c(0,frame$stop), highGuess=frame$start),digits=10)
+}
 #~~~~~~~~~~~~~~~~~~~~~~~~
+
+#makes calling these functions the same
+self<- new.env()
+self$getX=function(x)x
+self$getY=function(x)curve(x)
+
 #helper for narrow
 #creates an initial discretized curve, turns it into an approximate phase frame
 initFrame=function(){
@@ -182,9 +190,6 @@ sqdist <- function(a, b) {
   return((a[[1]]-b[[1]])^2 + (a[[2]]-b[[2]])^2)
 }
 
-self$getX=function(x)x
-self$getY=function(x)curve(x)
-
 
 #helper for narrow
 recurNarrow=function(start, startP, stop, stopP, tolerance=sqrt(sqrt(.Machine$double.eps))){
@@ -261,7 +266,7 @@ narrow= function(tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE)
 }
 
 #helper for phases
-distOfSources=function(self, pointA, pointB){
+self$distOfSources=function(pointA, pointB){
   x1=self$getX(pointA)
   y1=self$getY(pointA)
   x2=self$getX(pointB)
@@ -270,7 +275,7 @@ distOfSources=function(self, pointA, pointB){
 }
 
 #helper for phases
-addDistanceToPhase=function(self,inPhase){
+addDistanceToPhase=function(inPhase){
   findDist=function(index,phases){
     sqrt(self$distOfSources(phases[index,]$start, phases[index,]$stop))
   }
@@ -286,8 +291,6 @@ addDistanceToPhase=function(self,inPhase){
 
 #mostly rearranging data, computing distances
 phases=function(phaseFrame, distances=TRUE, sources=TRUE, params=FALSE){  #add or take out columns of phaseFrame according to parameters.
-  dsassert(self$bound, "To use this method the curve must be bound to a model")
-  dsassert(self$simPeriod, "To use this method the curve be constructed with simPeriod=TRUE")
   ret=phaseFrame
   if(params){ #add the value of the parameters to the data frame
     startA=paste("start",aname)
