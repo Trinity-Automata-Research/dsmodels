@@ -12,7 +12,7 @@ actual= c(0,3,3.44948974278,3.54409035955192285361596598660480454058309984544457
 aMin=0
 #aMax=4
 aMax=3.569945672 #the start of chaos
-numPeriods=17
+numPeriods=18
 find.period.args=list(iters=10000, maxPeriod=2^numPeriods, initIters=10000,
                       numTries=15, convergeCheck=2^numPeriods, powerOf2=TRUE,
                       epsilon=sqrt(.Machine$double.eps)/2)
@@ -21,7 +21,8 @@ bname="dummy"
 testX=.1
 testY=.1
 numPoints=10
-narrowTol=.000000001
+narrowTol=.0000000000001
+
 
 fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(s*x*(1-x),
@@ -39,6 +40,9 @@ print("low guess error")
 print(actual-c(0,frame$stop), digits=15)
 print(list(actual=actual, LowGuess=c(0,frame$stop), highGuess=frame$start),digits=10)
 }
+
+#further narrow
+#frame= phases(narrow(frame=frame, tolerance=.00000000000000001))
 #~~~~~~~~~~~~~~~~~~~~~~~~
 
 #makes calling these functions the same
@@ -223,12 +227,14 @@ recurNarrow=function(start, startP, stop, stopP, tolerance=sqrt(sqrt(.Machine$do
 
 
 #narrow now returns the frame
-#initDiscretize controls:
-#can either start with a pre-given discretized curve to narrow in on the gaps or
+#initDiscretize and wether frame is given controls:
+#can either start with
+#an existing phaseframe,
+#a pre-given discretized curve to narrow in on the gaps, or
 #start with one gap from start to end
-narrow= function(tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE){
-  if(initDiscretize){
-    pf = initFrame()
+narrow= function(frame= NULL, tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE){
+  if(!is.null(frame)){
+    pf = frame
     end = nrow(pf)
     firstStart=pf[1,]$start
     lastStop=pf[end,]$stop
@@ -245,30 +251,48 @@ narrow= function(tolerance=sqrt(sqrt(.Machine$double.eps)), initDiscretize=TRUE)
       stop=c(gaps$start, lastStop),
       period = c(gaps$startP[1], gaps$stopP))
 
+  } else{
+    if(initDiscretize){
+      pf = initFrame()
+      end = nrow(pf)
+      firstStart=pf[1,]$start
+      lastStop=pf[end,]$stop
+      #convert phases into gaps and recursively narrow
+      tmp=mapply(recurNarrow,
+                 pf$stop[-end], pf$period[-end],
+                 pf$start[-1], pf$period[-1],
+                 MoreArgs = list(tolerance=tolerance), SIMPLIFY = FALSE)
+      gaps=Reduce(rbind,tmp)
+
+      #convert back to phases
+      data.frame(
+        start=c(firstStart,gaps$stop),
+        stop=c(gaps$start, lastStop),
+        period = c(gaps$startP[1], gaps$stopP))
+
+    }
+    else{
+      a=self$getX(aMin)
+      b=self$getY(aMin)
+      args=c(list(x=testX,y=testY), find.period.args)
+      args[[aname]]=a
+      args[[bname]]=b
+      minp=do.call(find.period,args)
+
+      a=self$getX(aMax)
+      b=self$getY(aMax)
+      args=c(list(x=testX,y=testY), find.period.args)
+      args[[aname]]=a
+      args[[bname]]=b
+      maxp=do.call(find.period,args)
+      gaps=recurNarrow(aMin,minp, aMax, maxp, tolerance = tolerance)
+      #convert back into phases
+      data.frame(
+        start=c(aMin,gaps$start),
+        stop=c(gaps$stop, aMax),
+        period = c(gaps$startP[1], gaps$stopP))
+    }
   }
-  else{
-    a=self$getX(aMin)
-    b=self$getY(aMin)
-    args=c(list(x=testX,y=testY), find.period.args)
-    args[[aname]]=a
-    args[[bname]]=b
-    minp=do.call(find.period,args)
-
-    a=self$getX(aMax)
-    b=self$getY(aMax)
-    args=c(list(x=testX,y=testY), find.period.args)
-    args[[aname]]=a
-    args[[bname]]=b
-    maxp=do.call(find.period,args)
-    gaps=recurNarrow(aMin,minp, aMax, maxp, tolerance = tolerance)
-    #convert back into phases
-    data.frame(
-      start=c(aMin,gaps$start),
-      stop=c(gaps$stop, aMax),
-      period = c(gaps$startP[1], gaps$stopP))
-  }
-
-
 }
 
 #helper for phases
