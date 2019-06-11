@@ -30,8 +30,6 @@
 #' according to the periodicity. This requires the model's range to be a paramRange. Iters will be
 #' ignored.
 #'
-#'
-#'
 #' @section Images of curves:
 #'
 #' The \code{dscurve} object begins with an initial curve. Images of the curve may be displayed in three ways.
@@ -50,17 +48,18 @@
 #'
 #' @section Breaking discontinuities:
 #'
-#' In some cases, R will not properly recognize discontinuous lines. In that event, the stretch parameter can be used to specify a strategy for
-#' to insert NaNs into the points of a line in order to force the line to render discontinously.
+#' In some cases, R will not properly recognize discontinuous segments of
+#' a curve, and will connect them with a line. In that event, the \code{stretch} parameter
+#' can be used to force the line to render discontinously
+#' by inserting \code{NaN}s into the line.
 #'
-#' Stretch is a number that is passed to the \code{\link{breakDisconts}} function.
-#' Entering -1 will cause the function to replace any points beyond the limits of the model's range with NaN.
+#' The default of \code{0} will not alter the lines.
 #'
-#' Entering -2 will cause the function to search for consecutive points beyond the limits of the models range, and replace one of them with NaN.
+#' If \code{stretch} is \code{-1}, any points out of the model's range are replaced with \code{NaN}.
 #'
-#' Entering a positive real number will cause the function to insert NaN between any two consecutive points with a euclidean distance between them that is greater than the entered value.
+#' If \code{stretch} is \code{-2}, only out-of-bounds points that are not adjacent to an in-bounds point are replaced with \code{NaN}.
 #'
-#' Entering 0 will cause the function to simply return an unaltered line. Defaults to 0.
+#' If \code{stretch} is given a positive real number, \code{NaN}s are inserted between any two consecutive points when the Euclidean distance between them is greater than \code{stretch}.
 #'
 #' @include dsproto.R
 #' @param fun A function. If \code{yfun} is provided, this is the x-equation of the parametric
@@ -91,7 +90,7 @@
 #' @param discretize Set \code{discretize=TRUE} to display the calculated points, instead of
 #' connecting them as a curve: the curve is displayed with \code{points}
 #' instead of \code{lines}.
-#' @param stretch The stretch parameter passed to breakDisconts when the curve is bound to a model.
+#' @param stretch The \code{stretch} parameter is used to stop R from connecting discontinuous line segments. See the Breaking Discontinuities section for details.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
 #' @import pryr R.utils
