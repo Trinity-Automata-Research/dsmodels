@@ -94,7 +94,7 @@
 #' @param stretch The stretch parameter passed to breakDisconts when the curve is bound to a model.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
-#' @import pryr
+#' @import pryr R.utils
 #' @examples
 #' library(dsmodels)
 #'
