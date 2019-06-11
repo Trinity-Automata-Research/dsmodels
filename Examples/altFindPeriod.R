@@ -194,7 +194,7 @@ find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries
 #times how long it takes to run find.period num times
 #requires stuff from narrowOutside
 testTime=function(num=100){
-  sources <- seq(aMin,aMax, length.out = num)
+  sources <- seq(2.5,aMax, length.out = num)
   xValues <-mapply(self$getX,sources)
   yValues <-mapply(self$getY,sources)
 
@@ -204,7 +204,16 @@ testTime=function(num=100){
   args[[bname]]=yValues
   ptm <- proc.time()
   periods=do.call(mapply,args)
-  proc.time() - ptm
+  print(proc.time() - ptm)
+
+  transitions = rle(periods)
+  p = cumsum(transitions$lengths)
+  n = length(p)
+  starts = c(1,(p+1)[-n])
+  ends = p
+  data.frame(actual = actual[1:7], start  = sources[starts],
+                          period = transitions$values,
+                          stop   = sources[ends])
 }
 #tester
 mu=2.9 #1
