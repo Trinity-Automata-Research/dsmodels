@@ -8,10 +8,14 @@ shadowtext <- function(x, y=NULL, labels, col='white', bg='black',
 	xo <- r*strwidth('A')
 	yo <- r*strheight('A')
 
-	for (i in theta) {
-		text( xy$x + cos(i)*xo, xy$y + sin(i)*yo, labels, col=bg, ... )
+
+	if(not(is.null(bg) | bg=="" | bg == "NA")) {
+	  for (i in theta) {
+	    text( xy$x + cos(i)*xo, xy$y + sin(i)*yo, labels, col=bg, ... )
+	  }
 	}
-	text(xy$x, xy$y, labels, col=col, ... ) }
+	text(xy$x, xy$y, labels, col=col, ... )
+}
 
 
 

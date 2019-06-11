@@ -61,7 +61,7 @@
 #'
 #' If \code{stretch} is given a positive real number, \code{NaN}s are inserted between any two consecutive points when the Euclidean distance between them is greater than \code{stretch}.
 #'
-#' @include dsproto.R
+#' @include dsproto.R shadowtext.R
 #' @param fun A function. If \code{yfun} is provided, this is the x-equation of the parametric
 #' equations. If not, the function's graph is rendered.
 #' See sections describing graphs and parameteric equations for more info.
@@ -93,9 +93,9 @@
 #' @param stretch The \code{stretch} parameter is used to stop R from connecting discontinuous line segments. See the Breaking Discontinuities section for details.
 #' @param label A string representing the label to be displayed when the curve is rendered.
 #' @param labelLoc A real number between 0 and 1 denoting at what fraction of the way through the line the label should be displayed. Defaults to 0.5.
-#' @param labelOffset A vector \code(c(x, y)) offsetting the label from the curve. Defaults to an automatic scale dependent on the dsrange's y axis size.
-#' @param labelCol A string color denoting what color the label's text will be. Defaults to black.
-#' @param labelBg A string color denoting what color the label's background shadow will be. Defaults to white.
+#' @param labelOffset A vector \code{c(x, y)} offsetting the label from the curve. Defaults to an automatic scale dependent on the dsrange's y axis size.
+#' @param labelCol A string color denoting label text's color.. Defaults to black.
+#' @param labelBg A string color denoting the color of the label's background shadow. Defaults to white. Use \code{"NA"} or \code{""} to remove the shadow.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
 #' @import pryr R.utils

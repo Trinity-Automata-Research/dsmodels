@@ -22,17 +22,17 @@
 #' combined into a single vector.
 #'
 #'
-#' @include dsproto.R
+#' @include dsproto.R shadowtext.R
 #' @param x The x-coordinate of the point.
 #' @param y The y-coordinate of the point.
 #' @param label A string label. Text can be input in the form of pseudo-LaTeX code within quotes.
 #'  See \code{\link[latex2exp]{TeX}} for more details.
 #'  Text will appear above the dot by default.
 #'  Please see the \code{offset} parameter to adjust.
-#' @param labelBg A string color denoting what color the label's background shadow will be. Defaults to white.
-#' @param labelCol A string color denoting what color the label's text will be.
 #' @param col A string color for the point.
-#'  Use "NA" or "" to hide the point. See also \code{display}.
+#'  Use \code{"NA"} or \code{""} to hide the point. See also \code{display}.
+#' @param labelCol A string color denoting label text's color.. Defaults to black.
+#' @param labelBg A string color denoting the color of the label's background shadow. Defaults to white. Use \code{"NA"} or \code{""} to remove the shadow.
 #' @param offset This will offset the label. Enter as \code{c(x, y)}. Defaults to an automatic scale dependent on the \code{dsrange}'s \code{y} axis size.
 #' @param size Determines the size of the point.
 #' @param display Set display = FALSE to hide the dot, but still add to your system.
@@ -141,7 +141,7 @@ dspoint <- function(x, y, label = "", labelBg = "white", labelCol = "black", pch
         }
         xloc <- self$x + self$offset[1]
         yloc <- self$y + self$offset[2]
-        shadowtext(xloc, yloc, labels = self$label, col = self$labelCol, bg = self$labelbg)
+        shadowtext(xloc, yloc, labels = self$label, col = self$labelCol, bg = self$labelBg)
       }
     }
   )
