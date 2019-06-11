@@ -30,8 +30,6 @@
 #' according to the periodicity. This requires the model's range to be a paramRange. Iters will be
 #' ignored.
 #'
-
-#'
 #' @section Images of curves:
 #'
 #' The \code{dscurve} object begins with an initial curve. Images of the curve may be displayed in three ways.
@@ -47,6 +45,21 @@
 #'
 #' In most cases, rather than specifying \code{col} and \code{image} separately, they may be
 #' combined into a single vector.
+#'
+#' @section Breaking discontinuities:
+#'
+#' In some cases, R will not properly recognize discontinuous segments of
+#' a curve, and will connect them with a line. In that event, the \code{stretch} parameter
+#' can be used to force the line to render discontinously
+#' by inserting \code{NaN}s into the line.
+#'
+#' The default of \code{0} will not alter the lines.
+#'
+#' If \code{stretch} is \code{-1}, any points out of the model's range are replaced with \code{NaN}.
+#'
+#' If \code{stretch} is \code{-2}, only out-of-bounds points that are not adjacent to an in-bounds point are replaced with \code{NaN}.
+#'
+#' If \code{stretch} is given a positive real number, \code{NaN}s are inserted between any two consecutive points when the Euclidean distance between them is greater than \code{stretch}.
 #'
 #' @include dsproto.R
 #' @param fun A function. If \code{yfun} is provided, this is the x-equation of the parametric
@@ -77,7 +90,7 @@
 #' @param discretize Set \code{discretize=TRUE} to display the calculated points, instead of
 #' connecting them as a curve: the curve is displayed with \code{points}
 #' instead of \code{lines}.
-#' @param stretch The stretch parameter passed to breakDisconts when the curve is bound to a model.
+#' @param stretch The \code{stretch} parameter is used to stop R from connecting discontinuous line segments. See the Breaking Discontinuities section for details.
 #' @param label A string representing the label to be displayed when the curve is rendered.
 #' @param labelLoc A real number between 0 and 1 denoting at what fraction of the way through the line the label should be displayed. Defaults to 0.5.
 #' @param labelOffset This will offset the label. Enter as c(x, y). Defaults to an automatic scale dependent on the dsrange's y axis size.
@@ -85,7 +98,7 @@
 #' @param labelBg A string color denoting what color the label's background will be. Defaults to white.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
-#' @import pryr
+#' @import pryr R.utils
 #' @examples
 #' library(dsmodels)
 #'
@@ -525,7 +538,7 @@ darken <- function(color, factor=1.4){
   col <- rgb(t(col), maxColorValue=255)
   col
 }
-  
+
 #' Takes limits for the x and y values of a line, returns a version of the line with any values beyond those limits replaced by NaN.
 #' @param xlim A vector of length 2 where the first element is the minimum x value, and the second element is the maximum x value.
 #' @param ylim A vector of length 2 where the first element is the minimum y value, and the second element is the maximum y value.
@@ -554,4 +567,3 @@ breakDisconts <- function(line, xlim, ylim, stretch = 0) {
   }
   line
 }
-
