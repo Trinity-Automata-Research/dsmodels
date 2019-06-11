@@ -61,7 +61,7 @@
 #'
 #' If \code{stretch} is given a positive real number, \code{NaN}s are inserted between any two consecutive points when the Euclidean distance between them is greater than \code{stretch}.
 #'
-#' @include dsproto.R
+#' @include dsproto.R shadowtext.R
 #' @param fun A function. If \code{yfun} is provided, this is the x-equation of the parametric
 #' equations. If not, the function's graph is rendered.
 #' See sections describing graphs and parameteric equations for more info.
@@ -91,6 +91,11 @@
 #' connecting them as a curve: the curve is displayed with \code{points}
 #' instead of \code{lines}.
 #' @param stretch The \code{stretch} parameter is used to stop R from connecting discontinuous line segments. See the Breaking Discontinuities section for details.
+#' @param label A string representing the label to be displayed when the curve is rendered.
+#' @param labelLoc A real number between 0 and 1 denoting at what fraction of the way through the line the label should be displayed. Defaults to 0.5.
+#' @param labelOffset A vector \code{c(x, y)} offsetting the label from the curve. Defaults to an automatic scale dependent on the dsrange's y axis size.
+#' @param labelCol A string color denoting label text's color.. Defaults to black.
+#' @param labelBg A string color denoting the color of the label's background shadow. Defaults to white. Use \code{"NA"} or \code{""} to remove the shadow.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
 #' @import pryr R.utils
@@ -159,7 +164,8 @@ dscurve <- function(fun, yfun = NULL,
                     lwd = 3, n=NULL, iters = 0, simPeriod=FALSE, find.period.args=list(),
                     testX=.1, testY=.1, #better names? simX, simY?
                     crop = FALSE,  tstart=0, tend=1,
-                    discretize=FALSE, xlim = NULL, display=TRUE, stretch = 0,
+                    discretize=FALSE, xlim = NULL, display=TRUE, stretch = 0, label = "", labelLoc = 0.5, labelOffset = NULL,
+                    labelCol = "Black", labelBg = "white",
                     ...) {
   if(!simPeriod) {
     if(is.null(col))
@@ -185,6 +191,8 @@ dscurve <- function(fun, yfun = NULL,
     lims=c(tstart,tend)
   }
 
+  texLabel <- TeX(label)
+
   dsproto(
     `_class` = "curve", `_inherit` = feature,
     fun = fun,
@@ -192,7 +200,11 @@ dscurve <- function(fun, yfun = NULL,
     getX=NULL,
     getY=NULL,
     isParametric=isParametric,
+    hasLabel = label != "",
+    label = texLabel,
     col = colors,
+    labelBg = labelBg,
+    labelCol = labelCol,
     colMap = NULL,
     givenColors = col,
     testX=testX,
@@ -239,6 +251,18 @@ dscurve <- function(fun, yfun = NULL,
             lines(self$toPlot[[i]]$x, self$toPlot[[i]]$y, lwd = self$lwd,
                   col = self$col[[i]], ... = self$...)
         }
+        if(self$hasLabel) self$displayLabel(model$range)
+      }
+    },
+    displayLabel = function(self, range) {
+      if(self$hasLabel) {
+        if(is.null(labelOffset)) {
+          scale <- 0.08*(abs(max(range$ylim) - min(range$ylim)))
+          self$labelOffset=c(0,scale)
+        }
+        xloc <- self$xValues[labelLoc * length(self$xValues)] + self$labelOffset[1]
+        yloc <- self$yValues[labelLoc * length(self$yValues)] + self$labelOffset[2]
+        shadowtext(xloc, yloc, labels = self$label, col = self$labelCol, bg = self$labelBg)
       }
     },
     recalculate = function(self, model) {
@@ -257,7 +281,6 @@ dscurve <- function(fun, yfun = NULL,
           self$toPlot[[i]]= breakDisconts(data.frame(x=xs,y=ys), model$range$xlim, model$range$ylim, stretch = stretch)
           self$col[[i]]=self$colMap[[as.character(row$period)]]
         }
-
       } else {
         self$on.bind(model)
       }

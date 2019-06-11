@@ -22,7 +22,7 @@
 #' combined into a single vector.
 #'
 #'
-#' @include dsproto.R
+#' @include dsproto.R shadowtext.R
 #' @param x The x-coordinate of the point.
 #' @param y The y-coordinate of the point.
 #' @param label A string label. Text can be input in the form of pseudo-LaTeX code within quotes.
@@ -30,7 +30,9 @@
 #'  Text will appear above the dot by default.
 #'  Please see the \code{offset} parameter to adjust.
 #' @param col A string color for the point.
-#'  Use "NA" or "" to hide the point. See also \code{display}.
+#'  Use \code{"NA"} or \code{""} to hide the point. See also \code{display}.
+#' @param labelCol A string color denoting label text's color.. Defaults to black.
+#' @param labelBg A string color denoting the color of the label's background shadow. Defaults to white. Use \code{"NA"} or \code{""} to remove the shadow.
 #' @param offset This will offset the label. Enter as \code{c(x, y)}. Defaults to an automatic scale dependent on the \code{dsrange}'s \code{y} axis size.
 #' @param size Determines the size of the point.
 #' @param display Set display = FALSE to hide the dot, but still add to your system.
@@ -78,7 +80,7 @@
 #'  dsrange(3,3, discretize = .09) +
 #' 	dspoint(0.2, 0.5, image = "pink", iters = 3, col = "grey")
 #' @export
-dspoint <- function(x, y, label = "", pch = 21, size = 2,
+dspoint <- function(x, y, label = "", labelBg = "white", labelCol = "black", pch = 21, size = 2,
                        col = "blue", regionCol=NULL, image = "", offset=NULL,
                     display = TRUE, fixed = FALSE, iters = 0,
                     attractor=FALSE, crop = TRUE, artificial=FALSE,
@@ -96,7 +98,9 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     x = x,
     y = y,
     label = texLabel,
-    hasLabel = label == "",
+    labelBg = labelBg,
+    labelCol = labelCol,
+    hasLabel = label != "",
     col = col,
     pch = pch,
     cex = size,
@@ -137,7 +141,7 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
         }
         xloc <- self$x + self$offset[1]
         yloc <- self$y + self$offset[2]
-        text(xloc,yloc, labels = self$label)
+        shadowtext(xloc, yloc, labels = self$label, col = self$labelCol, bg = self$labelBg)
       }
     }
   )
