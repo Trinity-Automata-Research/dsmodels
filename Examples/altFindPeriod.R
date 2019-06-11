@@ -122,7 +122,7 @@ find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries
       return(FALSE)
     }
     dists=mapply(sqdist,candidates,compareCandidates)
-    print(sum(dists) < epsilon)
+    #print(sum(dists) < epsilon)
     #check if function has converged. if it has check for periodicity, otherwise go to next pass of this loop. exception:
     if(i==numTries || sum(dists) < epsilon){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
       return(wholePeriodCheck(candidates,epsilon,maxPeriod,powerOf2))
@@ -191,7 +191,21 @@ find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries
   return(Inf)
 }
 
+#times how long it takes to run find.period num times
+#requires stuff from narrowOutside
+testTime=function(num=100){
+  sources <- seq(aMin,aMax, length.out = num)
+  xValues <-mapply(self$getX,sources)
+  yValues <-mapply(self$getY,sources)
 
+  mArgs=list(x=testX,y=testY)
+  args=list(FUN=find.period, MoreArgs=mArgs)
+  args[[aname]]=xValues
+  args[[bname]]=yValues
+  ptm <- proc.time()
+  periods=do.call(mapply,args)
+  proc.time() - ptm
+}
 #tester
 mu=2.9 #1
 find.period(.1,.1, s=mu)
@@ -207,7 +221,11 @@ mu=3.5688 #32
 find.period(.1,.1, s=mu)
 mu=3.5697 #64
 find.period(.1,.1, s=mu)
+mu=3.569695 #64
+find.period(.1,.1, s=mu)
 
+
+testTime(1000)
 
 #pts=pts=apply(.1,.1, s=mu ,iters=127,accumulate=TRUE)[64:127]
 
