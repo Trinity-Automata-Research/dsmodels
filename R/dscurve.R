@@ -30,7 +30,7 @@
 #' according to the periodicity. This requires the model's range to be a paramRange. Iters will be
 #' ignored.
 #'
-
+#'
 #'
 #' @section Images of curves:
 #'
@@ -47,6 +47,20 @@
 #'
 #' In most cases, rather than specifying \code{col} and \code{image} separately, they may be
 #' combined into a single vector.
+#'
+#' @section Breaking discontinuities:
+#'
+#' In some cases, R will not properly recognize discontinuous lines. In that event, the stretch parameter can be used to specify a strategy for
+#' to insert NaNs into the points of a line in order to force the line to render discontinously.
+#'
+#' Stretch is a number that is passed to the \code{\link{breakDisconts}} function.
+#' Entering -1 will cause the function to replace any points beyond the limits of the model's range with NaN.
+#'
+#' Entering -2 will cause the function to search for consecutive points beyond the limits of the models range, and replace one of them with NaN.
+#'
+#' Entering a positive real number will cause the function to insert NaN between any two consecutive points with a euclidean distance between them that is greater than the entered value.
+#'
+#' Entering 0 will cause the function to simply return an unaltered line. Defaults to 0.
 #'
 #' @include dsproto.R
 #' @param fun A function. If \code{yfun} is provided, this is the x-equation of the parametric
