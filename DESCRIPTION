@@ -26,7 +26,8 @@ Depends:
     graphics,
     grDevices,
     latex2exp,
-    pryr
+    pryr,
+    R.utils
 LazyData: TRUE
 RoxygenNote: 6.1.1
 Collate: 
