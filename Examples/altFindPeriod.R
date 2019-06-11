@@ -74,6 +74,60 @@ find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=500, numTries
 }
 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~
+#dsmodels. if default is null, is unused
+#for each pass, prints true or false for if it converged
+find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries=5, powerOf2=TRUE,
+                        epsilon=sqrt(.Machine$double.eps), convergeCheck=NULL, ...){
+  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
+
+  for(i in 1:numTries) {
+    startPoint <- apply(x=x,y=y,...,iters=initIters,accumulate=FALSE)
+    candidates=apply(startPoint$x, startPoint$y, ...,iters=maxPeriod-1,accumulate=TRUE)
+    #puts a gap between the two parts to check
+    #convergePoint <- apply(startPoint$x,startPoint$y,...,iters=convergeCheck,accumulate=FALSE)
+
+    #puts no gap between the two parts to check
+    convergePoint <- apply(candidates[[maxPeriod]]$x, candidates[[maxPeriod]]$y,...,iters=1,accumulate=FALSE)
+    compareCandidates= apply(convergePoint$x, convergePoint$y, ...,iters=maxPeriod-1,accumulate=TRUE)
+    last=compareCandidates[[maxPeriod]]
+    if(has.diverged(last$x,last$y)){
+      #print("no period found, diverged")
+      return(FALSE)
+    }
+    dists=mapply(sqdist,candidates,compareCandidates)
+    print(sum(dists) < epsilon)
+    #check if function has converged. if it has check for periodicity, otherwise go to next pass of this loop. exception:
+    if(i==numTries || sum(dists) < epsilon){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
+      period=FALSE
+      j=1
+      while(j<=maxPeriod && !period){ #check for fixed or periodicity
+        test=candidates[1:j]
+        image=candidates[(j+1):(2*j)]
+        dists=mapply(sqdist,test,image)
+        if(all(dists < epsilon))
+          period=TRUE
+        else{
+          if(powerOf2)
+            j=2*j
+          else
+            j=j+1
+        }
+      }
+      if(period){
+        return(j)
+      }
+    }
+    #update x,y to a point further in the orbit
+
+    x=last$x
+    y=last$y
+  }
+  return(Inf)
+}
+
+
 #tester
 mu=2.9 #1
 find.period(.1,.1, s=mu)
