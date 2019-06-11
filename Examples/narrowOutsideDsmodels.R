@@ -1,9 +1,10 @@
 #stability testing without dsmodels. want to find all the bifurcation points
 #assumes the function plays nice
 
-#initDiscretize=TRUE breaks it. find.period calls some points divergent and they break up the phases.
 
-#phases overlap? look in narrow
+#in narrow, we know what the options for periods are, so
+#max period and convergeCheck can both be changed to a smaller number
+
 # the actual bifurcation points of the logistic map
 actual= c(0,3,3.44948974278,3.54409035955192285361596598660480454058309984544457367545781253030584294285,3.5644072660954325977735575865289824,3.568750,3.56969,3.56989,3.569934,3.569943,3.5699451,3.569945557)
 
@@ -20,7 +21,7 @@ bname="dummy"
 testX=.1
 testY=.1
 numPoints=10
-narrowTol=.0000000000001
+narrowTol=.000000001
 
 fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
   list(s*x*(1-x),
@@ -30,7 +31,7 @@ curve=function(s)2 # the curve dummy=2
 
 #run these after the file has been run
 if(FALSE){
-frame= phases(narrow(initDiscretize=TRUE, tolerance=narrowTol))
+frame= phases(narrow(initDiscretize=FALSE, tolerance=narrowTol))
 print(frame, digits=15)
 print("high guess error")
 print(actual-frame$start, digits=15) #only look at the first couple of terms, up to the first chaotic term.
@@ -66,6 +67,11 @@ initFrame=function(){
                                period = transitions$values,
                                stop   = sources[ends])
 
+}
+
+#helper for find.period
+finite.points = function(points) {
+  all(is.finite(unlist(points)))
 }
 
 #helper for find.period
@@ -275,7 +281,7 @@ self$distOfSources=function(pointA, pointB){
 }
 
 #helper for phases
-addDistanceToPhase=function(inPhase){
+self$addDistanceToPhase=function(inPhase){
   findDist=function(index,phases){
     sqrt(self$distOfSources(phases[index,]$start, phases[index,]$stop))
   }
