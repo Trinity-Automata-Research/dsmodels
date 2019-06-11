@@ -29,6 +29,8 @@
 #'  See \code{\link[latex2exp]{TeX}} for more details.
 #'  Text will appear above the dot by default.
 #'  Please see the \code{offset} parameter to adjust.
+#' @param labelBg A string color denoting what color the label's background shadow will be. Defaults to white.
+#' @param labelCol A string color denoting what color the label's text will be.
 #' @param col A string color for the point.
 #'  Use "NA" or "" to hide the point. See also \code{display}.
 #' @param offset This will offset the label. Enter as \code{c(x, y)}. Defaults to an automatic scale dependent on the \code{dsrange}'s \code{y} axis size.
@@ -78,7 +80,7 @@
 #'  dsrange(3,3, discretize = .09) +
 #' 	dspoint(0.2, 0.5, image = "pink", iters = 3, col = "grey")
 #' @export
-dspoint <- function(x, y, label = "", pch = 21, size = 2,
+dspoint <- function(x, y, label = "", labelBg = "white", labelCol = "black", pch = 21, size = 2,
                        col = "blue", regionCol=NULL, image = "", offset=NULL,
                     display = TRUE, fixed = FALSE, iters = 0,
                     attractor=FALSE, crop = TRUE, artificial=FALSE,
@@ -96,6 +98,8 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
     x = x,
     y = y,
     label = texLabel,
+    labelBg = labelBg,
+    labelCol = labelCol,
     hasLabel = label != "",
     col = col,
     pch = pch,
@@ -137,7 +141,7 @@ dspoint <- function(x, y, label = "", pch = 21, size = 2,
         }
         xloc <- self$x + self$offset[1]
         yloc <- self$y + self$offset[2]
-        text(xloc,yloc, labels = self$label, col = self$col)
+        shadowtext(xloc, yloc, labels = self$label, col = self$labelCol, bg = self$labelbg)
       }
     }
   )

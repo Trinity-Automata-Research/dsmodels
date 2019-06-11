@@ -93,9 +93,9 @@
 #' @param stretch The \code{stretch} parameter is used to stop R from connecting discontinuous line segments. See the Breaking Discontinuities section for details.
 #' @param label A string representing the label to be displayed when the curve is rendered.
 #' @param labelLoc A real number between 0 and 1 denoting at what fraction of the way through the line the label should be displayed. Defaults to 0.5.
-#' @param labelOffset This will offset the label. Enter as c(x, y). Defaults to an automatic scale dependent on the dsrange's y axis size.
+#' @param labelOffset A vector \code(c(x, y)) offsetting the label from the curve. Defaults to an automatic scale dependent on the dsrange's y axis size.
 #' @param labelCol A string color denoting what color the label's text will be. Defaults to black.
-#' @param labelBg A string color denoting what color the label's background will be. Defaults to white.
+#' @param labelBg A string color denoting what color the label's background shadow will be. Defaults to white.
 #' @param ... Further graphical parameters passed to \code{lines} or \code{points}.
 #' @seealso \code{\link{dspoint}}
 #' @import pryr R.utils
@@ -191,6 +191,8 @@ dscurve <- function(fun, yfun = NULL,
     lims=c(tstart,tend)
   }
 
+  texLabel <- TeX(label)
+
   dsproto(
     `_class` = "curve", `_inherit` = feature,
     fun = fun,
@@ -199,7 +201,7 @@ dscurve <- function(fun, yfun = NULL,
     getY=NULL,
     isParametric=isParametric,
     hasLabel = label != "",
-    label = label,
+    label = texLabel,
     col = colors,
     labelBg = labelBg,
     labelCol = labelCol,
