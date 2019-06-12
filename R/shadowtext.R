@@ -9,7 +9,7 @@ shadowtext <- function(x, y=NULL, labels, col='white', bg='black',
 	yo <- r*strheight('A')
 
 
-	if(not(is.null(bg) | bg=="" | bg == "NA")) {
+	if(!(is.null(bg) | bg=="" | bg == "NA")) {
 	  for (i in theta) {
 	    text( xy$x + cos(i)*xo, xy$y + sin(i)*yo, labels, col=bg, ... )
 	  }
