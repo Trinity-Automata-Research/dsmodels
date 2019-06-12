@@ -178,7 +178,7 @@ find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries
       return(FALSE)
     }
     dists=mapply(sqdist,candidates,compareCandidates)
-    print(sum(dists) < epsilon)
+    #print(sum(dists) < epsilon) #wether or not it has converged
     #check if function has converged. if it has check for periodicity, otherwise go to next pass of this loop. exception:
     if(i==numTries || sum(dists) < epsilon){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
       return(numBuckets(candidates,epsilon)) #any period 128 or greater is called 128
@@ -191,6 +191,42 @@ find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries
   return(Inf)
 }
 
+#~~~~~~~~~~~~~~~~~~~~~~~~
+#convergeCheck, check124. if default is null, is unused
+#for each pass, prints true or false for if it converged
+find.period = function( x, y, iters=NULL, maxPeriod=128, initIters=100, numTries=5, powerOf2=TRUE,
+                        epsilon=sqrt(.Machine$double.eps), convergeCheck=NULL, ...){
+  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
+
+  for(i in 1:numTries) {
+    startPoint <- apply(x=x,y=y,...,iters=initIters,accumulate=FALSE)
+    candidates=apply(startPoint$x, startPoint$y, ...,iters=maxPeriod-1,accumulate=TRUE)
+    #puts a gap between the two parts to check
+    #convergePoint <- apply(startPoint$x,startPoint$y,...,iters=convergeCheck,accumulate=FALSE)
+
+    #puts no gap between the two parts to check
+    convergePoint <- apply(candidates[[maxPeriod]]$x, candidates[[maxPeriod]]$y,...,iters=1,accumulate=FALSE)
+    compareCandidates= apply(convergePoint$x, convergePoint$y, ...,iters=maxPeriod-1,accumulate=TRUE)
+    last=compareCandidates[[maxPeriod]]
+    if(has.diverged(last$x,last$y)){
+      #print("no period found, diverged")
+      return(FALSE)
+    }
+    dists=mapply(sqdist,candidates,compareCandidates)
+    #print(sum(dists) < epsilon) #wether or not it has converged
+    #check if function has converged. if it has check for periodicity, otherwise go to next pass of this loop. exception:
+    if(i==numTries || sum(dists) < epsilon){  # check for periodicity should always happen if i=numTries.i.e. if on last try, continue anyways
+      return(numBuckets(candidates,epsilon)) #any period 128 or greater is called 128
+    }
+    #update x,y to a point further in the orbit
+
+    x=last$x
+    y=last$y
+  }
+  return(Inf)
+}
+
+
 #times how long it takes to run find.period num times
 #requires stuff from narrowOutside
 testTime=function(num=100){
@@ -198,7 +234,7 @@ testTime=function(num=100){
   xValues <-mapply(self$getX,sources)
   yValues <-mapply(self$getY,sources)
 
-  mArgs=list(x=testX,y=testY)
+  mArgs=c(list(x=testX,y=testY),find.period.args)
   args=list(FUN=find.period, MoreArgs=mArgs)
   args[[aname]]=xValues
   args[[bname]]=yValues
@@ -211,7 +247,7 @@ testTime=function(num=100){
   n = length(p)
   starts = c(1,(p+1)[-n])
   ends = p
-  data.frame(actual = actual[1:7], start  = sources[starts],
+  data.frame(actual = actual[1:n], start  = sources[starts],
                           period = transitions$values,
                           stop   = sources[ends])
 }
@@ -233,6 +269,11 @@ find.period(.1,.1, s=mu)
 mu=3.569695 #64
 find.period(.1,.1, s=mu)
 
+
+numPeriods=7
+find.period.args=list(iters=NULL, maxPeriod=2^numPeriods, initIters=100,
+                      numTries=5, convergeCheck=2^numPeriods, powerOf2=TRUE,
+                      epsilon=sqrt(.Machine$double.eps))
 
 testTime(1000)
 
