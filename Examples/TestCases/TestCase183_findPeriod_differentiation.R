@@ -26,10 +26,13 @@ print(c$phases(distances=TRUE),digits=10)
 
 #s<3,  is fixed point
 sval=2.998
-its=1000
+its=4000
 last=8
 pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ]
-mapply(1:last,FUN=function(i){pts[[i]]$x})
+print(mapply(1:last,FUN=function(i){pts[[i]]$x}),digits=22)
+mapply(sqdist,pts[1:(last/2)],pts[(last/2+1):last])
+mapply(sqdist,pts[1],pts[2])
+#wholePeriodCheck(pts,.Machine$double.eps,4,TRUE)
 #looks very periodic, is actually converging eventually
 
 its=4000
@@ -37,6 +40,12 @@ pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ]
 mapply(1:last,FUN=function(i){pts[[i]]$x})
 
 
+sval=3.564407215 #just past period 16 bif point, find.period calls it period 8.
+its=1000000
+last=32
+pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ]
+print(mapply(1:last,FUN=function(i){pts[[i]]$x}),digits=20)
+mapply(sqdist,pts[1:(last/2)],pts[(last/2+1):last])
 
 if(FALSE){
 h=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){

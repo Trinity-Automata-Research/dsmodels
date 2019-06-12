@@ -12,16 +12,16 @@ actual= c(0,3,3.44948974278,3.54409035955192285361596598660480454058309984544457
 aMin=0
 #aMax=4
 aMax=3.569945672 #the start of chaos
-numPeriods=18
-find.period.args=list(iters=10000, maxPeriod=2^numPeriods, initIters=10000,
+numPeriods=15
+find.period.args=list(iters=1000, maxPeriod=2^numPeriods, initIters=10000,
                       numTries=15, convergeCheck=2^numPeriods, powerOf2=TRUE,
-                      epsilon=sqrt(.Machine$double.eps)/2)
+                      epsilon=.Machine$double.eps*100)
 aname="s"
 bname="dummy"
 testX=.1
 testY=.1
 numPoints=10
-narrowTol=.0000000000001
+narrowTol=.0000000001
 
 
 fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
@@ -32,7 +32,7 @@ curve=function(s)2 # the curve dummy=2
 
 #run these after the file has been run
 if(FALSE){
-frame= phases(narrow(initDiscretize=FALSE, tolerance=narrowTol))
+frame= phases(narrow(initDiscretize=TRUE, tolerance=narrowTol))
 print(frame, digits=15)
 print("high guess error")
 print(actual-frame$start, digits=15) #only look at the first couple of terms, up to the first chaotic term.
@@ -288,8 +288,8 @@ narrow= function(frame= NULL, tolerance=sqrt(sqrt(.Machine$double.eps)), initDis
       gaps=recurNarrow(aMin,minp, aMax, maxp, tolerance = tolerance)
       #convert back into phases
       data.frame(
-        start=c(aMin,gaps$start),
-        stop=c(gaps$stop, aMax),
+        start=c(aMin,gaps$stop),
+        stop=c(gaps$start, aMax),
         period = c(gaps$startP[1], gaps$stopP))
     }
   }
