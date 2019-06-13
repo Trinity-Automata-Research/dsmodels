@@ -31,7 +31,13 @@ last=8
 pts=mod$apply(.1,.1, s=sval, iters=its, crop=FALSE)[(its-last+1):its ]
 print(mapply(1:last,FUN=function(i){pts[[i]]$x}),digits=22)
 mapply(sqdist,pts[1:(last/2)],pts[(last/2+1):last])
+mapply(sqdist,pts[1:(last/4)],pts[(last/4+1):(last/2)])
 mapply(sqdist,pts[1],pts[2])
+
+convDist=2^7
+converge=mod$apply(pts[[last]]$x, pts[[last]]$y, s=sval, iters=convDist, crop=FALSE)[(convDist-last+1):convDist ]
+print(mapply(1:last,FUN=function(i){converge[[i]]$x}),digits=22)
+mapply(sqdist,pts,converge)
 #wholePeriodCheck(pts,.Machine$double.eps,4,TRUE)
 #looks very periodic, is actually converging eventually
 

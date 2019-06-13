@@ -7,26 +7,29 @@
 
 # the actual bifurcation points of the logistic map
 actual= c(0,3,3.44948974278,3.54409035955192285361596598660480454058309984544457367545781253030584294285,3.5644072660954325977735575865289824,3.568750,3.56969,3.56989,3.569934,3.569943,3.5699451,3.569945557)
-
+#actual for henon
+#actual=  c(0,1.2675,1.8125,1.9216456,1.9452006,1.9502644,1.9513504,1.9515830,1.9516329)
 
 aMin=0
 #aMax=4
-aMax=3.569945672 #the start of chaos
-numPeriods=15
+aMax=3.569945672 #the start of chaos for logistic
+#aMax=2 #start of chaos for henon
+numPeriods=5
 find.period.args=list(iters=1000, maxPeriod=2^numPeriods, initIters=10000,
                       numTries=15, convergeCheck=2^numPeriods, powerOf2=TRUE,
-                      epsilon=.Machine$double.eps*100)
+                      epsilon=sqrt(.Machine$double.eps))
 aname="s"
 bname="dummy"
-testX=.1
-testY=.1
-numPoints=10
+#testX=1.2 #henon
+testX=.5
+testY=0
+numPoints=1000
 narrowTol=.0000000001
 
 
 fun=function(x,y,a=.5,b=.5,s=1,r=1,dummy=0){
-  list(s*x*(1-x),
-       0)
+  list(s*x*(1-x),0)
+  #list(s-x*x-.3*y,x) #henon
 }
 curve=function(s)2 # the curve dummy=2
 
@@ -70,7 +73,7 @@ initFrame=function(){
   phaseFrame = data.frame(start  = sources[starts],
                                period = transitions$values,
                                stop   = sources[ends])
-
+ phaseFrame
 }
 
 #helper for find.period
