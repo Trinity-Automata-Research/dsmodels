@@ -37,6 +37,8 @@ Collate:
     'shadowtext.R'
     'dscurve.R'
     'dsdots.R'
+    'uniroot.all.R'
+    'dsintersection.R'
     'dsmodel.R'
     'dspoint.R'
     'dsrange.R'
