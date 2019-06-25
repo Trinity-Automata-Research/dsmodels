@@ -14,6 +14,7 @@
 #' @param labels A string or list of strings representing the label (or labels) of the points.
 #' @param labelCols A string color or vector of string colors representing the font color of the points.
 #' @param labelBgs A string color or vector of string colors representing the color of the background of the label text.
+#' @param offsets A vector of offsets for the label. Enter as c(x, y). Defaults to an automatic scale dependant on the range's y axis size.
 #' @export
 dsintersection <- function(c1, c2, range = NULL, col = "blue", pch = 21, size = 2, bg = "black", display = TRUE, labels = "",
                            labelCols = "black", labelBgs = "white", offsets = NULL) {
