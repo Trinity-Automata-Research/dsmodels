@@ -16,7 +16,7 @@
 #' @param labelBgs A string color or vector of string colors representing the color of the background of the label text.
 #' @export
 dsintersection <- function(c1, c2, range = NULL, col = "blue", pch = 21, size = 2, bg = "black", display = TRUE, labels = "",
-                           labelCols = "black", labelBgs = "white") {
+                           labelCols = "black", labelBgs = "white", offsets = NULL) {
   if(is.curve(c1) && c1$bound) {
     fun1 <- eval(c1$fun)
     if(is.null(range)) range <- c1$model$range$xlim
@@ -55,13 +55,16 @@ dsintersection <- function(c1, c2, range = NULL, col = "blue", pch = 21, size = 
     labels = labels,
     labelCols = labelCols,
     labelBgs = labelBgs,
-    offset = offset,
+    offsets = offset,
     intersections = intersections,
     render = function(self, model) {
       if(self$display) {
-        pnts <- mapply(dspoint, self$intersections, fun1(self$intersections),
+        pnts <- if(!is.null(offsets)) mapply(dspoint, self$intersections, fun1(self$intersections),
                        self$labels, self$labelBgs, self$labelCols,
-                       self$pch, self$size, self$col)
+                       self$pch, self$size, self$col, regionCol = NULL, image = "", offset = self$offsets)
+                else  mapply(dspoint, self$intersections, fun1(self$intersections),
+                              self$labels, self$labelBgs, self$labelCols,
+                              self$pch, self$size, self$col)
         mapply(model$bind, pnts)
       }
     }

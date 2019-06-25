@@ -1,4 +1,4 @@
-# This file was originally written for the rootSolve package under the GPL 2. This version, modified by Nicholas Smoker, is here used by dsmodels under the terms of the GPL 2 (which dsmodels also uses).
+# This file was originally written by Karline Soetaert for the rootSolve package under the GPL 2. This version, modified by Nicholas Smoker, is here used by dsmodels under the terms of the GPL 2 (which dsmodels also uses).
 
 ## =============================================================================
 ## uniroot.all: multiple roots of one nonlinear equation
@@ -26,7 +26,7 @@ uniroot.all <- function (f, interval, lower= min(interval),
   ii   <- which(ss<0)
 
   for (i in ii)
-    Equi <- c(Equi,uniroot(f,lower=xseq[i],upper=xseq[i+1], ...)$root)
+    Equi <- c(Equi,uniroot(f,lower=xseq[i],upper=xseq[i+1], tol = tol, ...)$root)
 
   return(Equi)
 }
