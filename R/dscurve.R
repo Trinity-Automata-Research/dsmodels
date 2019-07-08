@@ -222,7 +222,7 @@ dscurve <- function(fun, yfun = NULL,
     discretize = discretize,
     crop=crop,
     lims=lims,
-    display = display,
+    display = display, 
     ... = ...,
     #functions to interact with the model
     on.bind = function(self, model) {

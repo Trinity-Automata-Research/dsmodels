@@ -194,6 +194,7 @@ findFixedPoint <- function (x,y,points,eps,tolerance,model, stride) {
   ind <- findNearestPoint(xp, yp, points, eps)
   while (ind==0 && moves) {
     tmp <- model$apply(xp,yp,iters=stride,accumulate=FALSE,crop=FALSE)
+    if(is.nan(tmp$x) || is.nan(tmp$y)) return(NaN)
     if(any(is.infinite(unlist(tmp))) || abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < tolerance)
       moves <- FALSE
     xp <- tmp[[1]]
