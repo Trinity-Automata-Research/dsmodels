@@ -8,7 +8,7 @@ aMin=0
 aMax=3.569945672 #the start of chaos for logistic
 
 testX=.5
-maxP=5
+maxP=10
 
 f=function(x,a=.5){
   a*x*(1-x)
@@ -56,7 +56,8 @@ ratio=function(counts){
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #uniform sampling
-numPoints=10000
+numPoints=1000000
+ptm <- proc.time()
 as <- seq(aMin,aMax, length.out = numPoints)
 pers=mapply(findPer, a=as, MoreArgs = list(x=testX, maxIts=1e4, tol=tol, maxP=maxP))
 print(pers)
@@ -68,6 +69,25 @@ for(p in 0:maxP){
 print(counts)
 print(ratio(counts))
 
+
+print(counts/numPoints *aMax-aMin)
+print("time")
+print(proc.time() - ptm)
+
+
+#zoom in on after the last fixed point
+if(F){
+transitions=rle(pers)
+last1=transitions$lengths[1]
+amountSafe=last1/numPoints
+lastSafe= amountSafe*(aMax-aMin)+aMin
+
+as2 <- seq(lastSafe
+           ,aMax, length.out = numPoints)
+pers2=mapply(findPer, a=as2, MoreArgs = list(x=testX, maxIts=1e4, tol=tol, maxP=maxP))
+}
+
+
 #varied discretization seems usefull-
 #to get better numbers we want more points, but we dont need to recompute all the fixed ones
 #recover what the last point before the first 2 was (the "safe" period 1 reigon) and  only look past that point
@@ -76,11 +96,14 @@ print(ratio(counts))
 #we need some way to remember which a had which period so we can find the "safe" period one reigon
 
 
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #random points
 
 
-numPoints=10000
+ptm <- proc.time()
 as <- runif(numPoints,aMin,aMax)
 pers=mapply(findPer, a=as, MoreArgs = list(x=testX, maxIts=1e4, tol=tol, maxP=maxP))
 print(pers)
@@ -92,6 +115,9 @@ for(p in 0:maxP){
 print(counts)
 print(ratio(counts))
 
+print(counts/numPoints *aMax-aMin)
+print("time")
+print(proc.time() - ptm)
 
 
 
