@@ -66,7 +66,7 @@
 #'
 #' model <- dsmodel(fun, title = "A Single Point")
 #' model + dsrange(3,3, discretize = .09) +
-#' 	dspoint(1,2, col = "magenta")
+#'  dspoint(1,2, col = "magenta")
 #'
 #' dsmodel(fun, title = "A Point and a Label") +
 #'  dsrange(3,3, discretize = .09) +
@@ -74,11 +74,11 @@
 #'
 #' dsmodel(fun, title = "A Point and Iterations of that Point") +
 #'  dsrange(3,3, discretize = .09) +
-#' 	dspoint(1,1, col = "red", image = c("orange","yellow"))
+#'  dspoint(1,1, col = "red", image = c("orange","yellow"))
 #'
 #' dsmodel(fun, title = "Iterations of a Point over a Color Gradient") +
 #'  dsrange(3,3, discretize = .09) +
-#' 	dspoint(0.2, 0.5, image = "pink", iters = 3, col = "grey")
+#'  dspoint(0.2, 0.5, image = "pink", iters = 3, col = "grey")
 #' @export
 dspoint <- function(x, y, label = "", labelBg = "white", labelCol = "black", pch = 21, size = 2,
                        col = "blue", regionCol=NULL, image = "", offset=NULL,
@@ -194,7 +194,8 @@ findFixedPoint <- function (x,y,points,eps,tolerance,model, stride) {
   ind <- findNearestPoint(xp, yp, points, eps)
   while (ind==0 && moves) {
     tmp <- model$apply(xp,yp,iters=stride,accumulate=FALSE,crop=FALSE)
-    if(is.nan(tmp$x) || is.nan(tmp$y)) return(NaN)
+    if(is.nan(tmp$x) || is.nan(tmp$y)) 
+      return(NaN)
     if(any(is.infinite(unlist(tmp))) || abs((xp-tmp[[1]])^2 + (yp-tmp[[2]])^2) < tolerance)
       moves <- FALSE
     xp <- tmp[[1]]
