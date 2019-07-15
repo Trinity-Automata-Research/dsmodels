@@ -334,7 +334,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=1000, numTries=5, powerOf2=TRUE, ignoreExtinction=FALSE,
+		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=1000, numTries=5, powerOf2=TRUE, ignoreExtinction=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, xlim=NULL, ylim=NULL, aname=NULL, bname=NULL){
 		  dsassert(is.paramrange(self$range), paste(      #paste is the only way to make multi line strings that dont contain newlines.
 		           "to use find.period model's range must be a paramRange. Most likely, ",
