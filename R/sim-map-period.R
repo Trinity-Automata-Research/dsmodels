@@ -149,7 +149,11 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
         image(self$grid$a,self$grid$b, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
         if(self$key){
           names=self$map
-          names[1]="Divergent"
+          if(ignoreExtinction){
+            names[1]="Divergent"
+          } else{
+            names[1]="Extinction"
+          }
           names[2]="Fixed"
           names[length(names)]="Chaotic"
           legend("topright", inset=c(-0.25,0), legend=names,
