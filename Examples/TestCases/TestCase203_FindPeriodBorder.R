@@ -21,7 +21,7 @@ model = dsmodel(f)
 
 model + paramrange(3,3,discretize = .1, paramNames = c(s,r))
 
-model + sim.map.period(.5,.5,maxPeriod = 16, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE, ignoreExtinction = TRUE)
+model + sim.map.period(.5,.5,maxPeriod = 16, epsilon=.0001, iters = 100, numTries = 1, powerOf2=TRUE)
 
 
 
