@@ -27,6 +27,7 @@ Depends:
     grDevices,
     latex2exp,
     pryr,
+    stats,
     R.utils
 LazyData: TRUE
 RoxygenNote: 6.1.1

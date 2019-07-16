@@ -18,22 +18,22 @@
 #' @export
 dsintersection <- function(c1, c2, range = NULL, col = "blue", pch = 21, size = 2, bg = "black", display = TRUE, labels = "",
                            labelCols = "black", labelBgs = "white", offsets = NULL) {
-  if(is.curve(c1) && c1$bound) {
+  if(is.curve(c1) && c1$bound && !c1$isParametric) {
     fun1 <- eval(c1$fun)
     if(is.null(range)) range <- c1$model$range$xlim
   }
-  if(is.curve(c2) && c2$bound) {
-    fun2 <- eval(c2$fun)
-    if(is.null(range)) range <- c2$model$range$xlim
-  }
-  if(is.function(c1)) fun1 <- c1
-  if(is.function(c2)) fun2 <- c2
-  if(is.list(c1)) {
+  else if(is.function(c1)) fun1 <- c1
+  else if(is.list(c1)) {
     fun1 <- approxfun(c1$x, c1$y)
     if(1 %in% sign(diff(c1$x)) && -1 %in% sign(diff(c1$x))) warning("We advise against using dsintersections with nonfunctional curves.")
     if(is.null(range)) range <- c(min(c1$x), max(c1$x))
   }
-  if(is.list(c2)) {
+  if(is.curve(c2) && c2$bound && !c2$isParametric) {
+    fun2 <- eval(c2$fun)
+    if(is.null(range)) range <- c2$model$range$xlim
+  }
+  else if(is.function(c2)) fun2 <- c2
+  else if(is.list(c2)) {
     fun2 <- approxfun(c2$x, c2$y)
     if(1 %in% sign(diff(c2$x)) && -1 %in% sign(diff(c2$x))) warning("We advise against using dsintersections with nonfunctional curves.")
     if(is.null(range)) range <- c(min(c2$x), max(c2$x))
