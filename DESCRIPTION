@@ -50,5 +50,6 @@ Collate:
     'sim-map-period.R'
     'simattractors.R'
     'simbasins.R'
+    'simisoclines.R'
 BugReports: https://github.com/Trinity-Automata-Research/dsmodels/issues
 URL: https://github.com/Trinity-Automata-Research/dsmodels

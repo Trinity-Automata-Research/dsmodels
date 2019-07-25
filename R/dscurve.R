@@ -562,7 +562,7 @@ breakDisconts <- function(line, xlim, ylim, stretch = 0) {
   }
   else if(stretch > 0) {
     rep <- which(c(FALSE, diff(line$x)^2 + diff(line$y)^2) > stretch^2)
-    if(length(rep) > 1) {
+    if(length(rep) >= 1) {
       line$y <- insert(line$y, rep, NaN)
       line$x <- insert(line$x, rep, NaN)
     }
