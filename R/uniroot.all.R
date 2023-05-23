@@ -9,10 +9,9 @@ uniroot.all <- function (f, interval, lower= min(interval),
         maxiter= 1000, n = 100, ... ) {
 
 ## error checking as in uniroot...
-  if (!missing(interval) && length(interval) != 2)
+  if(!missing(interval) && length(interval) != 2)
      stop("'interval' must be a vector of length 2")
-  if (!is.numeric(lower) || !is.numeric(upper) || lower >=
-     upper)
+  if(!is.numeric(lower) || !is.numeric(upper) || lower >= upper)
     stop("lower < upper  is not fulfilled")
 
 ## subdivide interval in n subintervals and estimate the function values

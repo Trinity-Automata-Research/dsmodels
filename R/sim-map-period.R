@@ -38,7 +38,7 @@
 #' model + paramrange(3,3,discretize = .02, paramNames = c(s,r))
 #' #generate an image based on periodicity tested at the point (.5,.5). Takes a bit of time.
 #' #maxperiodicity=8 makes every periodicity above 8 count as divergent or 0.
-#' model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 1000, numTries = 1)
+#' #model + sim.map.period(.5,.5,maxPeriod = 8, epsilon=.0001, iters = 100, numTries = 1)
 #' #varying only one variable can be done by using a dummy variable.
 #' #create a model with the function
 #' model = dsmodel(f)
@@ -61,7 +61,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
   if(safe.apply(is.null,paramNames)) {
     aname <- NULL
     bname <- NULL
-  } else if(length(givenNames) == 3 && givenNames[1] == substitute(c())) {
+  } else if(length(givenNames) == 3 && identical(givenNames[1], substitute(c()))) {
     aname <- as.character(givenNames[2])
     bname <- as.character(givenNames[3])
   } else {
@@ -128,9 +128,9 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       z=mapply(normalize,z)
       numCol=length(map)
       if(is.null(self$cols) || length(self$cols)<numCol){
-        if (numCol <= 6)
+        if(numCol <= 6)
           self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
-        else if (numCol <= 28)
+        else if(numCol <= 28)
           self$cols <- c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f")
         else
           self$cols <- rainbow(numCol) #warning? More colors needed

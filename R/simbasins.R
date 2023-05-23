@@ -128,7 +128,7 @@ simbasins <- function(discretize=NULL, xlim=NULL, ylim=NULL, iters=NULL,
                           MoreArgs=list(model=model, points=self$fps, tolerance=self$tolerance, eps=self$epsilon, stride=self$stride))
         if(model$warnPeriodic)
           warning("simbasins: some points appear to be periodic, or attractors not set properly.")
-      } else if (is.infinite(iters)) {
+      } else if(is.infinite(iters)) {
         images <- applyTillFixed(model, self$grid$X0, self$grid$Y0, self$stride, self$iters, initIters = 0, self$tolerance)
         colsMap <- mapply(findNearestPoint, images$x, images$y,
                           MoreArgs=list(points=self$fps, eps=self$epsilon))

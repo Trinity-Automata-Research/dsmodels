@@ -117,7 +117,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         }
         iterAccum[[1]] <- startvals
         iterSeq = 1:iters
-        if(iters==0)
+        if(identical(iters,0))
           iterSeq <- NULL
         for(i in iterSeq){
           tmp=self$fun(x,y,...)
@@ -165,23 +165,19 @@ dsmodel <- function(fun, title="", display = TRUE) {
         xin <- vals[[1]]
         yin <- vals[[2]]
       }
-      tmp1 <- self$range$xlim
-      tmp2 <- self$range$ylim
-      filterfunx <- function(x) (x <= max(tmp1) && x >= min(tmp1))
-      filterfuny <- function(x) (x <= max(tmp2) && x >= min(tmp2))
-      xrid = boolpos(filterfunx, xin)
-      yrid = boolpos(filterfuny, yin)
-      rid <- c(xrid,yrid)
-      if(!is.null(rid)) {
+      xlim <- self$range$xlim
+      ylim <- self$range$ylim
+      keeps <- !( xin > max(xlim) | xin < min(xlim) | yin > max(ylim) | yin < min(ylim))
+      if(all(keeps)) {
         list(
-          x = xin[-rid],
-          y = yin[-rid]
+          x = xin,
+          y = yin
         )
       }
       else {
         list(
-          x = xin,
-          y = yin
+          x = xin[keeps],
+          y = yin[keeps]
         )
       }
     },
@@ -229,7 +225,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
         if(!self$range$rendered)
           rerender = TRUE
       }
-      else if (!is.null(self$range)) {
+      else if(!is.null(self$range)) {
         if(   (is.background(obj) && !(is.null(self$visualization) && is.null(self$feature)))
            || (is.visualization(obj) && ! is.null(self$feature)) )
           rerender = TRUE
@@ -271,22 +267,22 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		#Methods related to models-as-interactable-objects (for simulation to test, not visualize)
     points = function(self, format="list", filter="all") {
       points <- Filter(is.dspoint, self$feature)
-      if(filter == "attractor")
+      if(identical(filter,"attractor"))
         points <- Filter(function(p) {p$attractor}, points)
-      else if (filter == "sim")
+      else if(identical(filter,"sim"))
         points <- Filter(function(p) {p$artificial}, points)
-      else if (filter == "fixed" || filter == "fixedpoint")
+      else if(identical(filter,"fixed") || identical(filter,"fixedpoint"))
         points <- Filter(function(p) {p$fixed}, points)
-      else if(filter != "all")
+      else if(!identical(filter,"all"))
         stop("dsmodel: valid filters for dsmodel$points method are: \"all\", \"attractor\", \"fixed\", \"sim\".")
-      if(format == "objects")
+      if(identical(format,"objects"))
         points
-      else if (format == "list") {
+      else if(identical(format,"list")) {
         res <- pointsToList(points)
         res$inds = c(res$inds,recursive=TRUE)
         res
       }
-      else if (format == "pairs")
+      else if(identical(format,"pairs"))
         Map(function(pnt) c(pnt$x, pnt$y), points)
       else
         stop("dsmodel: valid formats for dsmodel$points method are: \"objects\",  \"list\", \"pairs\"")
@@ -423,10 +419,10 @@ is.model <- function(x) inherits(x,"model")
 colorVector <- function(col, image, iters) {
   if(is.null(image))
     image <- ""
-  if((length(col) == 2 && iters > 1 && image == "") # GRADIENT
+  if((length(col) == 2 && iters > 1 && identical(image, "")) # GRADIENT
      || (length(col) == 1 && length(image) == 1 && iters > 1)){
     if(!is.null(image)) {
-      if(image != "")
+      if(!identical(image,""))
         col <- append(col,image)
     }
     colf <- colorRamp(col)
@@ -441,7 +437,7 @@ colorVector <- function(col, image, iters) {
     vect
   }
   else{ # NOT GRADIENT
-    if(image != "")
+    if(!identical(image,""))
       col <- append(col, image)
     lengthOfCol <- length(col)
     if( iters > 1 )
@@ -450,37 +446,12 @@ colorVector <- function(col, image, iters) {
       len <- lengthOfCol
     vect <- vector(mode = "list", len)
      for(i in 1:len){
-      if(col[[i]]=="")
+      if(identical(col[[i]],""))
         col[[i]] = "NA"
       vect[[i]] <- col[[i]]
     }
     vect
   }
-}
-
-#' Find Positions of False Elements
-#'
-#' Returns all positions of elements in \code{v} where \code{fun(v)}
-#' returns \code{FALSE}.
-#' @param fun A \code{function(x)} which outputs a single boolean
-#' @param v A vector or list of elements compatible with \code{fun}
-#' @keywords internal
-#' @export
-boolpos <- function(fun, v) {
-  holder <- c()
-  tracker <- 1
-  if(length(v) <= 0)
-    return(holder)
-  for(i in 1:length(v)) {
-    val <- fun(v[[i]])
-    if(!is.na(val) && !is.nan(val)) {
-      if(!val) {
-        holder[[tracker]] <- i
-        tracker <- tracker+1
-      }
-    }
-  }
-  holder
 }
 
 #' NaNRemove
@@ -494,14 +465,11 @@ NaNRemove <- function(twoDList){
   if(length(tmp[[1]])!=length(tmp[[2]])){
     stop("dsmodel: X and Y of different length. Internal Error.")
   }
-  ridFun <- function(x) !is.nan(x)
-  toRidX <- boolpos(ridFun,tmp[[1]])
-  toRidY <- boolpos(ridFun,tmp[[2]])
-  rid <- c(toRidX,toRidY)
-  if(!is.null(rid)) {
+  keeps <- is.finite(tmp[[1]]) & is.finite(tmp[[2]])
+  if(!all(keeps)) {
     list(
-      tmp[[1]] <- tmp[[1]][-rid],
-      tmp[[2]] <- tmp[[2]][-rid]
+      tmp[[1]] <- tmp[[1]][keeps],
+      tmp[[2]] <- tmp[[2]][keeps]
     )
   }
 }

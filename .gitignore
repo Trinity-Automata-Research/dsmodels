@@ -1,3 +1,7 @@
+renv
+renv.lock
+.Rprofile
+docs
 .Rproj.user
 .Rhistory
 .RData

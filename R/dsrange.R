@@ -62,8 +62,8 @@ dsrange <- function(xlim,ylim,discretize = 0,
     },
     #methods for creating grids
     getDiscretize = function(self, potential) {
-      if(is.null(potential)||potential==0){
-        if(is.null(self$discretize)||self$discretize==0)
+      if(is.null(potential)||identical(potential,0)){
+        if(is.null(self$discretize)||identical(self$discretize,0))
           stop("Either the range or the appropriate object must have a discretization parameter")
         return(self$discretize)
       } else {
