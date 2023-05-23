@@ -114,7 +114,7 @@ dspoint <- function(x, y, label = "", labelBg = "white", labelCol = "black", pch
     offset=offset,
     crop = crop,
     on.bind = function(self, model) {
-      if(iters == 0)
+      if(identical(iters,0))
         self$toPlot <- model$apply(self$x, self$y, iters=length(self$col), crop = self$crop)
       else
         self$toPlot <- model$apply(self$x, self$y, iters=self$iters, crop = self$crop)
@@ -192,7 +192,7 @@ findFixedPoint <- function (x,y,points,eps,tolerance,model, stride) {
   yp <- y
   moves <- TRUE
   ind <- findNearestPoint(xp, yp, points, eps)
-  while (ind==0 && moves) {
+  while (identical(ind,0) && moves) {
     tmp <- model$apply(xp,yp,iters=stride,accumulate=FALSE,crop=FALSE)
     if(is.nan(tmp$x) || is.nan(tmp$y)) 
       return(NaN)

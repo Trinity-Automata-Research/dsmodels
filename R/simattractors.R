@@ -59,7 +59,7 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
     attractors = NULL,
     on.bind = function(self, model) {
       self$grid=model$range$corners(discretize=self$discretize, xlim=self$xlim, ylim=self$ylim)
-      if(self$iters == 0)
+      if(identical(self$iters,0))
         self$iters = Inf
       if(is.null(self$epsilon)){
         self$epsilon <- (model$range$getDiscretize(self$discretize))^2
@@ -95,9 +95,9 @@ simattractors <- function(discretize=NULL, xlim=NULL, ylim=NULL, stride=8, iters
       if(discardFlag)
           warning("simattractors: non-fixed point(s) discarded because maximum iteration was reached or because they diverged to infinity.")
       if(length(self$cols) < found) {
-        if (found <= 6)
+        if(found <= 6)
           self$cols <- c("yellow", "magenta", "orange", "green", "red", "blue")
-        else if (found <= 28)
+        else if(found <= 28)
           self$cols <- c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f")
         else
           self$cols <- rainbow(found)
@@ -122,14 +122,14 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
   unstableFlag=FALSE
   while(moved && iters < maxIters) {
     images <- model$apply(prev$x, prev$y, iters=stride, accumulate=FALSE, crop=FALSE) #crop=TRUE?
-    if (length(prev$x) != length(images$x)){
+    if(length(prev$x) != length(images$x)){
     }
     dists = (images$x - prev$x)^2 + (images$y - prev$y)^2
     m <- max(dists[is.finite(dists)])
     if(is.nan(m)){
       stop("dssimulation: Model not well defined: NaN")
     }
-    if (m < tolerance) {
+    if(m < tolerance) {
       moved <- FALSE
       if(!all(is.finite(dists))){
         unstableFlag=TRUE
@@ -140,7 +140,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
       iters <- iters+1 #should probably be +stride. Issue #104
     }
   }
-  if(iters == maxIters && moved)
+  if(identical(iters,maxIters) && moved)
     warning("dssimulation: hit iteration threshhold in simattractors.")
   if(!moved) {
     noStrideImages = model$apply(images$x, images$y, iters=1, accumulate=FALSE, crop=FALSE)
@@ -149,7 +149,7 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
       unstableFlag=TRUE
     }
     m <- max(dists[is.finite(dists)])
-    if (m > tolerance) {
+    if(m > tolerance) {
       warning("dssimulation: points are only stable under stride, may have periodic attractors.")
       #tolernace here is the wrong parameter, because we're moving once instead of 8 times.
       #dividing by 8 is probably better(?), but maybe even as extreme as square-rooting.

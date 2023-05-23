@@ -6,7 +6,8 @@ Authors@R: c(
          person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
          person("Seth", "Fogarty", email = "sfogarty@trinity.edu", role = c("aut")),
          person("Kenny", "McLaren", email = "kmclaren@trinity.edu", role = c("aut")),
-         person("Nick", "Smoker", email = "nsmoker@trinity.edu", role = c("aut"))
+         person("Nick", "Smoker", email = "nsmoker@trinity.edu", role = c("aut")),
+         person("Mitchy", "Lee", email = "mlee2@trinity.edu", role = c("aut"))
         )
 Description: An expressive language to facilitate simulation and visualization
     of two-dimensional dynamical systems. The basic elements of the language are
@@ -29,8 +30,9 @@ Depends:
     pryr,
     stats,
     R.utils
+Encoding: UTF-8
 LazyData: TRUE
-RoxygenNote: 6.1.1
+RoxygenNote: 7.2.3
 Collate: 
     'dsproto.R'
     'axeslabel.R'

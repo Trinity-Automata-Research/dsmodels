@@ -377,9 +377,9 @@ dscurve <- function(fun, yfun = NULL,
         if(is.null(self$givenColors) || length(self$givenColors)<numCol){
           if(!is.null(self$givenColors))
             warning("not enough colors given, using a preset") #warning? More colors needed
-          if (numCol <= 6) {
+          if(numCol <= 6) {
             self$col <- darken(c("yellow", "magenta", "orange", "green", "red", "blue"))
-          } else if (numCol <= 28) {
+          } else if(numCol <= 28) {
             self$col <- darken(c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287",
                                  "#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3",
                                  "#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c",
@@ -488,9 +488,9 @@ dscurve <- function(fun, yfun = NULL,
       args[[self$aname]]=a
       args[[self$bname]]=b
       p=do.call(self$model$find.period,args)
-      if(p==startP)   #gap gets smaller
+      if(identical(p,startP))   #gap gets smaller
         return(self$recurNarrow(midPoint,startP,stop,stopP,tolerance))
-      else if(p==stopP)
+      else if(identical(p,stopP))
         return(self$recurNarrow(start,startP,midPoint,stopP,tolerance))
       else{           #gap splits into two gaps
         g1=self$recurNarrow(start,startP,midPoint,p,tolerance)
@@ -550,11 +550,11 @@ darken <- function(color, factor=1.4){
 #' @keywords internal
 #' @export
 breakDisconts <- function(line, xlim, ylim, stretch = 0) {
-  if(stretch == -1) {
+  if(identical(stretch,-1)) {
     line$x[line$x < xlim[1] | line$x > xlim[2]] <- NaN
     line$y[line$y < ylim[1] | line$y > ylim[2]] <- NaN
   }
-  else if(stretch == -2) {
+  else if(identical(stretch,-2)) {
     oobx <- line$x < xlim[1] | line$x > xlim[2]
     ooby <- line$y < ylim[1] | line$y > ylim[2]
     line$x[oobx & c(FALSE, oobx[-length(oobx)]) & c(oobx[-1], FALSE)] <- NaN

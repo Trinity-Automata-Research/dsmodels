@@ -56,7 +56,7 @@ paramrange = function(alim,blim,xlim=0,ylim=0, paramNames=NULL,discretize=0, ren
   if(safe.apply(is.null,paramNames)) {
     aname <- NULL
     bname <- NULL
-  } else if(length(givenNames) == 3 && givenNames[1] == substitute(c())) {
+  } else if(length(givenNames) == 3 && identical(givenNames[1], substitute(c()))) {
     aname <- as.character(givenNames[2])
     bname <- as.character(givenNames[3])
   } else {
@@ -91,8 +91,8 @@ paramrange = function(alim,blim,xlim=0,ylim=0, paramNames=NULL,discretize=0, ren
     #right now paramdisc and disc are the same so this is the same as paramdisc
     #only needed if paramdisc if different from disc
     getParamDiscretize = function(self, potential) {
-    #  if(is.null(potential)||potential==0){
-    #    if(is.null(self$discretize)||self$discretize==0)
+    #  if(is.null(potential)||identical(potential,0)){
+    #    if(is.null(self$discretize)||identical(self$discretize,0))
     #      return(self$parent$getDiscretize(potential))
     #    return(self$discretize)
     #  } else {
@@ -122,7 +122,7 @@ paramrange = function(alim,blim,xlim=0,ylim=0, paramNames=NULL,discretize=0, ren
       openParams = allparams[!defaults]
       if(length(openParams) == 4)
         params = openParams
-      else if (length(allparams) >= 4)
+      else if(length(allparams) >= 4)
         params = allparams
       else
         return(NULL)
