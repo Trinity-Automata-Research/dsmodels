@@ -30,7 +30,7 @@ Depends:
     stats,
     R.utils
 LazyData: TRUE
-RoxygenNote: 6.1.1
+RoxygenNote: 7.2.3
 Collate: 
     'dsproto.R'
     'axeslabel.R'
