@@ -92,7 +92,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
     vapply = function(self, vect, ..., iters=1) {
       if(is.null(vect[1]) || is.null(vect[2]))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
-      tmp=self$fun(x,y,...)
+      tmp=self$fun(vect[1], vect[2], ...)
       c(tmp[[1]],tmp[[2]])
     },
     apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
