@@ -167,3 +167,19 @@ applyTillFixed <- function(model, x, y, stride, maxIters, initIters=0, tolerance
 
 boolSelector <- function(b, t, f) { if(b) t else f }
 
+
+#' reasonableColors
+#'
+#' Finds a reasonable list of colors, given a minimum length. (Find refrence)
+#' @keywords internal
+#' @param count Number of colors required. More may be returned.
+#' @export
+
+reasonableColors <- function(count) {
+  if(count <= 6)
+    c("yellow", "magenta", "orange", "green", "red", "blue")
+  else if(count <= 28)
+    c("#00119c","#cdff50","#8d00a9","#00b054","#ff40dd","#01f9be","#ff1287","#2a73ff","#d99b00","#f5ff84","#3e004a","#91fffa","#ff455a","#00a5f3","#850f00","#9897ff","#0e2100","#e2b5ff","#005238","#ffa287","#12002c","#e2ffe0","#620045","#ffd3e1","#2b0a00","#0068b0","#5f1800","#00376f")
+  else
+    rainbow(count)
+}

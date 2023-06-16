@@ -70,7 +70,7 @@ dsrange <- function(xlim,ylim,discretize = 0,
         return(potential)
       }
     },
-    grid = function(self, discretize=NULL, xlim=NULL, ylim=NULL, center=FALSE){
+    grid = function(self, discretize=NULL, xlim=NULL, ylim=NULL, center=FALSE, expand=TRUE){
       disc = self$getDiscretize(discretize)
       if(is.null(xlim)){
         x=self$xlim
@@ -94,14 +94,18 @@ dsrange <- function(xlim,ylim,discretize = 0,
         gx = seq(x[[1]],x[[2]], by = disc)
         gy = seq(y[[1]],y[[2]], by = disc)
       }
-      N = as.matrix(expand.grid(gx,gy))
-      list(x=gx, y=gy,X0 = N[,1],Y0 = N[,2])
+      if(expand) {
+        N = as.matrix(expand.grid(gx,gy))
+        list(x=gx, y=gy,X0 = N[,1],Y0 = N[,2])
+      } else {
+        list(x=gx, y=gy)
+      }
     },
-    corners = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
-      self$grid(discretize=discretize, xlim=xlim, ylim=ylim)
+    corners = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim, expand=TRUE){
+      self$grid(discretize=discretize, xlim=xlim, ylim=ylim, expand=expand)
     },
-    centers = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim){
-      self$grid(discretize=discretize, xlim=xlim, ylim=ylim, center=TRUE)
+    centers = function(self, discretize=NULL, xlim=self$xlim, ylim=self$ylim, expand=TRUE){
+      self$grid(discretize=discretize, xlim=xlim, ylim=ylim, center=TRUE, expand=expand)
     }
   )
 }
