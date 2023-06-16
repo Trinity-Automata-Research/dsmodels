@@ -89,6 +89,12 @@ dsmodel <- function(fun, title="", display = TRUE) {
       invisible(self)
     },
     #methods for applying the underlying function of the model
+    vapply = function(self, vect, ..., iters=1) {
+      if(is.null(vect[1]) || is.null(vect[2]))
+        stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
+      tmp=self$fun(x,y,...)
+      c(tmp[[1]],tmp[[2]])
+    },
     apply = function(self, x, y, ..., iters=1, accumulate=TRUE, crop = TRUE) {
       if(is.null(x) || is.null(y))
         stop("dsmodel: Please make sure your x and y values are defined in latest object created.")
