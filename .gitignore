@@ -8,3 +8,5 @@ docs
 .Ruserdata
 *.Rd
 NAMESPACE
+DESCRIPTION
+dsmodels.Rproj
