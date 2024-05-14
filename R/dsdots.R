@@ -1,4 +1,4 @@
-#' Adds a visualization of the system using dots.
+#' Adds a visualization of the system using dots
 #'
 #' The visualization displays a uniform array of points and their images under the function defined
 #' by the model as dots.  Multiple
@@ -86,23 +86,17 @@ dsdots <- function(col = "black",image = "", iters = 1,
     `_class` = "dots", `_inherit` = parent,
     ... = ...,
     cex = size,
-    X0 = NULL, Y0 = NULL,
     col = col,
     iters = iters,
-    dotsComputed = FALSE,
     discretize = discretize,
     toPlot = c(), #when filled should be a list
     crop = crop,
-    computeDots = function(self, model) {
-      self$dotsComputed <- TRUE
-      self$rediscretize(model)
-      self$toPlot <- model$apply(self$X0, self$Y0, self$iters, crop = self$crop)
+    on.bind = function(self, model) {
+      self$bound = TRUE
+      corners=model$range$corners(discretize=self$discretize)
+      self$toPlot <- model$apply(corners$X0, corners$Y0, iters=self$iters, crop = self$crop)
     },
-    render = function(self, model) {
-      self$rediscretize(model)
-	    if(!self$dotsComputed) {
-      	self$computeDots(model)
-	    }
+    render = function(self,model) {
       for(i in 1:(self$iters)){
         tmp <- self$toPlot[[i]]
         points(
@@ -111,30 +105,7 @@ dsdots <- function(col = "black",image = "", iters = 1,
           ... = self$...
         )
       }
-    },
-    recalculate = function(self, model) {
-      self$computeDots(model)
-    },
-    rediscretize = function(self, model) { # if recalculate needed, include model
-      if(!is.null(self$discretize)) {
-      	x <- model$range$xlim
-      	y <- model$range$ylim
-
-      	gx = seq(min(x),max(x), by = self$discretize)
-      	gy = seq(min(y),max(y), by = self$discretize)
-      	N = as.matrix(expand.grid(gx,gy))
-
-      	self$X0 = N[,1]
-      	self$Y0 = N[,2]
-      }
-	  else {
-	    if(model$range$discretize == 0)
-	      stop("dsdots: Either the dsrange or the dsdots have to have a non-empty discretization parameter.")
-        self$X0 = model$range$X0
-        self$Y0 = model$range$Y0
-        self$discretize = model$range$discretize
-	  }
-	}
+    }
   )
 }
 

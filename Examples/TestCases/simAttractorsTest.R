@@ -25,4 +25,4 @@ field <- dsrange(0:3,0:3,discretize = .1)
 #They can be set manually with parameters.
 model+field
 model + dsarrows(head.length=0.15)
-model + guessattractors(discretize=0.05) + guessregions(discretize=0.02)
+model + simattractors(discretize=0.05) + simbasins(discretize=0.02)

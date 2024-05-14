@@ -1,12 +1,15 @@
 Package: dsmodels
 Type: Package
-Title: A Language to Facilitate the Creation and Visualization of Two-Dimensional Dynamical Systems
-Version: 1.0.0
+Title: A Language to Facilitate Simulation and Visualization of Two-Dimensional Dynamical Systems
+Version: 1.1.0
 Authors@R: c(
-	     person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
-	     person("Seth", "Fogarty", email = "sfogarty@trinity.edu", role = c("aut"))
-	    )
-Description: An expressive language to facilitate the creation and visualization
+         person("Charles", "Stein", email = "cstein1@trinity.edu", role = c("aut", "cre")),
+         person("Seth", "Fogarty", email = "sfogarty@trinity.edu", role = c("aut")),
+         person("Kenny", "McLaren", email = "kmclaren@trinity.edu", role = c("aut")),
+         person("Nick", "Smoker", email = "nsmoker@trinity.edu", role = c("aut")),
+         person("Mitchy", "Lee", email = "mlee2@trinity.edu", role = c("aut"))
+        )
+Description: An expressive language to facilitate simulation and visualization
     of two-dimensional dynamical systems. The basic elements of the language are
     a model wrapping around a function(x,y) which outputs a list(x
     = xprime, y = yprime), and a range. The language supports three
@@ -14,30 +17,40 @@ Description: An expressive language to facilitate the creation and visualization
     depict the behavior of the dynamical system over the entire range.
     Features display
     user-defined curves and points, and their images under the system.
-    Backgrounds define and color regions of interest, such as areas of convergence and divergence.
+    Backgrounds define and color regions of interest, such as basins of attraction.
     The language
-    can also automatically guess attractors and regions of convergence and divergence.
+    can also approximate attractors and their basins through simulation.
 License: GPL-2 | file LICENSE
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.1.0),
+    shape,
+    graphics,
+    grDevices,
+    latex2exp,
+    pryr,
+    stats,
+    R.utils
+Encoding: UTF-8
 LazyData: TRUE
-RoxygenNote: 5.0.1
-Collate:
+RoxygenNote: 7.2.3
+Collate: 
     'dsproto.R'
     'axeslabel.R'
     'dsarrows.R'
+    'shadowtext.R'
     'dscurve.R'
     'dsdots.R'
-    'dspoint.R'
-    'dsguessing.R'
+    'uniroot.all.R'
+    'dsintersection.R'
     'dsmodel.R'
+    'dspoint.R'
     'dsrange.R'
     'dsregion.R'
     'features.R'
     'modelConstruction.R'
-Imports:
-    shape,
-    graphics,
-    grDevices
+    'paramrange.R'
+    'sim-map-period.R'
+    'simattractors.R'
+    'simbasins.R'
 BugReports: https://github.com/Trinity-Automata-Research/dsmodels/issues
 URL: https://github.com/Trinity-Automata-Research/dsmodels

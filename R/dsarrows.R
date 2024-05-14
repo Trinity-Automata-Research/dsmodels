@@ -1,4 +1,4 @@
-#' Add a visualization of the system using arrows.
+#' Add a visualization of the system using arrows
 #'
 #' The visualization displays the movement of a uniform array of points under the function defined
 #' by the model as arrows.
@@ -74,7 +74,6 @@ dsarrows <- function(
       X1 = NULL, Y1 = NULL,
       X2 = NULL, Y2 = NULL,
       length = length,
-      arrowsComputed = FALSE,
       iters = iters,
       col = col,
       type = type,
@@ -83,70 +82,35 @@ dsarrows <- function(
       crop = crop,
       head.length = head.length,
       ... = ...,
-      # getLims = function(self,model) {
-      #   if(is.null(self$X0))
-      #     self$X0 = model$range$X0
-      #   if(is.null(self$Y0))
-      #     self$Y0 = model$range$Y0
-      # },
-      computeArrows = function(self, model) {
-        self$rediscretize(model)
-        if(!self$arrowsComputed) {
-          tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, self$iters, crop = self$crop)
-          self$X1 <- tmp$x
-          self$Y1 <- tmp$y
-          if((length(self$X0) > 1500 || length(self$Y0) > 1500))
-            warning("arrows: We suggest coarser discretization")
-          self$arrowsComputed <- TRUE
-          if(is.null(self$length))
-          {
-            self$length <- self$scale*self$discretize
-          }
-          L = self$length
-          a=(self$Y1-self$Y0)/(self$X1-self$X0)
-          b=self$Y0-a*self$X0
-          self$X2 <- self$X0+sign((self$X1-self$X0))*L/sqrt(a^2+1)
-          self$Y2 <- a*self$X2+b
+      on.bind = function(self, model) {
+        corners=model$range$corners(discretize=self$discretize)
+        self$X0 = corners$X0
+        self$Y0 = corners$Y0
+        if(is.null(self$length))
+        {
+          self$length <- self$scale*model$range$getDiscretize(self$discretize)
         }
+        self$computeArrows(model)
+        self$bound=TRUE
+      },
+      computeArrows = function(self, model) {
+        tmp <- model$apply(self$X0, self$Y0, accumulate=FALSE, iters=self$iters, crop = self$crop)
+        self$X1 <- tmp$x
+        self$Y1 <- tmp$y
+        if((length(self$X0) > 1500 || length(self$Y0) > 1500))
+          warning("arrows: We suggest coarser discretization")
+        a=(self$Y1-self$Y0)/(self$X1-self$X0)
+        b=self$Y0-a*self$X0
+        self$X2 <- self$X0+sign((self$X1-self$X0))*self$length/sqrt(a^2+1)
+        self$Y2 <- a*self$X2+b
       },
       render = function(self, model) {
-        self$rediscretize(model)
-        if(!self$arrowsComputed)
-          self$recalculate(model)
-        if(!is.discretizedrange(model$range) && is.null(self$discretize))
-          stop("arrows: dsrange is not discretized. Give range an extra 'discretize' parameter in either dsarrows or dsrange.")
+        if(!self$bound)
+          stop("Critical error. Attempting to render before object is bound. Please notify developers.")
         Arrows(self$X0, self$Y0,
                self$X2, self$Y2,
                col = self$col, arr.length = self$head.length,
                angle = self$angle, arr.type = self$type, ... = self$...)
-      },
-      recalculate = function(self, model) {
-        self$X1 = NULL
-        self$X2 = NULL
-        self$Y1 = NULL
-        self$Y2 = NULL
-        self$arrowsComputed = FALSE
-        self$computeArrows(model)
-      },
-      rediscretize = function(self, model) { # if recalculate needed, include model
-        if(!is.null(self$discretize)){
-        x <- model$range$xlim
-        y <- model$range$ylim
-
-        gx = seq(min(x),max(x), by = self$discretize)
-        gy = seq(min(y),max(y), by = self$discretize)
-        N = as.matrix(expand.grid(gx,gy))
-
-        self$X0 = N[,1]
-        self$Y0 = N[,2]
-        }
-        else{
-          if(model$range$discretize == 0)
-            stop("dsdots: Either the dsrange or the dsdots have to have a non-empty discretization parameter.")
-          self$X0 = model$range$X0
-          self$Y0 = model$range$Y0
-          self$discretize = model$range$discretize
-        }
       }
     )
 }

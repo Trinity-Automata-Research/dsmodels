@@ -1,0 +1,12 @@
+renv
+renv.lock
+.Rprofile
+docs
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rd
+NAMESPACE
+DESCRIPTION
+dsmodels.Rproj

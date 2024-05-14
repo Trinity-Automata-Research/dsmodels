@@ -19,6 +19,11 @@ features <- function(f1,f2){
       )
 }
 
+#' Checks if object is a collection of dsproto objects.
+# @rdname features
+#' @param obj An object to test
+#' @keywords internal
+#' @export
 is.features <- function(obj) {
   inherits(obj,"features")
 }
