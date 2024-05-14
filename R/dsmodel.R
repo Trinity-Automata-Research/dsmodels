@@ -334,7 +334,7 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  res <- unique(c(basin$colMatrix))
 		  (length(res) == 1) && !(is.element(0,res))
 		},
-		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=1000, numTries=5, powerOf2=TRUE,
+		find.period= function(self, a, b, x=NULL, y=NULL, iters=1000, maxPeriod=128, initIters=1000, numTries=5, powerOf2=TRUE, ignoreExtinction=TRUE,
                           epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE, xlim=NULL, ylim=NULL, aname=NULL, bname=NULL){
 		  dsassert(is.paramrange(self$range), paste(      #paste is the only way to make multi line strings that dont contain newlines.
 		           "to use find.period model's range must be a paramRange. Most likely, ",
@@ -383,11 +383,9 @@ dsmodel <- function(fun, title="", display = TRUE) {
   		  aname=self$range$aname
 		  if(is.null(bname))
 		    bname=self$range$bname
-		  convCheck=2^(max(5,1+log2(maxPeriod)))  #converge check is how many iterations to go out to check convergence
-
 		  args=list(FUN=self$find.period.internal, MoreArgs=list(x=x, y=y, iters=iters, maxPeriod=maxPeriod,
-		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, epsilon=epsilon,
-		            crop=crop, xlim=xlim, ylim=ylim, convergeCheck=convCheck))
+		            initIters=initIters, numTries=numTries, powerOf2=powerOf2, ignoreExtinction=ignoreExtinction,
+		            epsilon=epsilon, crop=crop, xlim=xlim, ylim=ylim))
 		  args[[aname]]=a
 		  args[[bname]]=b
       ret=do.call(what=mapply,args=args)
@@ -395,8 +393,8 @@ dsmodel <- function(fun, title="", display = TRUE) {
         warning(paste("Assuming some points are chaotic: no period found after",(iters+maxPeriod)*numTries+initIters,"iterations. Consider increasing iters."))
       ret
 		},
-		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2,
-		                                epsilon, crop, xlim, ylim, convergeCheck, ...){
+		find.period.internal = function(self, x, y, iters, maxPeriod, initIters, numTries, powerOf2, ignoreExtinction,
+		                                epsilon, crop, xlim, ylim, ...){
 		  #moves all the points. stops if they are either all infinite, fixed, or if(crop==TRUE), outside of range
 		  startPoint <- self$apply(x,y,...,iters=initIters,accumulate=FALSE,crop=FALSE)
 		  x=startPoint$x
@@ -404,43 +402,41 @@ dsmodel <- function(fun, title="", display = TRUE) {
 		  for(i in 1:numTries) {
 		    startPoint <- self$apply(x,y,...,iters=iters,accumulate=FALSE,crop=FALSE)
 		    candidates=self$apply(startPoint$x, startPoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
-		    convergePoint <- self$apply(startPoint$x,startPoint$y,...,iters=convergeCheck,accumulate=FALSE,crop=FALSE)
-		    compareCandidates= self$apply(convergePoint$x, convergePoint$y, ...,iters=maxPeriod*2-1,accumulate=TRUE,crop=FALSE)
-		    last=compareCandidates[[2*maxPeriod]]
+		    last=candidates[[2*maxPeriod]]
+		    if(!ignoreExtinction && (last$x<epsilon || last$y<epsilon)){
+		      return(0)
+		    }
 		    if(self$has.diverged(last$x,last$y,crop=crop, xlim=xlim, ylim=ylim)){
 		      #print("no period found, diverged")
 		      return(FALSE)
 		    }
-		    dists=mapply(sqdist,candidates,compareCandidates)
-		    #check if function has converged.
-		    if(i==numTries || sum(dists)>epsilon){  # should always happen if i=numTries.i.e. if on last try, continue anyways
-  		    period=FALSE
-  		    j=1
-  		    while(j<=maxPeriod && !period){ #check for fixed or periodicity
-  		      test=candidates[1:j]
-  		      image=candidates[(j+1):(2*j)]
-  		      dists=mapply(sqdist,test,image)
-  		      if(all(dists < epsilon))
-  		        period=TRUE
-  		      else{
-  		        if(powerOf2)
-  		          j=2*j
-  		        else
-  		          j=j+1
-  		      }
-  		    }
-  		    if(period){
-  		      return(j)
-  		    }
+
+		    period=FALSE
+		    j=1
+		    while(j<=maxPeriod && !period){ #check for fixed or periodicity
+		      test=candidates[1:j]
+		      image=candidates[(j+1):(2*j)]
+		      dists=mapply(sqdist,test,image)
+		      if(all(dists < epsilon))
+		        period=TRUE
+		      else{
+		        if(powerOf2)
+		          j=2*j
+		        else
+		          j=j+1
+		      }
 		    }
-		      #update x,y to a point further in the orbit
-  		    if(self$properNames){
-  		      x=last$x
-  		      y=last$y
-  		    }
-  		    else{
-  		      x=last[[1]]
-  		      y=last[[2]]
+		    if(period){
+		      return(j)
+		    }
+	      #update x,y to a point further in the orbit
+		    if(self$properNames){
+		      x=last$x
+		      y=last$y
+		    }
+		    else{
+		      x=last[[1]]
+		      y=last[[2]]
 
 		    }
 		  }

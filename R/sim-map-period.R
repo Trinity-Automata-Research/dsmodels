@@ -56,7 +56,7 @@
 
 
 sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NULL, ylim=NULL, paramNames=NULL, discretize=0, cols=NULL,
-                key=TRUE, iters=500, maxPeriod=128, initIters=0, numTries=2, powerOf2=TRUE,
+                key=TRUE, iters=500, maxPeriod=128, initIters=0, numTries=2, powerOf2=TRUE, ignoreExtinction=TRUE,
                 epsilon=sqrt(sqrt(.Machine$double.eps)), crop=FALSE){
   givenNames = substitute(paramNames)
   if(safe.apply(is.null,paramNames)) {
@@ -86,7 +86,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
     key=key,
     iters=iters, maxPeriod=maxPeriod,
     initIters=initIters, numTries=numTries,
-    powerOf2=powerOf2, epsilon=epsilon, crop=crop,
+    powerOf2=powerOf2, ignoreExtinction=ignoreExtinction,  epsilon=epsilon, crop=crop,
     grid=NULL,
     colMatrix=NULL,
     cols=cols,
@@ -116,7 +116,7 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
       z=model$find.period(a=self$grid$A0, b=self$grid$B0, x=self$x, y=self$y,
                           iters=self$iters, maxPeriod=self$maxPeriod,
                           initIters=self$initIters, numTries=self$numTries,
-                          powerOf2=self$powerOf2, epsilon=self$epsilon,
+                          powerOf2=self$powerOf2, ignoreExtinction=self$ignoreExtinction, epsilon=self$epsilon,
                           crop=self$crop, xlim=self$xlim, ylim=self$ylim, aname=self$aname, bname=self$bname)
 
       map=sort(unique(append(z,c(1,0,Inf)))) #should be repaced with an enviornment like dscurve
@@ -149,7 +149,11 @@ sim.map.period = function(testX=NULL, testY=NULL, alim=NULL, blim=NULL, xlim=NUL
         image(self$grid$a,self$grid$b, self$colMatrix, zlim = c(1, self$numCol), col=self$cols[range], add=TRUE)
         if(self$key){
           names=self$map
-          names[1]="Divergent"
+          if(ignoreExtinction){
+            names[1]="Divergent"
+          } else{
+            names[1]="Extinction"
+          }
           names[2]="Fixed"
           names[length(names)]="Chaotic"
           legend("topright", inset=c(-0.25,0), legend=names,
