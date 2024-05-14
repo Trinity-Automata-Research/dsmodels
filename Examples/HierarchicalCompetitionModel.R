@@ -18,7 +18,7 @@ def <- function(X0,Y0) {
 #A model contains a function and a title.
 model <- dsmodel(fun = def, title="Four interior fixed points")
 
-#The field is the graph area. We could change the name if you like, for instance to dsplot.
+#The field is the graph area. We could change the name if you like, for instance to dsplot
 field <- dsrange(0:3,0:3,discretize = .2)
 
 #By default the arrows will be scaled to the discretization parameter, and blue.
@@ -77,4 +77,3 @@ testFun <- function(paramNames) {
   }
   c(aname, bname)
 }
-
